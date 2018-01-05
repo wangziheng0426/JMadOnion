@@ -1,0 +1,16 @@
+global proc Ju_sourceScripts()
+{
+string $Ju_runScript="source \""+`Ju_getSysPath`+"Ju_scripts.mel\"";
+eval($Ju_runScript);
+Ju_scripts(Ju_getSysPath(),"Mad Onion");
+}
+
+global proc string Ju_getFilePath()
+{
+return (`Ju_getSysPath`+"J_file/");
+} 
+
+global proc string Ju_getSysPath()
+{
+return "D:/MyCloud/myFile/madOnion/"+"J_scripts/";
+}
