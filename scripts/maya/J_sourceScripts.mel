@@ -1,0 +1,16 @@
+global proc J_sourceScripts()
+{
+string $J_runScript="source \""+`J_getSysPath`+"/J_scripts.mel\"";
+eval($J_runScript);
+J_scripts(J_getSysPath(),"Mad Onion");
+}
+
+global proc string J_getFilePath()
+{
+return (`J_getSysPath`+"/J_file/");
+} 
+
+global proc string J_getSysPath()
+{
+return "//192.168.0.99/evenNas2T/JmadOnionGit/scripts/maya";
+}

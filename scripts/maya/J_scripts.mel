@@ -1,0 +1,87 @@
+global proc J_scripts(string $J_mainPath,string $J_menuLabel)
+{
+	////////////////////////////////////////////////////////////////创建菜单
+	//string $J_menuLabel="疯狂的桔子";
+	string $J_menuName="madOrange";
+	if (`menu -exists  $J_menuName`) deleteUI $J_menuName;
+		{string $menu=`menu  -l $J_menuLabel -p MayaWindow  $J_menuName`;}	
+	//读取菜单列表
+	string $J_menuList=$J_mainPath+"/config/menuList.txt";
+	
+	int $J_fileId=`fopen $J_menuList "r"`;
+	int $loopRun=1;
+	fgetline $J_fileId;
+	string $J_getWord=`fgetword $J_fileId`;
+	print "-------";
+	print $J_getWord;
+	string $J_mainMenuName="";
+	string $J_mainMenuLabel="";
+	string $J_subInfo[];
+	string $J_menuItems[];
+	int $J_menuItemsCount=0;
+	while ( $loopRun ) 
+	{
+		if($J_getWord=="<MainMenu>")
+		{
+		    $J_getWord = `fgetword $J_fileId`;
+		    $J_mainMenuLabel=$J_getWord;
+		    $J_getWord = `fgetword $J_fileId`;
+		    $J_mainMenuName=$J_getWord ;
+	        $J_menuItems[$J_menuItemsCount]=`menuItem -p $J_menuName -subMenu 1 -label $J_mainMenuLabel -to 1 -aob 1 $J_mainMenuName`;
+			$J_menuItemsCount++;
+			$J_getWord = `fgetword $J_fileId`;
+		}
+		else{ $J_getWord = `fgetword $J_fileId`;}					
+    	if($J_getWord=="<SubMenu>")
+    	{
+            $J_getWord = `fgetword $J_fileId`;
+    		$J_subInfo[0]=$J_getWord;
+    		$J_getWord = `fgetword $J_fileId`;
+    		$J_subInfo[1]=$J_getWord ;
+    	    $J_getWord = `fgetword $J_fileId`;
+    		$J_subInfo[2]=$J_getWord ;
+    			
+    	    string $fileToSource="source \""+$J_mainPath+"/"+$J_subInfo[2]+"\"";
+    		catch(`eval $fileToSource `);
+    	    menuItem -p $J_mainMenuName -label $J_subInfo[0] -c $J_subInfo[1] -to 1 ;
+			$J_getWord = `fgetword $J_fileId`;
+    	}
+		if($J_getWord==""){$loopRun =0;}
+		
+	}
+	fclose $J_fileId;
+	////////////////////////////////////////////////////////////////创建菜单
+	////////////////////////////////////////////////////////////////读取命令
+	
+	string $J_commandList=$J_mainPath+"/config/commandList.txt";
+	int $J_fileId=`fopen $J_commandList "r"`;
+	int $loopRun=1;
+	string $J_commandName;
+	string $J_commandLabel;
+	string $J_commandPath;
+	string $J_getWord=`fgetword $J_fileId`;
+	while ( $loopRun ) 
+	{
+		if($J_getWord=="<command>")
+		{
+		    $J_getWord = `fgetword $J_fileId`;
+		    $J_commandLabel=$J_getWord;
+		    $J_getWord = `fgetword $J_fileId`;
+		    $J_commandName=$J_getWord ;
+			$J_getWord = `fgetword $J_fileId`;
+			$J_commandPath=$J_getWord ;
+			$J_getWord = `fgetword $J_fileId`;
+			string $fileToSource="source \""+$J_mainPath+"/"+$J_commandPath+"\"";print $fileToSource;
+			eval $fileToSource ;
+		}
+		else{ $J_getWord = `fgetword $J_fileId`;}					
+		if($J_getWord==""){$loopRun =0;}		
+	}
+		////////////////////////////////////////////////////////////////读取命令
+	fclose $J_fileId;
+	menuItem -p $J_menuName -label "完美工具集" -c madOrange -aob 1 flying0;
+	menuItem -p $J_menuName -label "康康工具箱" -c kangkangPan -aob 1 flying1;
+	menuItem -p $J_menuName -label "Fps30" -c J_changePlayBackSpeedTo30 -aob 1 flying2;
+	
+}
+
