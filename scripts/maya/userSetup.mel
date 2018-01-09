@@ -1,1 +1,4 @@
-J_sourceScripts;
+string $J_pluginPath="//10.32.73.250/JmadOnionGit/scripts/maya";
+string $J_startUp="source \""+$J_pluginPath+"/J_sourceScripts.mel\"" ;
+catch(`eval $J_startUp`);
+J_sourceScripts($J_pluginPath);
