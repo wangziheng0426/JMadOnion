@@ -1,9 +1,9 @@
 /////////////////////////////////////////////////////////////
 ///\file J_scripts.mel
 ///
-///\brief  ´«µİ½ÚµãÊôĞÔ¹¤¾ß
+///\brief  æ’ä»¶åŠ è½½å·¥å…·ã€‚è‡ªåŠ¨åŠ è½½ç›®å½•ä¸‹çš„æ’ä»¶
 ///
-///\author ½Û
+///\author æ¡”
 ///\version 1.0
 ///\date  15:44 2018/1/9
 ///History:  
@@ -11,12 +11,12 @@
 ///////////////////////////////////////////////////////////////
 global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 {
-	////////////////////////////////////////////////////////////////´´½¨²Ëµ¥
-	//string $J_menuLabel="·è¿ñµÄ½Û×Ó";
+	////////////////////////////////////////////////////////////////åˆ›å»ºèœå•
+	//string $J_menuLabel="ç–¯ç‹‚çš„æ¡”å­";
 	string $J_menuName="madOrange";
 	if (`menu -exists  $J_menuName`) deleteUI $J_menuName;
 		{string $menu=`menu  -l $J_menuLabel -p MayaWindow  $J_menuName`;}	
-	//¶ÁÈ¡²Ëµ¥ÁĞ±í
+	//è¯»å–èœå•åˆ—è¡¨
 	string $J_menuList=$J_mainPath+"/config/menuList.txt";
 	
 	int $J_fileId=`fopen $J_menuList "r"`;
@@ -61,8 +61,8 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 		
 	}
 	fclose $J_fileId;
-	////////////////////////////////////////////////////////////////´´½¨²Ëµ¥
-	////////////////////////////////////////////////////////////////¶ÁÈ¡ÃüÁî
+	////////////////////////////////////////////////////////////////åˆ›å»ºèœå•
+	////////////////////////////////////////////////////////////////è¯»å–å‘½ä»¤
 	
 	string $J_commandList=$J_mainPath+"/config/commandList.txt";
 	int $J_fileId=`fopen $J_commandList "r"`;
@@ -88,10 +88,10 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 		else{ $J_getWord = `fgetword $J_fileId`;}					
 		if($J_getWord==""){$loopRun =0;}		
 	}
-		////////////////////////////////////////////////////////////////¶ÁÈ¡ÃüÁî
+		////////////////////////////////////////////////////////////////è¯»å–å‘½ä»¤
 	fclose $J_fileId;
-	menuItem -p $J_menuName -label "ÍêÃÀ¹¤¾ß¼¯" -c madOrange -aob 1 flying0;
-	menuItem -p $J_menuName -label "¿µ¿µ¹¤¾ßÏä" -c kangkangPan -aob 1 flying1;
+	menuItem -p $J_menuName -label "å®Œç¾å·¥å…·é›†" -c madOrange -aob 1 flying0;
+	menuItem -p $J_menuName -label "åº·åº·å·¥å…·ç®±" -c kangkangPan -aob 1 flying1;
 	menuItem -p $J_menuName -label "Fps30" -c J_changePlayBackSpeedTo30 -aob 1 flying2;
 	
 }
