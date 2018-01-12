@@ -22,6 +22,7 @@ J_scripts(J_getSysPath(),"Mad Onion");
 python("import maya.cmds as cmds");
 python("import sys");
 python("import os");
+python("import shutil");
 python("sys.path.append('"+`J_getSysPath`+""+"')");
 print "PlugIn Loaded\n";
 return "success";

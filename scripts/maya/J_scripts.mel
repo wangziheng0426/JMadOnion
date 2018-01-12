@@ -90,7 +90,7 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 	}
 		////////////////////////////////////////////////////////////////读取命令
 	fclose $J_fileId;
-	menuItem -p $J_menuName -label "命令工具集" -c madOrange -aob 1 flying0; 
+	menuItem -p $J_menuName -label "命令工具集" -c madOnion -aob 1 flying0; 
 	
 }
 
