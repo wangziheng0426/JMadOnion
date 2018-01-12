@@ -1,9 +1,9 @@
 /////////////////////////////////////////////////////////////
 ///\file J_sourceScripts.mel
 ///
-///\brief  ä¸»è¦ç”¨äºåŠ è½½æ’ä»¶ä¸»ä½“,æŸ¥è¯¢æ’ä»¶ç›®å½•
+///\brief  Ö÷ÒªÓÃÓÚ¼ÓÔØ²å¼şÖ÷Ìå,²éÑ¯²å¼şÄ¿Â¼
 ///
-///\author æ¡”
+///\author ½Û
 ///\version 1.0
 ///\date  15:44 2018/1/9
 ///History:  
@@ -11,8 +11,8 @@
 ///////////////////////////////////////////////////////////////
 
 
-///åŠ è½½æ’ä»¶ä¸»ä½“,å¹¶å¯¼å…¥pythonåº“
-///\param string $inPath é€šè¿‡userSetupè¾“å…¥è·¯å¾„\
+///¼ÓÔØ²å¼şÖ÷Ìå,²¢µ¼Èëpython¿â
+///\param string $inPath Í¨¹ıuserSetupÊäÈëÂ·¾¶\
 ///\return success
 global proc string J_sourceScripts(string $inPath)
 {
@@ -26,14 +26,14 @@ python("sys.path.append('"+`J_getSysPath`+""+"')");
 print "PlugIn Loaded\n";
 return "success";
 }
-///åé¦ˆç´ æç›®å½•
-///\return string ç´ ææ–‡ä»¶ç›®å½•
+///·´À¡ËØ²ÄÄ¿Â¼
+///\return string ËØ²ÄÎÄ¼şÄ¿Â¼
 global proc string J_getFilePath()
 {
 return (`J_getSysPath`+"/J_file/");
 } 
-///åé¦ˆæ’ä»¶ç›®å½•
-///\return string æ’ä»¶æ–‡ä»¶ç›®å½•
+///·´À¡²å¼şÄ¿Â¼
+///\return string ²å¼şÎÄ¼şÄ¿Â¼
 global proc string J_getSysPath()
 {
 	string $J_path=`whatIs J_sourceScripts`;

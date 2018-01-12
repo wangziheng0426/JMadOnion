@@ -1,8 +1,8 @@
 /////////////////////////////
 ///\file   userSetup.mel
-///\brief  maya鎻掍欢寮曞鏂囦欢
+///\brief  maya插件引导文件
 /////////////////////////////
-string $J_pluginPath="//10.32.73.250/JmadOnionGit/scripts/maya";
+string $J_pluginPath="//192.168.0.99/evenNas2T/JmadOnionGit/scripts/maya";
 string $J_startUp="source \""+$J_pluginPath+"/J_sourceScripts.mel\"" ;
 catch(`eval $J_startUp`);
 J_sourceScripts($J_pluginPath);
