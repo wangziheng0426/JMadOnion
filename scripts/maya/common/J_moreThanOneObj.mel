@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////
 ///\file J_moreThanOneObj.mel
-///\brief æ£€æŸ¥é‡åå·¥å…·
+///\brief ¼ì²éÖØÃû¹¤¾ß
 ///
-///\author æ¡”
+///\author ½Û
 ///\version 1.0
 ///\date  15:44 2018/1/9
 ///History:  
@@ -10,17 +10,17 @@
 ///////////////////////////////////////////////////////////////
 
 
-///æ‰“å¼€ä¸»ç•Œé¢çª—å£
+///´ò¿ªÖ÷½çÃæ´°¿Ú
 ///\return success
 global proc string J_moreThanOneObj()
-{	//åˆ—å‡ºæ‰€æœ‰çš„èŠ‚ç‚¹
+{	//ÁĞ³öËùÓĞµÄ½Úµã
 	string $allNodes[] = `ls`;
 	string $allName[];
 	clear $allName;
 	string $overName[];
 	clear $overName;
 
-	progressWindow -title "æ­£åœ¨æ£€æŸ¥é‡åèŠ‚ç‚¹ï¼Œè¯·ç¨ç­‰..." -progress 0 -ii 1 -status "å¼€å§‹..";
+	progressWindow -title "ÕıÔÚ¼ì²éÖØÃû½Úµã£¬ÇëÉÔµÈ..." -progress 0 -ii 1 -status "¿ªÊ¼..";
 	int $progress = $p = 0;
 	int $num = `size $allNodes`;
 
@@ -35,7 +35,7 @@ global proc string J_moreThanOneObj()
 		  
 		++$p;
 		$progress = $p * 50/$num;
-		progressWindow -e -progress $progress -status ("å®Œæˆ:" + $progress + "%  (" +  $p + " objects checked)");
+		progressWindow -e -progress $progress -status ("Íê³É:" + $progress + "%  (" +  $p + " objects checked)");
 		if ( `progressWindow -query -isCancelled` ) break;
 	}
 	
@@ -51,7 +51,7 @@ global proc string J_moreThanOneObj()
 		//print ("\n"+$node);
 		++$p;
 		$progress = $p * 50/$num;
-		progressWindow -e -progress $progress -status ("å®Œæˆ:" + $progress + "%  (" +  $p + " objects checked)");
+		progressWindow -e -progress $progress -status ("Íê³É:" + $progress + "%  (" +  $p + " objects checked)");
 		if ( `progressWindow -query -isCancelled` ) break;
 	}
 
@@ -61,12 +61,12 @@ global proc string J_moreThanOneObj()
 	if  (`size $overName`)  
 	{
 		if (`window -ex J_moreThanOneObjWin`) deleteUI -window J_moreThanOneObjWin;		
-		string $win=`window -t "é‡åæŸ¥è¯¢å·¥å…·" -rtf 1 -h 450 -w 245 J_moreThanOneObjWin`;
+		string $win=`window -t "ÖØÃû²éÑ¯¹¤¾ß" -rtf 1 -h 450 -w 245 J_moreThanOneObjWin`;
 		scrollLayout scrollLayout;
 		formLayout -numberOfDivisions 100  juForm;
 			textScrollList -h 300 -bgc 0 0 0 -sc "J_selectitemMore" -allowMultiSelection true overNameList;
 			textField -tx "NodeName" nameField;
-			string $b2 = `button -l "å…¨éƒ¨é‡å‘½å" -w 100 -c "J_overNameObjRenameAllCmd"`;
+			string $b2 = `button -l "È«²¿ÖØÃüÃû" -w 100 -c "J_overNameObjRenameAllCmd"`;
 		formLayout -e
 		-af overNameList top 0
 		-af overNameList left 0
@@ -85,7 +85,7 @@ global proc string J_moreThanOneObj()
 		showWindow $win;
 		eval $addShapesCommand;
 	}
-	else{confirmDialog -m "æ²¡æœ‰æ£€æµ‹åˆ°é‡åèŠ‚ç‚¹" -t "Check Result" -button "Ok" -defaultButton "Ok" ;}
+	else{confirmDialog -m "Ã»ÓĞ¼ì²âµ½ÖØÃû½Úµã" -t "Check Result" -button "Ok" -defaultButton "Ok" ;}
 
 return "success";
 }
@@ -170,7 +170,7 @@ global proc sg_overNameObjRenameCmd()
 }
 */
 
-///é‡å‘½åé‡åèŠ‚ç‚¹
+///ÖØÃüÃûÖØÃû½Úµã
 ///\return success
 proc string J_overNameObjRenameAllCmd()
 {
@@ -197,12 +197,12 @@ proc string J_selectitemMore()
 {
 	string $nn[]=`textScrollList -q -si overNameList`;
 	select $nn;
-	return "success"
+	return "success";
 }
 
 
-///èŠ‚ç‚¹å±‚çº§æ•°é‡æ’åº è¾“å…¥å­—ç¬¦æ•°ç»„  æ’åºåè¾“å‡º
-///\param string $baseName åŸºç¡€åç§°
+///½Úµã²ã¼¶ÊıÁ¿ÅÅĞò ÊäÈë×Ö·ûÊı×é  ÅÅĞòºóÊä³ö
+///\param string $baseName »ù´¡Ãû³Æ
 ///\return success
 proc string J_superRaname(string $baseName)
 {
@@ -258,7 +258,7 @@ global proc J_runRename(string $resNames[],string $baseName,int $objNum[])
 }
 
 
-//èŠ‚ç‚¹å±‚çº§æ•°é‡æ’åº è¾“å…¥å­—ç¬¦æ•°ç»„  æ’åºåè¾“å‡º
+//½Úµã²ã¼¶ÊıÁ¿ÅÅĞò ÊäÈë×Ö·ûÊı×é  ÅÅĞòºóÊä³ö
 
 global proc J_quickSort(string $vIn[])
 {
