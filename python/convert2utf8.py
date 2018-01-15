@@ -1,9 +1,20 @@
 #-*- coding:utf-8 -*-
+################################
+## @package J_convert2utf8.py
+#
+## @brief 加载工具栏菜单
+#  @author 桔
+#  @version 1.0
+#  @date 15:44 2018/1/9
+#  History:  
+#################################
+
+
 
 import os
 import sys
 import shutil
-
+##清理缓存输出目录
 def J_convert2utf8(J_inPath,J_outPath):
     #清理目录
     if os.path.exists(J_inPath):
@@ -17,7 +28,7 @@ def J_convert2utf8(J_inPath,J_outPath):
             os.makedirs(i[0].replace(J_inPath, J_outPath))
             for files in i[2]:
                 J_convertFile(i[0]+"/"+files,i[0].replace(J_inPath, J_outPath)+'/'+files)
-
+##复制文件，修改编码为utf8
 def J_convertFile(J_sourceFile,J_destinationFile):
     try:
         fs=open(J_sourceFile,'r')
@@ -32,19 +43,21 @@ def J_convertFile(J_sourceFile,J_destinationFile):
     except:
         shutil.copyfile(J_sourceFile, J_destinationFile)
         print ('file copy' +J_destinationFile)
-J_madOnionPath=r'\\10.32.73.250\JmadOnionGit'
-helpPath=r'e:\madOnionHelp'
-J_convert2utf8(J_madOnionPath,helpPath)
+J_madOnionPath=r'\\192.168.0.2\Projects\JmadOnionGit'
+outPath=r'd:\madOnionHelp'
+J_convert2utf8(J_madOnionPath,outPath)
 doxygenPath=J_madOnionPath+r'\other\thirdParty\doxygen\doxygen.exe  '+J_madOnionPath+r'\other\thirdParty\doxygen\madonion'
 doxygenConfigPathOrg=J_madOnionPath+r'\other\thirdParty\doxygen\madonionOrig'
-doxygenConfigPath=J_madOnionPath+r'\other\thirdParty\doxygen\madonionX'
+doxygenConfigPath=J_madOnionPath+r'\other\thirdParty\doxygen\madonion'
 file_data=''
 with open(doxygenConfigPathOrg,'r') as doxygenConfigOrg:
     for lines in doxygenConfigOrg.readlines():
-        if 'J_getHelp' in lines:
-            lines=lines.replace('J_getHelp',helpPath)
+        if 'J_outPath' in lines:
+            lines=lines.replace('J_outPath',outPath)
+        if 'J_inputHelp' in lines:
+            lines=lines.replace('J_inputHelp',outPath)
         file_data+=lines
 with open(doxygenConfigPath,'w') as doxygenConfig:
     doxygenConfig.write(file_data)
 print doxygenPath
-#os.system(doxygenPath)
+os.system(doxygenPath)
