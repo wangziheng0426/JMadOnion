@@ -8,11 +8,10 @@
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///打开主界面窗口
 ///\return success
-global proc string J_moreThanOneObj()
+global proc  string J_moreThanOneObj()
 {	//列出所有的节点
 	string $allNodes[] = `ls`;
 	string $allName[];
@@ -64,13 +63,13 @@ global proc string J_moreThanOneObj()
 		string $win=`window -t "重名查询工具" -rtf 1 -h 450 -w 245 J_moreThanOneObjWin`;
 		scrollLayout scrollLayout;
 		formLayout -numberOfDivisions 100  juForm;
-			textScrollList -h 300 -bgc 0 0 0 -sc "J_selectitemMore" -allowMultiSelection true overNameList;
+			textScrollList -h 300  -sc "J_selectitemMore()" -allowMultiSelection true overNameList;
 			textField -tx "NodeName" nameField;
-			string $b2 = `button -l "全部重命名" -w 100 -c "J_overNameObjRenameAllCmd"`;
+			string $b2 = `button -l "全部重命名" -w 100 -c "J_overNameObjRenameAllCmd()"`;
 		formLayout -e
 		-af overNameList top 0
 		-af overNameList left 0
-		-af overNameList right 0
+		-ap overNameList right 0 99
 		-ap overNameList bottom 0 60
 		
 		-ac nameField "top" 2 overNameList
@@ -89,111 +88,23 @@ global proc string J_moreThanOneObj()
 
 return "success";
 }
-/*
 
-
-global proc J_selectObj()
-{
-	if(`formLayout -q -ex juFormX`){deleteUI juFormX;}
-	formLayout -p juForm -numberOfDivisions 100  juFormX;
-	formLayout -e
-		-ac juFormX top 1 overNameList
-		-af juFormX left 0
-		-af juFormX right 0
-		//-ap juFormX bottom 0 100
-		juForm;
-	string  $selectedName[] = `textScrollList -q -si overNameList`;
-	select -r $selectedName;
-	string $textFieldS[];
-	int $textFieldCount=0;
-	for ($sel in $selectedName){
-		string $buffer[];
-		$numTokens=`tokenize $sel "|" $buffer`;	
-		$textFieldS[$textFieldCount]=`textField -p juFormX -tx ("NodeName"+$textFieldCount)`;
-		
-		if($textFieldCount==0)
-		{
-		formLayout -e
-		-af $textFieldS[$textFieldCount] top 0
-		-af $textFieldS[$textFieldCount] left 0
-		-af $textFieldS[$textFieldCount] right 0
-		juFormX;
-		}
-		else
-		{
-		formLayout -e
-		-ac $textFieldS[$textFieldCount] top 0 $textFieldS[$textFieldCount-1]
-		-af $textFieldS[$textFieldCount] left 0
-		-af $textFieldS[$textFieldCount] right 0
-		juFormX;
-		}
-		$textFieldCount++;
-	}
-
-	string $b1 = `button -p juFormX -l "Rename" -w 100 -c "sg_overNameObjRenameCmd"`;
-	string $b2 = `button -p juFormX -l "RenameAll" -w 100 -c "J_overNameObjRenameAllCmd"`;
-	
-	formLayout -e
-
-		-ac $b1 "top" 2 $textFieldS[$textFieldCount-1]
-		-af $b1 left 0
-		-af $b1 right 0
-		
-		-ac $b2 "top" 2 $b1
-		-af $b2 left 0
-		-af $b2 right 0
-		
-	juFormX;
-	
-	
-}
-
-
-global proc sg_overNameObjRenameCmd()
-
-{
-	string  $selectedName[] = `textScrollList -q -si overNameList`;
-	string  $reName[] = `formLayout -q -ca juFormX`;
-	int $i;
-	for ($i=0;$i<`size $selectedName`;$i++){
-		string $newName = `textField -q -tx $reName[$i]`;
-		if ($newName != $selectedName[$i]){
-		
-			rename $selectedName[$i] $newName ;
-			textScrollList -e -ri $selectedName[$i] overNameList;
-			textScrollList -e -a $newName overNameList;
-			textScrollList -e -si $newName overNameList;
-		}
-
-	}
-
-}
-*/
 
 ///重命名重名节点
 ///\return success
-proc string J_overNameObjRenameAllCmd()
+global proc    string J_overNameObjRenameAllCmd()
 {
 	//string  $reName[] = `formLayout -q -ca juFormX`;
 	string $newName = `textField -q -tx nameField`;
 	J_superRaname($newName);
+	if (`window -ex J_moreThanOneObjWin`) deleteUI -window J_moreThanOneObjWin;	
 	J_moreThanOneObj;
 	return "success";
 }
 
-/*
-global proc sgOverNameFilterShapeCmd()
-{
-	string  $allName[] = `textScrollList -q -ai overNameList`;
-	for ($name in $allName){
-		if (`gmatch $name "*Shape*"` == 1){
-			textScrollList -e -ri $name overNameList;
-		}
-	}
-	checkBox -e -en 0  overNameFilterCheck1;
-}
-*/
-proc string J_selectitemMore()
+///列表与场景同步选择
+///\return success
+global proc    string J_selectitemMore()
 {
 	string $nn[]=`textScrollList -q -si overNameList`;
 	select $nn;
@@ -204,7 +115,7 @@ proc string J_selectitemMore()
 ///节点层级数量排序 输入字符数组  排序后输出
 ///\param string $baseName 基础名称
 ///\return success
-proc string J_superRaname(string $baseName)
+global proc    string J_superRaname(string $baseName)
 {
 string $allNodes[] = `ls`;
 	string $allName[];
@@ -236,31 +147,38 @@ string $allNodes[] = `ls`;
 	J_runRename($resNames,$baseName,$objNum);
 	return "success";
 }
-/*
-////////////////////////////////////	
-global proc J_runRename(string $resNames[],string $baseName,int $objNum[])
+///重命名操作实体
+///\param string $resNames 源节点名
+///\param string $baseName 基础名称
+///\param string $objNum 序号
+///\return success
+global proc    string J_runRename(string $resNames[],string $baseName,int $objNum[])
 {
 	
 	for($i=size($resNames);$i>0;$i--)
 	{
-	    if(`objExists $resNames[$i]`)
-	    {
-	        string $newName=($baseName+$objNum[0]);
+
+		if(`objExists $resNames[$i]` )
+		{
+			string $newName=($baseName+$objNum[0]);
             while(`objExists $newName`)
                 {
                 $objNum[0]=$objNum[0]+1;
-                $newName=($baseName+$objNum[0]);
+                $newName=($baseName+"Shape"+$objNum[0]);
                 }
     	catch(`rename $resNames[$i] $newName`);
-
-        }
+		//NWrenShap($resNames);
+		}
 	}
+	return "success";
 }
 
 
-//节点层级数量排序 输入字符数组  排序后输出
+///排序准备工作,提取节点层级数
+///\param string $vIn 源节点名列表
+///\return success
 
-global proc J_quickSort(string $vIn[])
+global proc    string J_quickSort(string $vIn[])
 {
 	int $a[];
 	int $indexIn[] ;
@@ -273,10 +191,17 @@ global proc J_quickSort(string $vIn[])
 	}
 	int $count=size($vIn)-1;
 	RunQuickSort($vIn,$a,$indexIn,0,$count);
+	return "success";
 }
 
-
-global proc RunQuickSort(string $v[],int $a[],int $b[] ,int $start, int $end)
+///根据层级排序
+///\param string $v 源节点数组 
+///\param string $a 源节点层级数
+///\param string $b 源节点层级数
+///\param string $start 源节点层级数
+///\param string $end 源节点层级数
+///\return success
+global proc    string RunQuickSort(string $v[],int $a[],int $b[] ,int $start, int $end)
         {
 
             int $left = $start;
@@ -327,5 +252,5 @@ global proc RunQuickSort(string $v[],int $a[],int $b[] ,int $start, int $end)
             {
                 RunQuickSort($v,$a,$b, $left+1, $end);
             }
+			return "success";
         }
-*/

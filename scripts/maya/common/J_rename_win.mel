@@ -1,0 +1,290 @@
+/////////////////////////////////////////////////////////////
+///\file J_rename_win.mel
+///
+///\brief  文件批量改名
+///
+///\author 桔
+///\version 1.0
+///\date  10:43 2018/1/15
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+
+///批量重命名工具窗体
+///\return success
+global proc string J_rename_win()
+{
+	if (`window -ex NWreNameWin`)
+	deleteUI -window NWreNameWin;
+	string $window = `window -title "Rename Of Object"
+    		-widthHeight 800 200  NWreNameWin`;
+	
+//	string $chaNamenw;
+
+	formLayout renOptionFom;
+	
+		frameLayout -l "物体重命名选项" -labelAlign "center"
+			-borderStyle "etchedIn" renOptionFrm;
+  			
+			columnLayout renOptionLay;
+			radioButtonGrp -numberOfRadioButtons 3
+    				-label "重命名类型"
+				-labelArray3 "添加前缀" "添加后缀" "替换命名"
+				-sl 1 renType;
+			radioButtonGrp -numberOfRadioButtons 2 -shareCollection renType
+				-label ""
+				-labelArray2  "新的名字" "重命名形节点" renType2;
+
+		    	radioButtonGrp
+    				-numberOfRadioButtons 2
+    				-label "重命名对象"
+	    			-labelArray2 "选择物体" "包括所有子级" 
+				-sl 1 renRange;
+			setParent..;
+		setParent..;
+
+
+		frameLayout -l "替换字符" -labelAlign "center"
+			-borderStyle "etchedIn" repNameFrm;
+	 		
+			columnLayout -adjustableColumn true  repNameLay;
+			textFieldGrp 
+				-label "原字符" -en 0
+				-text "old" oldstring;
+
+	      		textFieldGrp
+				-label "替换为" -en 0 
+				-text "new" newstring;
+			setParent..;
+		setParent..;
+
+		frameLayout -l "新名字" -labelAlign "center"
+			-borderStyle "etchedIn" newNameFrm;
+
+		   	columnLayout -adjustableColumn true newNameLay;
+			textFieldGrp 
+				-label "前缀" -en 1
+				-text "Prefix_" preString ;
+			textFieldGrp 
+				-label "后缀" -en 0
+				-text "_Postfix" postString ;
+			textFieldGrp 
+				-label "物体名称" -en 0
+				-text "Obj_" objString ;
+
+			setParent..;
+		setParent..;
+
+		button -l "OK" 
+			-annotation "Rename Objects Operation"
+			-c "NWrenameTool_Main;deleteUI  NWreNameWin;" okBtn;
+		button -l "Operation" 
+			-annotation "Rename Objects Operation"
+			-c "NWrenameTool_Main;" optBtn;
+		button -l "Close"
+			-annotation "Close Curren Windows"
+			-c "deleteUI  NWreNameWin;" closeBtn;	
+
+	setParent..;
+
+	string $cmdOnOldStr = "textFieldGrp -e -en 1 oldstring;";
+	string $cmdOffOldStr = "textFieldGrp -e -en 0 oldstring;";
+
+	string $cmdOnNewStr = "textFieldGrp -e -en 1 newstring;";
+	string $cmdOffNewStr = "textFieldGrp -e -en 0 newstring;";
+
+	string $cmdOnObjStr = "textFieldGrp -e -en 1 objString;";
+	string $cmdOffObjStr = "textFieldGrp -e -en 0 objString;";
+
+	string $cmdOnPreStr = "textFieldGrp -e -en 1 preString;";
+	string $cmdOffPreStr = "textFieldGrp -e -en 0 preString;";
+
+	string $cmdOnPosStr = "textFieldGrp -e -en 1 postString;";
+	string $cmdOffPosStr = "textFieldGrp -e -en 0 postString;";
+
+
+
+	radioButtonGrp -e -on1 ($cmdOnPreStr + $cmdOffOldStr + $cmdOffNewStr + $cmdOffObjStr + $cmdOffPosStr)
+			-on2 ($cmdOffPreStr + $cmdOffOldStr + $cmdOffNewStr + $cmdOffObjStr + $cmdOnPosStr)
+			-on3 ($cmdOffPreStr + $cmdOnOldStr + $cmdOnNewStr + $cmdOffObjStr + $cmdOffPosStr)
+			renType;
+	radioButtonGrp -e
+			-on1 ($cmdOffPreStr + $cmdOffOldStr + $cmdOffNewStr + $cmdOnObjStr + $cmdOffPosStr)
+			-on2 ($cmdOffPreStr + $cmdOffOldStr + $cmdOffNewStr + $cmdOffObjStr + $cmdOffPosStr)
+			renType2;
+
+	formLayout -e	
+		-af okBtn left 5
+		-af okBtn bottom 5 
+		-ap okBtn right 0 30 
+
+		-ac optBtn left 5 okBtn
+		-af optBtn bottom 5 
+		-ap optBtn right 0 65 
+
+		-ac closeBtn left 5 optBtn
+		-af closeBtn bottom 5
+		-af closeBtn right 5
+
+		-af renOptionFrm top 5
+		-af renOptionFrm left 5
+		-af renOptionFrm right 5 
+
+		-ac repNameFrm top 5 renOptionFrm
+		-af repNameFrm left 5
+		-af repNameFrm right 5 
+
+		-ac newNameFrm top 5 repNameFrm
+		-af newNameFrm left 5
+		-af newNameFrm right 5 
+		renOptionFom;
+
+
+showWindow NWreNameWin;
+return "success";
+}
+
+
+
+global proc  NWaddPrefix(string $seled[],string $prefix)
+{
+	for($i=0;$i<`size $seled`;$i++)
+	{
+		string $namepiece[];
+		int $j = (`size $seled`)-$i-1;
+		int  $tok = `tokenize $seled[$j] "|"  $namepiece`;
+
+		string $name_temp = $prefix + $namepiece[$tok-1] ;
+		rename $seled[$j] $name_temp;
+	}
+
+}
+
+global proc  NWaddPostfix(string $seled[],string $postfix)
+{
+	for($i=0;$i<`size $seled`;$i++)
+	{
+		string $namepiece[];
+		int $j = (`size $seled`)-$i-1;
+		int  $tok = `tokenize $seled[$j] "|"  $namepiece`;
+
+		string $name_temp = $namepiece[$tok-1] + $postfix ;
+		rename $seled[$j] $name_temp;
+	}
+
+}
+
+global proc  NWrepLetter(string $seled[],string $oldLetter,string $newLetter)
+{
+	for($i=0;$i<`size $seled`;$i++)
+	{
+		string $namepiece[];
+		int $j = (`size $seled`)-$i-1;
+		int  $tok = `tokenize $seled[$j] "|"  $namepiece`;
+
+		string $name_temp = `substitute $oldLetter $namepiece[$tok-1] $newLetter`;
+		rename $seled[$j] $name_temp;
+	}
+
+}
+
+global proc  NWrenShap(string $seled[])
+{
+	int $j = size ($seled);
+	string $namepiece[];
+
+	for ($i=0;$i<$j;$i++)
+	{
+		select -r $seled[$i];
+		string $shapes[] = `ls -dag -leaf -sl`;
+		int $num = `tokenize $seled[$i] "|" $namepiece` -1;
+
+		if(size($shapes) == 1)
+		{
+			string $shapName = $namepiece[$num] + "Shape" ;
+			rename $shapes[0]   $shapName;
+
+		}
+		else
+		{
+		
+			for($ii=0;$ii<size($shapes);$ii++)
+			{
+				string $temp = $ii+1;
+				string $shapName = $namepiece[$num] + "Shape" + $temp;
+				rename $shapes[$ii]   $shapName;
+			}
+		}
+	}
+}
+
+global proc  NWnewName(string $seled[],string $newName)
+{
+	int $j = size ($seled);
+	
+	for($i=0;$i<`size $seled`;$i++)
+	{
+		int $j = (`size $seled`)-$i-1;
+		string $name_temp = $newName + $j;
+		rename $seled[$j] $name_temp;
+	}
+
+
+}
+
+global proc  NWrenameTool_Main()
+{
+	string $tmp[],$tmp1[],$sel_list[],$shap[];
+
+	int $renType = `radioButtonGrp -q -sl renType` 
+		+ sign(float(`radioButtonGrp -q -sl renType2`))*3.0
+		+ `radioButtonGrp -q -sl renType2`;
+	int $renRang = `radioButtonGrp -q -sl renRange`;
+
+	string $oldName = `textFieldGrp -q -text oldstring`;
+	string $newName = `textFieldGrp -q -text newstring`;
+	string $prefix	= `textFieldGrp -q -text preString`;
+	string $postfix = `textFieldGrp -q -text postString`;
+	string $objName = `textFieldGrp -q -text objString`;
+
+	if($renRang == 1)
+	{
+		$tmp1 = `ls -l -sl`;
+		$shap = `ls -s -l -sl`;
+	}
+	else
+	{
+		$tmp1 = `ls -sl`;
+		select -hi $tmp1;
+		$tmp1 = `ls -l -sl`;
+	}
+	$shap = `ls -s -l -sl`;
+	$tmp = stringArrayRemove($shap, $tmp1);
+	
+	for($i=0;$i<`size $tmp`;$i++)
+	{
+			$sel_list[$i] = $tmp[$i];
+	}
+
+	switch ($renType)
+	{
+	    case 1:
+		NWaddPrefix($sel_list,$prefix);
+		break;
+	    case 2:
+		NWaddPostfix($sel_list, $postfix);
+	        break;
+	    case 3:
+		NWrepLetter($sel_list,$oldName,$newName);
+	        break;
+	    case 4:
+		 NWnewName($sel_list,$objName);
+	        break;
+	    case 5:
+		NWrenShap($sel_list);
+	        break;
+
+	}
+}
+

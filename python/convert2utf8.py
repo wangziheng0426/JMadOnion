@@ -1,13 +1,12 @@
-#-*- coding:utf-8 -*-
-################################
-## @package J_convert2utf8.py
+# -*- coding:utf-8 -*-
+##  @package J_convert2utf8
 #
-## @brief 加载工具栏菜单
-#  @author 桔
-#  @version 1.0
-#  @date 15:44 2018/1/9
+##  @brief 自动生成帮助
+##  @author 桔
+##  @version 1.0
+##  @date 15:44 2018/1/9
 #  History:  
-#################################
+
 
 
 
@@ -43,12 +42,12 @@ def J_convertFile(J_sourceFile,J_destinationFile):
     except:
         shutil.copyfile(J_sourceFile, J_destinationFile)
         print ('file copy' +J_destinationFile)
-J_madOnionPath=r'\\192.168.0.2\Projects\JmadOnionGit'
-outPath=r'd:\madOnionHelp'
+J_madOnionPath=r'E:\JmadOnionGit'
+outPath=r'e:\madOnionHelp'
 J_convert2utf8(J_madOnionPath,outPath)
-doxygenPath=J_madOnionPath+r'\other\thirdParty\doxygen\doxygen.exe  '+J_madOnionPath+r'\other\thirdParty\doxygen\madonion'
+doxygenPath=J_madOnionPath+r'\other\thirdParty\doxygen\doxygen.exe  '+outPath+r'\other\thirdParty\doxygen\madonion'
 doxygenConfigPathOrg=J_madOnionPath+r'\other\thirdParty\doxygen\madonionOrig'
-doxygenConfigPath=J_madOnionPath+r'\other\thirdParty\doxygen\madonion'
+doxygenConfigPath=outPath+r'\other\thirdParty\doxygen\madonion'
 file_data=''
 with open(doxygenConfigPathOrg,'r') as doxygenConfigOrg:
     for lines in doxygenConfigOrg.readlines():
