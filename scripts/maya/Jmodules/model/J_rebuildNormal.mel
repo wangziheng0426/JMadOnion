@@ -1,0 +1,200 @@
+/////////////////////////////////////////////////////////////
+///\file  J_rebuildNormal.mel
+///\brief  整理法线
+///
+///\author 桔
+///\version 1.0
+///\date   16:11 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///整理法线
+global proc  J_rebuildNormal()
+{
+	string $objList[] = `ls -sl `;
+	if (size($objList)==0)
+	{$objList=`ls -type mesh`;}
+	$objList = `filterExpand -sm 10 -sm 12  $objList`;
+	$objList = stringArrayRemoveDuplicates($objList);
+	if (!`size $objList`){
+	warning ("选择你要进行反转的物体(大致范围),并将摄象机对准它们以便程序能做出正确判断.\n");
+	return;}
+
+	string $comBineObj[],$separateObj[];
+	int $m = 0,$p = 0;
+
+	progressWindow -title "正在查找合并的物体，请稍等..." -progress 0 -status "开始.." -isInterruptable false;
+	int $progress = 0;
+	int $num = `size $objList`;
+
+	
+	for ($sel in $objList){
+		string $armoAttrs[]=`listAttr -ud -st "*_Info" $sel`;
+					int $picn[]=`polyEvaluate -s $sel`;
+			if ($picn[0]>1){	//当物体能被分离的就会放进一个新数组[!catchQuiet (`polySeparate -ch 1 $sel`)]
+				polySeparate -ch 1 $sel;
+				$comBineObj[$m] = $sel;
+				//print "ok";
+				$m++;
+			}
+			++$p;
+			$progress = $p * 100/$num;
+			progressWindow -e -progress $progress -status ("完成:" + $progress + "%  (" +  $p + " objects checked)");
+		
+
+	}
+	progressWindow -e -endProgress;
+	print ("一共有 " + `size $comBineObj` + " 个合并的物体需要先分开。\n");
+	//print $comBineObj;
+	$separateObj = `filterExpand  -sm 10 -sm 12 $objList`;		//分离后的所有物体
+	 
+	
+	
+	//size $objList
+	//size $separateObj
+
+	if (!`size $separateObj`){    
+	print ("所选物体不需要反转法线。\n");
+	}	
+	else{
+	string $revdGeoNode[] = auRvGeoNor ($separateObj);
+	}
+	//print $separateObj;
+	select -cl;
+	combineIt8 $comBineObj;
+
+}
+global proc string[] auRvGeoNor (string $geo[])
+{
+	//string $geo[]=`ls -l -sl`;
+	// create progress window
+	//string $fr=`frameLayout -l "清除错误法线" -w 340 -cll 1 -cl 1 -bs "etchedIn" -p lookLayout `;///////////////////////////
+	//string $ts=`textScrollList -nr 10 -ams 1`;////////////////////////////////////////
+	progressWindow -title "正在反转，请稍等..." -progress 0 -status "开始.." -isInterruptable false;
+	int $progress = 0;
+	int $num = `size $geo`;
+//	viewSet -fit -ff 0.8 -krs true -an 1 -f;
+
+	createNode closestPointOnMesh -n cpom;
+	createNode closestPointOnSurface -n cpos;
+	createNode pointOnSurfaceInfo -n posInfo;
+	string $cameraName=`lookThru -q`;
+	vector $pos=`xform  -q -ws -t $cameraName`;
+	string $revdMeshNode[];
+	string $revdNrbsNode[];
+
+	int $i = 0,$j = 0,$p = 0;
+	for($node in  $geo)
+	{
+		string $nodeShape[] =  `listRelatives -f -s $node`;
+
+		if ((`size $nodeShape`)&&(`nodeType $nodeShape[0]` == "mesh"))
+		{
+		
+		polyNormal -normalMode 2 -userNormalMode 0 -ch 1 $node; //统一法线，在个别面有反转的情况下使用
+		select $node;
+		catchQuiet(doBakeNonDefHistory( 1, {"prePost" }));//将统一法线历史删除，保留变形节点
+//textScrollList -e -append $node $ts;print $node;
+		connectAttr -f ($node +".outMesh") cpom.inMesh;
+		setAttr "cpom.inPositionX" ($pos.x);
+		setAttr "cpom.inPositionY" ($pos.y);
+		setAttr "cpom.inPositionZ" ($pos.z);
+		vector $npt =`getAttr "cpom.position"`;
+		vector $nor =`getAttr "cpom.normal"`;
+		vector $dir=unit($pos-$npt);
+		
+			if(dot($dir,$nor)<0){
+			polyNormal -normalMode 0 -userNormalMode 0 -ch 1 $node;
+			$revdMeshNode[$i] = $node;
+			//print ($node + " 被反转法线。\n");
+				
+				
+			$i++;
+			}
+			
+		}//if mesh
+		
+		if ((`size $nodeShape`)&&(`nodeType $nodeShape[0]` == "nurbsSurface"))
+		{
+		connectAttr -f ($node +".worldSpace[0]") cpos.inputSurface;
+		connectAttr -f ($node +".worldSpace[0]") posInfo.inputSurface;
+		setAttr "cpos.inPositionX" ($pos.x);
+		setAttr "cpos.inPositionY" ($pos.y);
+		setAttr "cpos.inPositionZ" ($pos.z);
+
+		setAttr  posInfo.parameterU `getAttr cpos.parameterU`;
+		setAttr  posInfo.parameterV `getAttr cpos.parameterV`;
+
+
+		vector $npt =`getAttr "posInfo.position"`;
+		vector $nor =`getAttr "posInfo.normal"`;
+		vector $dir = unit($pos-$npt);
+		
+			if(dot($dir,$nor)<0){
+			reverseSurface -d 0 -ch 0 -rpo 1 $node;
+			$revdNrbsNode[$j] = $node;
+			//print ($node + " 被反转法线。\n");
+			$j++;
+			}
+			}//if nurbs
+
+	++$p;
+	$progress = $p * 100/$num;
+	progressWindow -e -progress $progress -status ("完成:" + $progress + "%  (" +  $p + " objects checked)");
+
+			
+	}//for
+
+	delete cpom cpos posInfo;
+	select -cl;
+	string $revdGeoNode[] = stringArrayCatenate( $revdMeshNode,$revdNrbsNode);
+	print ("一共有 " + `size $revdGeoNode` + " 个物体的法线被修正。\n");
+	//pause -seconds 1;
+        progressWindow -e -endProgress;
+	return $revdGeoNode;
+
+}
+//将分离的物体合并
+global proc combineIt8 (string $name[])
+{
+	//string $name[] = `ls -l -sl`;
+
+	if (!`size  $name`){
+	return;}	
+
+	progressWindow -title "正在合并被分离的物体，请稍等..." -progress 0 -status "开始.." -isInterruptable false;
+	int $progress = 0,$p = 0;
+	int $num = `size $name`;
+
+	for ($i in $name){
+	
+		string $namePart[];
+		int $partNum = `tokenize $i "|" $namePart`;//避免重名的情况
+		string $nameGroup[] = `listRelatives -f -p $i`;
+		string $comBineObj[] = `polyUnite $i`;
+		
+		if (catchQuiet(doBakeNonDefHistory( 1, {"prePost" }))){
+			warning ("不能删除" + $comBineObj[0] + "上的历史\n");//带蒙皮历史的无法删除非变形历史
+		}
+
+		if (`size $nameGroup`){
+		parent  $comBineObj[0] $nameGroup[0];
+		}
+		if ($partNum == 1){
+		rename $comBineObj[0] $i;
+		}//如果没有重名则用原来的名称不需要分解
+		else{
+		rename $comBineObj[0] $namePart[($partNum - 1)];
+		}
+	++$p;
+	$progress = $p * 100/$num;
+	progressWindow -e -progress $progress -status ("完成:" + $progress + "%  (" +  $p + " objects checked)");
+
+	}
+	
+        progressWindow -e -endProgress;
+	select -cl;
+	
+}
+//////////////////////////////////////////////////////////////////////////////反转法线

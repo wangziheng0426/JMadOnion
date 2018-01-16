@@ -1,0 +1,63 @@
+/////////////////////////////////////////////////////////////
+///\file J_deleteMat.mel
+///\brief  删除无连接材质
+///
+///\author 桔
+///\version 1.0
+///\date   15:10 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///删除无连接材质
+///\return "success";
+global proc string J_deleteMat()
+{
+	string $materials[] = `ls -type shadingEngine`;
+		int $count3 =size($materials);
+		for($k=0;$k<$count3;$k++)
+		{
+			string $currShadingEngine = $materials[$k];
+			string $conns[]=`listConnections  -source 1 -d 0  $currShadingEngine`;
+			if(!size($conns))
+			{
+				delete $currShadingEngine;print ("删除了"+$currShadingEngine);
+			}
+		}
+		
+	string $materials[] = `ls -long -mat`;
+	int $count = `size($materials)`;
+	for ($i = 0; $i < $count; $i++)
+	{
+	    //删除无用材质和相连的shadingEngine
+		string $currShader = $materials[$i];
+		string $conn[] = `listConnections  -source 0 -type shadingEngine $currShader`;
+		$count2 = `size($conn)`;
+		if($count2<1)
+		{delete $currShader;print ("删除了"+$currShader);}
+		else
+		{
+    		for ($j = 0; $j < $count2; $j++) 
+    		{
+    		    if(`objExists $conn[$j]`)
+    		    {
+    		    string $temp[]=`listConnections  -source 1 -d 0 -type mesh $conn[$j]`;
+    		    int $sizeTemp=size($temp);
+    		    if($sizeTemp==0)
+    		    {
+    		        catch(`delete $conn[$j]`);
+    		        catch(`delete $materials[$i]`);
+    		    }
+    		    }
+    		}
+		}
+
+	}
+	string $ObjectSets[]=`ls -type objectSet`;
+	for($obj in $ObjectSets)
+	{
+		string $temp[]=`listConnections  -source 1 -d 1  $obj`;
+		if(!size($temp)){catch(`delete $obj`);}
+	}
+	return "success";
+} 

@@ -1,0 +1,36 @@
+/////////////////////////////////////////////////////////////
+///\file  J_modeLockAxis.mel
+///\brief  锁定轴心
+///
+///\author 桔
+///\version 1.0
+///\date   
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///锁定轴心
+global proc J_modeLockAxis()
+{
+	string $sel[]= `ls -sl`;
+	for($i=0;$i<size($sel);$i++){
+	string $CreatLoc1[] =`spaceLocator`;
+	string $pCon1[]=`parentConstraint $sel[$i] $CreatLoc1`;
+	string $findpnt1[]=`listRelatives -type parentConstraint $CreatLoc1`;
+	select $findpnt1;delete;
+	string $CreatLoc2[] =`spaceLocator`;
+	string $pCon2[]=`parentConstraint  $CreatLoc2 $sel[$i]`;
+	string $findpnt2[]=`listRelatives -type parentConstraint $sel[$i]`;
+	select $findpnt2;delete;
+	select $sel[$i];
+	FreezeTransformations;
+	string $pCon3[]=`parentConstraint $CreatLoc1 $sel[$i]`;
+	string $findpnt3[]=`listRelatives -type parentConstraint $sel[$i]`;
+	select $findpnt3;delete;
+	select $CreatLoc1 $CreatLoc2;
+	delete;
+}
+
+
+
+}

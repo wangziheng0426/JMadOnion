@@ -1,0 +1,29 @@
+/////////////////////////////////////////////////////////////
+///\file  J_removeAllNameSpace.mel
+///\brief  删除所有名字空间
+///
+///\author 桔
+///\version 1.0
+///\date   
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+
+///删除所有名字空间
+global proc string J_removeAllNameSpace()
+{
+	string $nameSpaces[]=`namespaceInfo -listOnlyNamespaces`;
+	string $items[] = { "shared", "UI"};
+	string $diff[] = stringArrayRemove($items, $nameSpaces);
+	if(size($diff)>0)
+	{
+		for($i in $diff)
+		{
+			namespace -mergeNamespaceWithRoot -removeNamespace $i ;
+			print ($i +"被删除\n");
+		}
+		J_removeAllNameSpace();
+	}
+	return "success";
+}

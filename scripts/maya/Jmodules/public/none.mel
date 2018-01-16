@@ -1,14 +1,19 @@
 /////////////////////////////////////////////////////////////
-///\file J_ 
+///\file  .mel
 ///\brief  
 ///
-///\author æ¡”
+///\author ½Û
 ///\version 1.0
 ///\date   
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
-global proc none()
+
+///´ò¿ªÖ÷½çÃæ´°¿Ú
+///\param string $sel Ñ¡ÔñµÄ½Úµã
+///\return "success";
+global proc string none()
 {
 	print "blank!";
+	return "success";
 }

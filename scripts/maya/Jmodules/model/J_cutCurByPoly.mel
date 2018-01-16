@@ -1,0 +1,51 @@
+/////////////////////////////////////////////////////////////
+///\file J_cutCurByPoly.mel
+///\brief  ∂‡±ﬂ–Œ«–∏Ó«˙œﬂ
+///
+///\author Ω€
+///\version 1.0
+///\date   12:04 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+/// ∂‡±ﬂ–Œ«–∏Ó«˙œﬂ
+///\return success
+global proc string J_cutCurByPoly()
+{
+		string $cur[]=`filterExpand  -ex true -sm 9 `;
+		string $poly[]=`filterExpand -ex true -sm 12`;
+		string $cpom=`createNode closestPointOnMesh`;
+		connectAttr -f ($poly[0]+".outMesh") ($cpom+".inMesh");
+	for($curIt in $cur)
+	{
+		float $startPoint=`getAttr ($curIt+".minValue")`;
+		float $endPoint=`getAttr ($curIt+".maxValue")`;
+		float $resultPoint;
+		 for($i=0;$i<100;$i++)
+			{
+			 float $midPoint=($startPoint+$endPoint)/2.0;
+			 $resultPoint=$midPoint;
+			 float $midStart=($startPoint+$midPoint)/2.0;
+			 float $midEnd=($endPoint+$midPoint)/2.0;
+			 if(dis($midStart,$curIt,$cpom)>dis($midEnd,$curIt,$cpom))
+			   $startPoint=$midPoint;
+			 else
+			   $endPoint=$midPoint;    
+			}
+		string $newCur[]=`detachCurve  -rpo 1 ($curIt+".u["+$resultPoint+"]")`;
+
+	}
+	delete $cpom;
+return "success";
+}
+///º∆À„æ‡¿Î
+global proc float dis(float $inPutPr,string $curveName,string $cpom)
+{
+	vector $pos=`pointOnCurve -pr $inPutPr -p $curveName`;
+	setAttr ($cpom+".inPositionX") ($pos.x);
+	setAttr ($cpom+".inPositionY") ($pos.y);
+	setAttr ($cpom+".inPositionZ") ($pos.z);
+	vector $cpos=`getAttr ($cpom+".position")`;
+	return mag($pos-$cpos);
+}

@@ -1,0 +1,145 @@
+/////////////////////////////////////////////////////////////
+///\file  J_crSpritsSmoke.mel
+///\brief  创建精灵粒子烟雾
+///
+///\author 桔
+///\version 1.0
+///\date   16:51 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_crSpritsSmoke(string $objToEmitte)
+{
+string $emitTemp[]=`emitter -type omni -r 2 -sro 0 -nuv 0 -cye none -cyi 1 -spd 3 
+                            -srn 0 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 0 $objToEmitte`;
+$emitTemp[1]=`rename $emitTemp[1] ($objToEmitte+"_smoke")`;
+string $parName[]=`particle -n ("J_"+$emitTemp[0])`;
+connectDynamic -em $emitTemp[1] $parName[0];
+
+  setAttr ($parName[1]+".lifespanMode") 3;
+  setAttr ($parName[1]+".lifespan") 5.5;
+  setAttr ($parName[1]+".lifespanRandom") 1;
+  setAttr ($parName[1]+".particleRenderType") 5;
+  setAttr ($parName[1]+".inheritFactor") 0.2;
+
+  setAttr ($parName[1]+".conserve") 0.95;
+  
+
+//////////////////////////////////////////////添加控制属性
+addAttr -ln radiusPP -dt doubleArray $parName[1];
+
+addAttr -ln "smokeLifeSpan"      -at double -dv 1   -min 0 $parName[1];
+addAttr -ln "smokeOpacity"       -at double -dv 0.5 -min 0 $parName[1];
+addAttr -ln "smokeDissipation"         -at double -dv 2   -min 0 $parName[1];
+addAttr -ln "smokeScale"    -at double -dv 1   -min 0 $parName[1];
+addAttr -ln "smokeTwist"         -at double -dv 1   -min 0 $parName[1];
+addAttr -ln "smokeMass"          -at double -dv 0.5 -min 0 $parName[1];
+
+
+string $parShap[]=`listRelatives -s $parName[1]`;
+addAttr -ln spriteNumPP    -dt doubleArray $parName[1];
+addAttr -ln spriteTwistPP  -dt doubleArray $parName[1];
+addAttr -ln spriteScaleXPP -dt doubleArray $parName[1];
+addAttr -ln spriteScaleYPP -dt doubleArray $parName[1];
+addAttr -ln "opacityPP"    -dt doubleArray $parName[1];
+addAttr -ln "opacityRamp"    -dt doubleArray $parName[1];
+addAttr -ln rand_v  -dt doubleArray $parName[1];
+addAttr -ln dissipationPP  -dt doubleArray $parName[1];
+addAttr -ln dissipationRamp  -dt doubleArray $parName[1];
+///////////////////////////////////////设置半径
+
+string $pa_arraymap[]=`arrayMapper -target $parName[1] -destAttr dissipationRamp -inputV ageNormalized -type ramp`;
+string $ramp_node[]=`listConnections -type "ramp" $pa_arraymap[0]`;
+string $rampTemp=`rename $ramp_node[0] ($parName[0]+"dissipationRamp")`;
+setAttr ($rampTemp+".colorEntryList[0].color") -type double3 0 0 0;
+setAttr ($rampTemp+".colorEntryList[1].color") -type double3 0.2 0.2 0.2;
+setAttr ($rampTemp+".colorEntryList[2].color") -type double3 0 0 0;
+setAttr ($rampTemp+".colorEntryList[2].position") 1;
+setAttr ($rampTemp+".colorEntryList[1].position") 0.1;
+setAttr ($rampTemp+".colorEntryList[0].position") 0;
+
+///////////////////////////////////////设置不透明
+
+string $pa_arraymapOp[]=`arrayMapper -target $parName[1] -destAttr opacityRamp -inputV ageNormalized -type ramp`;
+string $ramp_nodeOp[]=`listConnections -type "ramp" $pa_arraymapOp[0]`;
+string $rampTemp=`rename $ramp_node[0] ($parName[0]+"opacityRamp")`;
+setAttr ($rampTemp+".colorEntryList[0].color") -type double3 0 0 0;
+setAttr ($rampTemp+".colorEntryList[1].color") -type double3 0.5 0.5 0.5;
+setAttr ($rampTemp+".colorEntryList[2].color") -type double3 0 0 0;
+setAttr ($rampTemp+".colorEntryList[2].position") 1;
+setAttr ($rampTemp+".colorEntryList[1].position") 0.2;
+setAttr ($rampTemp+".colorEntryList[0].position") 0;
+
+//创建时表达式
+string $exp="{\n"
++$parName[1]+".spriteScaleYPP="+$parName[1]+".spriteScaleXPP="+$parName[1]+".smokeScale*rand(1,2)"+";\n"
++$parName[1]+".lifespanPP="+$parName[1]+".smokeLifeSpan*rand(1,2)"+";\n"
++$parName[1]+".dissipationPP="+$parName[1]+".smokeDissipation*rand(1,2)"+";\n"
++$parName[1]+".spriteTwistPP=rand(360)"+";\n"
++$parName[1]+".opacityPP=0"+";\n"
++$parName[1]+".spriteNumPP=rand(13)"+";\n"
++"}\n";
+dynExpression  -s $exp -n "smoke_Scale_rampexp" -c $parName[1];
+
+//运行时表达式
+string $exp="{\n"
++$parName[1]+".spriteScaleYPP="+$parName[1]+".spriteScaleXPP+="+$parName[1]+".dissipationRamp*"+$parName[1]+".dissipationPP"+";\n"
++$parName[1]+".opacityPP="+$parName[1]+".opacityRamp*"+$parName[1]+".smokeOpacity*(noise(id)*0.48+0.5)"+";\n"
+
++$parName[1]+".spriteTwistPP+="+$parName[1]+".smokeTwist*noise(id)"+";\n"
+
++"}\n";
+dynExpression  -s $exp -n "smoke_Scale_rampexp" -rbd $parName[1];
+
+
+//////////////////////////////////////材质
+string $spriteShading=`shadingNode -asShader lambert -n ($emitTemp[0]+"smoke_m")`;
+string $spriteSet=`sets -renderable true -noSurfaceShader true -empty -name ($emitTemp[0]+"smoke_mSG")`;
+connectAttr -f ($spriteShading+".outColor") ($spriteSet+".surfaceShader");
+select -r $parName[1];
+sets -e -forceElement $spriteSet;
+/////贴图
+
+string $fileTemp=`shadingNode -asTexture file -n ($spriteShading+"file")`;
+string $p2dTemp=`shadingNode -asUtility place2dTexture -n ($spriteShading+"p2d")`;
+connectAttr -f ($p2dTemp+".coverage") ($fileTemp+".coverage");
+connectAttr -f ($p2dTemp+".translateFrame") ($fileTemp+".translateFrame");
+connectAttr -f ($p2dTemp+".rotateFrame") ($fileTemp+".rotateFrame");
+connectAttr -f ($p2dTemp+".mirrorU") ($fileTemp+".mirrorU");
+connectAttr -f ($p2dTemp+".mirrorV") ($fileTemp+".mirrorV");
+connectAttr -f ($p2dTemp+".stagger") ($fileTemp+".stagger");
+connectAttr -f ($p2dTemp+".wrapU") ($fileTemp+".wrapU");
+connectAttr -f ($p2dTemp+".wrapV") ($fileTemp+".wrapV");
+connectAttr -f ($p2dTemp+".repeatUV") ($fileTemp+".repeatUV");
+connectAttr -f ($p2dTemp+".offset") ($fileTemp+".offset");
+connectAttr -f ($p2dTemp+".rotateUV") ($fileTemp+".rotateUV");
+connectAttr -f ($p2dTemp+".noiseUV") ($fileTemp+".noiseUV");
+connectAttr -f ($p2dTemp+".vertexUvOne") ($fileTemp+".vertexUvOne");
+connectAttr -f ($p2dTemp+".vertexUvTwo") ($fileTemp+".vertexUvTwo");
+connectAttr -f ($p2dTemp+".vertexUvThree") ($fileTemp+".vertexUvThree");
+connectAttr -f ($p2dTemp+".vertexCameraOne") ($fileTemp+".vertexCameraOne");
+connectAttr -f ($p2dTemp+".outUV") ($fileTemp+".uv");
+connectAttr -f ($p2dTemp+".outUvFilterSize") ($fileTemp+".uvFilterSize");
+setAttr -type "string" ($fileTemp+".fileTextureName") "your texture file";
+connectAttr -f ($fileTemp+".outTransparency") ($spriteShading+".transparency");
+connectAttr -f ($fileTemp+".outColor") ($spriteShading+".color");
+
+
+////////////////////////////添加表达式
+
+$exp="{\n"
++$fileTemp+".frameExtension=1+frame%12;\n"
++"}\n";
+expression -s $exp -n "file_exp" -ae 1 -uc all;
+
+string $tempPath=J_getSysPath()+"/J_file/spritesTexture/smoke_sprite.001.tga";
+
+setAttr -type "string" ($fileTemp+".fileTextureName") $tempPath;
+
+setAttr ($fileTemp+".useFrameExtension") 1;
+setAttr ($fileTemp+".useHardwareTextureCycling") 1;
+setAttr ($fileTemp+".startCycleExtension") 1;
+setAttr ($fileTemp+".endCycleExtension") 12;
+
+}

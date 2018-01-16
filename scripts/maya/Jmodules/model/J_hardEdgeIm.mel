@@ -1,0 +1,19 @@
+/////////////////////////////////////////////////////////////
+///\file  J_hardEdgeIm.mel
+///\brief  选择边界
+///
+///\author 桔
+///\version 1.0
+///\date   
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+//选择边界
+global proc J_hardEdgeIm()
+{string $sel[]=`ls -sl`;
+	if(!size($sel))
+		{select -all;}    
+		polySelectConstraint -m 3 -t 0x8000 -sm 1;
+
+}

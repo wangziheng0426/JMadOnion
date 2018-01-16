@@ -1,0 +1,127 @@
+/////////////////////////////////////////////////////////////
+///\file J_deleteGroup.mel
+///\brief  删除多余组
+///
+///\author 桔
+///\version 1.0
+///\date   14:57 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///删除多余组
+///\param string $mode 选择删除模式:all所有组节点,既没有型节点的变换节点.empty仅删除任何子节点中都没有shape节点的变换节点
+///\return "success";
+global proc string J_deleteGroup(string $mode)
+{
+	switch($mode)
+	{
+	case "all":
+		J_deleteAllGroup();
+	case "empty":
+		J_deleteEmptyGrp();
+	}
+	return "success";
+}
+
+///清除所有的组
+///\return "success";
+global proc string J_deleteAllGroup()
+{    
+	string $temp0[]=`ls -l -s`;
+	 //select -all;DeleteHistory;
+	for($i in $temp0)
+	{    
+	    if(`objExists $i`)
+	    {
+		///关闭关联物体选项
+	    catch(`setAttr ($i +".intermediateObject") 0`);
+	    string $getChild[]=`listRelatives -f -p -type transform $i`;
+		if(size($getChild))
+			{
+		    catch(`parent -w $getChild[0]`);
+			catch(`parent -w $getChild[0]`);
+		    }
+		}
+	}
+	string $temp1[]=`ls -l -type transform`;
+	
+	for($i in $temp1)
+	{
+		if(`objExists $i`)
+		{
+			string $getChild1[]=`listRelatives -c -f -s  $i`;
+			if(size($getChild1)==0&&`objectType $i`=="transform")
+			{catch(`delete $i`);}	
+		}
+	}
+	string $temp1[]=`ls -l -type transform`;
+	for($i in $temp1)
+	{
+	    setAttr ($i+".visibility") 1;
+	}
+	
+	return "success";
+}
+
+///清除空组
+///\return "success";
+global proc string J_deleteEmptyGrp()
+{
+    string $allTransform[]=`ls -l -type transform`;
+    string $cams[]={"|persp", "|top", "|front" ,"|side","initialParticleSE","lambert1","initialShadingGroup"
+					,"initialParticleSE","particleCloud1","defaultLightSet","defaultObjectSet"
+					};
+    
+    
+    string $allShape[]=`ls -l -s`;
+    string $allShapeTransform[];
+    string $aMTTemp[];
+    int $allShapeTranCount=0;
+    for($i in $allShape)
+    {
+        
+        string $temp[];
+        $aMTTemp=J_DiGuiA($i,$temp);
+        for($nn=0;$nn<size($aMTTemp);$nn++)
+        {
+            $allShapeTransform[$allShapeTranCount] =$aMTTemp[$nn];
+            $allShapeTranCount++;
+        }
+        
+    }//print $allShapeTransform;
+
+      
+		$allTransform=stringArrayRemove($cams,$allTransform);
+		string $diff[] = stringArrayRemove($allShapeTransform, $allTransform);
+		if(size($diff))
+			delete $diff;
+return "success";
+}
+
+
+///递归查组
+///\param string $a检查对象
+///\param string $allNodes[]反馈数组
+///\return string[] 
+global proc string[] J_DiGuiA(string $a,string $allNodes[])//$a检查对象  $allNodes[]反馈数组
+    {
+    	
+    	 	string $chs[]=`listRelatives -f -p $a`;
+    		if(size($chs))
+    		{
+    			for($k in $chs)
+    			{
+    			if($k!="")
+    			{
+    				int $count=size($allNodes);
+    				$allNodes[$count]= $k;
+    				J_DiGuiA($k,$allNodes);
+    				}
+    			}
+    		}
+    		else
+    		return {""};
+    		return $allNodes;
+    	
+    }

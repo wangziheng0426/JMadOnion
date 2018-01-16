@@ -1,0 +1,33 @@
+/////////////////////////////////////////////////////////////
+///\file  J_getSceneFilePath.mel
+///\brief  返回场景路径名称
+///
+///\author 桔
+///\version 1.0
+///\date   17:26 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///读取场景目录
+///\return 返回场景路径名称
+global proc string J_getSceneFilePath()
+{
+		string $filePath=`file -q -sn`;
+	string $getPath="";
+	if($filePath!="")
+	{
+		string $buffer[];
+		$numTokens = `tokenize $filePath "." $buffer`;
+		$getPath=$buffer[0];
+		
+		for($j=1;$j<(size($buffer)-1);$j++)
+		{
+			$getPath+="."+$buffer[$j];
+		}
+		
+		string $buffer1[];
+		$numTokens = `tokenize $buffer[size($buffer)-2] "/" $buffer1`;
+	}
+return  $getPath;
+}
