@@ -1,0 +1,22 @@
+/////////////////////////////////////////////////////////////
+///\file  J_twoSidedLight.mel
+///\brief  单双面显示切换
+///
+///\author 桔
+///\version 1.0
+///\date   15:14 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///单双面显示切换
+global proc J_twoSidedLight()
+{if(`modelEditor -q -twoSidedLighting  modelPanel4`)
+	{
+	modelEditor -e -twoSidedLighting false modelPanel4;
+	}
+	else
+	{
+	modelEditor -e -twoSidedLighting true modelPanel4;
+	}
+}

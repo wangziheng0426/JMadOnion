@@ -1,0 +1,30 @@
+/////////////////////////////////////////////////////////////
+///\file  J_removeShape.mel
+///\brief  É¾³ý¶àÓàshape
+///
+///\author ½Û
+///\version 1.0
+///\date   16:26 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///É¾³ý¶àÓàshape
+global proc J_removeShape()//É¾³ý¶àÓàshape
+{
+    string $sel[]=`ls -l -sl`;
+    for ($i in $sel)
+    {
+        string $ch[]=`listRelatives -c -f $i`;
+		for($j in $ch)
+		{
+		    string $buffer[];
+            $numTokens = `tokenize $i "|" $buffer`;
+		int $nnn=`getAttr ($j+".intermediateObject")`;
+        if($nnn)
+            {	delete $j; 	}
+		else
+		    {rename $j ($buffer[size($buffer)-1]+"shape");}
+		}
+    }
+}

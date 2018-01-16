@@ -1,0 +1,23 @@
+/////////////////////////////////////////////////////////////
+///\file  J_softEdges.mel
+///\brief  所有模型软边
+///
+///\author 桔
+///\version 1.0
+///\date   
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///所有模型软边
+global proc J_softEdges()
+{
+string $n[]=`ls -type mesh`;
+for($i in $n)
+	{
+	select $i;
+	polySetToFaceNormal ;
+	select $i;
+	polySoftEdge -a 180 -ch 1 ;
+	}
+}

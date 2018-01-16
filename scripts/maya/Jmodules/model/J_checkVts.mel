@@ -1,0 +1,55 @@
+/////////////////////////////////////////////////////////////
+///\file J_checkVts.mel
+///\brief  检查模型错误点
+///
+///\author 桔
+///\version 1.0
+///\date   12:00 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///检查错误的点
+///\return success
+global proc string  J_checkVts()
+{
+	string $yObj[] = `ls -sl`;
+	if (`size $yObj` == 1){
+		ConvertSelectionToVertices;
+		string $wrongVts[];
+		clear $wrongVts;
+		string $allVts[] = `ls -sl -fl`;
+		int $v = 0,$z = 0;
+		progressWindow -title "正在检查模型上的错误点，请稍等..." -progress 0 -ii 1 -status "开始..";
+		int $progress = $p = 0;
+		int $num = `size $allVts`;
+		for ($vtx in $allVts){
+			
+			select -r $vtx;
+			ConvertSelectionToEdges;;	
+			string $tempEdge[] = `ls -sl -fl`;
+			select -r $vtx;
+			ConvertSelectionToFaces;;	
+			string $tempFace[] = `ls -sl -fl`;
+			if ((size($tempEdge) == 2)&&(size($tempFace) != 1)){
+				$wrongVts[$z] = $vtx;
+				$z++;
+			}
+			++$p;
+			$progress = $p * 100/$num;
+			progressWindow -e -progress $progress -status ("完成:" + $progress + "%  (" +  $p + " vtxs checked)");
+			if ( `progressWindow -query -isCancelled` ) break;			
+		}
+		select -cl;
+		if (`size $wrongVts`){
+		warning ("有" + `size $wrongVts` + "个错误的点.\n");
+		select $wrongVts;
+		}
+		else {
+		print ("模型上没有错误的点.\n");
+		}
+		progressWindow -e -endProgress;
+
+	}
+	return "success";
+}

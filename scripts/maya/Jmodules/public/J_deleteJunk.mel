@@ -1,0 +1,28 @@
+/////////////////////////////////////////////////////////////
+///\file J_deleteJunk.mel
+///\brief  删除垃圾节点
+///
+///\author 桔
+///\version 1.0
+///\date   15:18 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///删除垃圾节点
+///\param string $junkType 垃圾节点类型
+///\return "success";
+global proc string J_deleteJunk(string $junkType)
+{
+	string $sceneJunk[]=`ls -type $junkType`;
+	for ($i in $sceneJunk)
+	{
+		if(`objExists $i`)
+			{
+				lockNode -l 0 $i;
+				catch(`delete $i`);			
+			}	
+	}
+	print ("--------------------场景中的"+$junkType+"节点被清除-------------------------"+"\n");
+	return "success";
+} 

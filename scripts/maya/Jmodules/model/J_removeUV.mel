@@ -1,0 +1,29 @@
+/////////////////////////////////////////////////////////////
+///\file  J_removeUV.mel
+///\brief  删除无用uvset
+///
+///\author 桔
+///\version 1.0
+///\date   16:29 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+
+global proc J_removeUV()//删除无用uvset
+{
+	string $allMesh[]=`ls -typ mesh`;
+    for ($i in $allMesh)
+    {
+    string $currentUV[]=`polyUVSet -q -currentUVSet $i`;
+    string $allUV[]=`polyUVSet -q -auv $i`;
+
+    for($k in $allUV)
+        {
+            if($k!=$currentUV[0])
+            {
+                catch(`polyUVSet  -d -uvSet $k $i`);
+            }        
+        }
+    }
+}

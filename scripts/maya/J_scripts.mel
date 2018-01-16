@@ -23,8 +23,9 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 	int $loopRun=1;
 	fgetline $J_fileId;
 	string $J_getWord=`fgetword $J_fileId`;
-	print "-------";
+	print "----------------------------------------------------------------";
 	print $J_getWord;
+	print "\n";
 	string $J_mainMenuName="";
 	string $J_mainMenuLabel="";
 	string $J_subInfo[];
@@ -64,32 +65,18 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 	////////////////////////////////////////////////////////////////创建菜单
 	////////////////////////////////////////////////////////////////读取命令
 	
-	string $J_commandList=$J_mainPath+"/config/commandList.txt";
-	int $J_fileId=`fopen $J_commandList "r"`;
-	int $loopRun=1;
-	string $J_commandName;
-	string $J_commandLabel;
-	string $J_commandPath;
-	string $J_getWord=`fgetword $J_fileId`;
-	while ( $loopRun ) 
+	string $JmodulesfilePath[]=` getFileList  -folder  (J_getSysPath()+"/Jmodules/")`;
+	for ($JmodulesfilePathItem in $JmodulesfilePath)
 	{
-		if($J_getWord=="<command>")
+		string $J_modules[]=`getFileList  -folder (J_getSysPath()+"/Jmodules/"+$JmodulesfilePathItem) -filespec "*.mel" `;
+		for ($J_modelesItem in $J_modules)
 		{
-		    $J_getWord = `fgetword $J_fileId`;
-		    $J_commandLabel=$J_getWord;
-		    $J_getWord = `fgetword $J_fileId`;
-		    $J_commandName=$J_getWord ;
-			$J_getWord = `fgetword $J_fileId`;
-			$J_commandPath=$J_getWord ;
-			$J_getWord = `fgetword $J_fileId`;
-			string $fileToSource="source \""+$J_mainPath+"/"+$J_commandPath+"\"";print $fileToSource;
-			eval $fileToSource ;
+		    catch(eval("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\""));
+			print ("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\"\n");
 		}
-		else{ $J_getWord = `fgetword $J_fileId`;}					
-		if($J_getWord==""){$loopRun =0;}		
 	}
-		////////////////////////////////////////////////////////////////读取命令
-	fclose $J_fileId;
+	////////////////////////////////////////////////////////////////读取命令
+	
 	menuItem -p $J_menuName -label "命令工具集" -c madOnion -aob 1 flying0; 
 	
 }

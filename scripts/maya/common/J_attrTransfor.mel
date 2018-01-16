@@ -8,6 +8,7 @@
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
+
 ///判断窗口是否有物体被选择
 ///\return success
 global proc  string J_attrTransfor()

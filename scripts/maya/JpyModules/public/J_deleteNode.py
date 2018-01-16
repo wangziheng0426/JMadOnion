@@ -1,8 +1,8 @@
 # -*- coding:gbk -*-
 ##  @package public
 #
-##  @brief  鍒犻櫎鍦烘櫙涓寚瀹氳妭鐐�
-##  @author 妗�
+##  @brief  删除场景中指定节点
+##  @author 桔
 ##  @version 1.0
 ##  @date  16:46 2018/1/15
 #  History:  
@@ -14,6 +14,6 @@ def J_deleteNode(nodes):
             try:
                 cmds.delete( nodeToDelete )
             except:
-                print nodeToDelete+'鏃犳硶鍒犻櫎'
-    print ('鍦烘櫙涓殑'+'nodes'+'鑺傜偣宸茶鍒犻櫎')
+                print nodeToDelete+'无法删除'
+    print ('场景中的'+'nodes'+'节点已被删除')
     

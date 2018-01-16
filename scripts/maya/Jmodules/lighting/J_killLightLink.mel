@@ -1,0 +1,32 @@
+/////////////////////////////////////////////////////////////
+///\file  J_killLightLink.mel
+///\brief  …±µ∆π‚¡¥Ω”
+///
+///\author Ω€
+///\version 1.0
+///\date   
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///…±µ∆π‚¡¥Ω”
+global proc J_killLightLink()
+{
+
+	string $ligtLinks[]=`ls -type lightLinker`;
+	for ($ligtLink in $ligtLinks)
+	{
+		string $cons[]=`listConnections -p 1 -c 1 $ligtLink`; 
+		int $progress = $p = 0;
+		int $num = `size $cons`/2;		
+		
+		for ($i=0;$i<`size $cons`;$i+=2)
+		{
+			if (`isConnected $cons[$i+1] $cons[$i]`)
+			{
+				disconnectAttr $cons[$i+1] $cons[$i];
+				print ($cons[$i]+"\n");
+			}
+		}
+	}
+}

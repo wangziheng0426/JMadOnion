@@ -1,0 +1,15 @@
+//Coded by Tiancg
+global proc tjh_cut_tool_Main()
+{	string $srcPath = `whatIs "tjh_cut_tool_Main"`;
+	int $size = size($srcPath) ;
+	$srcPath = `substring $srcPath 25 $size`;
+	$srcPath = dirname( $srcPath );
+	string $mayaVer=`about -v`;
+	string $ver[];
+	int $number=`tokenize $mayaVer "." $ver`;
+	string $plug_ins="linkDll_"+$ver[0]+".mll";
+	if(!` pluginInfo -query -l $plug_ins `)
+	loadPlugin -qt ($srcPath+"/dll/"+$plug_ins);
+	linkDll ($srcPath+"/dll/"+"tjh_cut_tool.dll");
+	tjh_cut_tool;
+	}
