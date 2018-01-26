@@ -6,6 +6,7 @@
 ##  @version 1.0
 ##  @date  16:46 2018/1/15
 #  History:  
+
 import maya.cmds as cmds
 def J_deleteNode(nodes):
     for nodeToDelete in cmds.ls(type=nodes):
