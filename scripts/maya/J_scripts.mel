@@ -63,7 +63,7 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 	}
 	fclose $J_fileId;
 	////////////////////////////////////////////////////////////////创建菜单
-	////////////////////////////////////////////////////////////////读取命令
+	////////////////////////////////////////////////////////////////读取mel命令
 	
 	string $JmodulesfilePath[]=` getFileList  -folder  (J_getSysPath()+"/Jmodules/")`;
 	for ($JmodulesfilePathItem in $JmodulesfilePath)
@@ -75,7 +75,21 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 			print ("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\"\n");
 		}
 	}
-	////////////////////////////////////////////////////////////////读取命令
+	////////////////////////////////////////////////////////////////读取mel命令
+	
+	////////////////////////////////////////////////////////////////读取py命令
+	
+	string $JmodulesfilePath[]=` getFileList  -folder  (J_getSysPath()+"/Jmodules/")`;
+	for ($JmodulesfilePathItem in $JmodulesfilePath)
+	{
+		string $J_modules[]=`getFileList  -folder (J_getSysPath()+"/Jmodules/"+$JmodulesfilePathItem) -filespec "*.mel" `;
+		for ($J_modelesItem in $J_modules)
+		{
+		    catch(eval("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\""));
+			print ("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\"\n");
+		}
+	}
+	////////////////////////////////////////////////////////////////读取py命令
 	
 	menuItem -p $J_menuName -label "命令工具集" -c madOnion -aob 1 flying0; 
 	
