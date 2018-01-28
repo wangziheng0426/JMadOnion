@@ -26,25 +26,33 @@ if (`window -ex conCurceWin`)
     string $bu02=`button -l "反转曲线方向"  -c  "reverseCurve -ch 1 -rpo 1;"  `;
 	string $bu03=`button -l "poly切曲线"  -c  "J_cutCurByPoly"  `;
 	string $bu04=`button -l "修改曲线轴心"  -c  "J_curPivot"  `;
+	string $bu05=`button -l "删除多余shape"  -c  "J_removeShape"  `;
 	formLayout -e
 	    -af  radioButton1 top 5
-        -af  radioButton1 left 10
+        -af  radioButton1 left -70
 		-ac  radioButton2 top 5 radioButton1
-		-af  radioButton2 left 10
+		-af  radioButton2 left -70
 
             -af $bu01 left 5
-            -ac $bu01 top 10 radioButton2
-            -ap $bu01 right 0 50
-            -ac $bu02 top 10 radioButton2
-            -af $bu02 right 5
-            -ac $bu02 left 0 $bu01
+            -ac $bu01 top 5 radioButton2
+            -ap $bu01 right 0 99
+			
+            -af $bu02 left 5
+            -ac $bu02 top 5 $bu01
+            -ap $bu02 right 0 99
 			
 			-af $bu03 left 5
-            -ac $bu03 top 10 $bu02
-            -ap $bu03 right 0 50
-            -ac $bu04 top 10 $bu02
-            -af $bu04 right 5
-            -ac $bu04 left 0 $bu03
+            -ac $bu03 top 5 $bu02
+            -ap $bu03 right 0 99
+			
+			-af $bu04 left 5
+            -ac $bu04 top 5 $bu03
+            -ap $bu04 right 0 99
+			
+			-af $bu05 left 5
+            -ac $bu05 top 5 $bu04
+            -ap $bu05 right 0 99
+			
 		textureNameLayout;
 
 showWindow conCurceWin;
@@ -123,4 +131,3 @@ break;
 }
 select -cl;
 }
-
