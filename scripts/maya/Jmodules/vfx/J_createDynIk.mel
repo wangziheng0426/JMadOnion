@@ -1,7 +1,8 @@
 /////////////////////////////////////////////////////////////
 ///\file J_createDynIk.mel
 ///
-///\brief    根据选择建立动力学ik，可以只选择单个骨节点，从选中的骨节点下一级开始创建动力学ik到最末端骨节点，或者可以选择两根骨节点，先选根骨节点再加选末端骨节点。生成动力学ik后自动添加毛发系统
+///\brief    根据选择建立动力学ik，可以只选择单个骨节点，从选中的骨节点下一级开始创建动力学ik到最末端骨节点，或者可以选择两根骨节点，先选根骨节点再加选末端骨节点。
+///生成动力学ik后自动添加毛发系统.如果最后加选了毛发系统，则会将新建立的动力学ik加入选择的系统中。
 ///
 ///\author 桔
 ///\version 1.0
@@ -57,14 +58,21 @@ string $myCurveShape[]=`listRelatives -c -s $myCurve`;
 int $myCurveSpan=`getAttr ($myCurveShape[0]+".spans" )`;
 rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s $myCurveSpan -d 3 -tol 0.01 $myCurve;
 
-string $hsys = `createNode hairSystem`;
-string $parentOfHairSys[]=`listRelatives -p  $hsys`;
-connectAttr time1.outTime ($hsys + ".currentTime");
+string $chOfLastSelect[]=`listRelatives -c $sel[size($sel)-1]`;
+string $hsys=$chOfLastSelect[0];
+if(`objectType $hsys`!="hairSystem")
+	{
+		$hsys = `createNode hairSystem -n ($sel[0]+"HairSys")`;
+		connectAttr time1.outTime ($hsys + ".currentTime");
+	}
+
+//string $parentOfHairSys[]=`listRelatives -p  $hsys`;
+
 string $dynFollicle = createHairCurveNode( $hsys, "", 0,0,10, true, true, false, false, $myCurveShape[0], 3.0, {0}, "","",1);
 string $getFollicShape[]=`listRelatives -c -s $dynFollicle`;
 string $getCurrentCurve[]=`listConnections -s 0 -d 1 -type "nurbsCurve" $getFollicShape[0]`;
 rename $getCurrentCurve[0] ($sel[0]+"dynIkSplineCurve");
-rename $parentOfHairSys[0] ($sel[0]+"HairSys");
+//rename $parentOfHairSys[0] ($sel[0]+"HairSys");
 
 ikHandle -sol ikSplineSolver -startJoint $joints[0] -endEffector $joints[$count] -ccv false -roc 1 -pcv 0 -snapCurve 1 -curve ($sel[0]+"dynIkSplineCurve");
 parent $dynFollicle $startJoint;
