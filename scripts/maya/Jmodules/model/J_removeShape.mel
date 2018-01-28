@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////
 ///\file  J_removeShape.mel
-///\brief  删除多余shape
+///\brief  删除多余shape，当节点有一个以上shape，这些shape会被删除。*慎用
 ///
 ///\author 桔
 ///\version 1.0
-///\date   16:26 2018/1/16
+///\date   17:51 2018/1/28
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@
 ///删除多余shape
 global proc string J_removeShape()//删除多余shape
 {
-    string $sel[]=`ls -l -sl`;
+string $sel[]=`ls -sl -l`;
     for ($i in $sel)
     {
         string $ch[]=`listRelatives -c -f $i`;
@@ -22,21 +22,21 @@ global proc string J_removeShape()//删除多余shape
             $numTokens = `tokenize $i "|" $buffer`;
 		int $nnn=`getAttr ($j+".intermediateObject")`;
         if($nnn)
-            {	delete $j; 	}
+            {	delete $j; 	print ($j+"被删除\n");}
 		else
 		    {rename $j ($buffer[size($buffer)-1]+"shape");}
 		}
     }
+for ($i in $sel)
+	{
+		string $ch[]=`listRelatives -c $i`;
+		if(size($ch)>1)
+		{
+			for ($x=1;$x<size($ch);$x++)
+				{delete $ch[$x];
+				print ($ch[$x]+"被删除\n");
+				}
+		}
+	}
 	return "success";
 }
-/*
-string $sel[]=`ls -sl -l`;
-for ($i in $sel)
-{
-    string $ch[]=`listRelatives -c $i`;
-    if(size($ch))
-    {
-        delete $ch[0];
-    }
-}
-*/
