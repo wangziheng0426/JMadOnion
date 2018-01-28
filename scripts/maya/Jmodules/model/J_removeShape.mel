@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////
 
 ///É¾³ı¶àÓàshape
-global proc J_removeShape()//É¾³ı¶àÓàshape
+global proc string J_removeShape()//É¾³ı¶àÓàshape
 {
     string $sel[]=`ls -l -sl`;
     for ($i in $sel)
@@ -27,4 +27,16 @@ global proc J_removeShape()//É¾³ı¶àÓàshape
 		    {rename $j ($buffer[size($buffer)-1]+"shape");}
 		}
     }
+	return "success";
 }
+/*
+string $sel[]=`ls -sl -l`;
+for ($i in $sel)
+{
+    string $ch[]=`listRelatives -c $i`;
+    if(size($ch))
+    {
+        delete $ch[0];
+    }
+}
+*/

@@ -9,6 +9,7 @@
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
+
 global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 {
 	////////////////////////////////////////////////////////////////创建菜单
@@ -65,33 +66,55 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 	////////////////////////////////////////////////////////////////创建菜单
 	////////////////////////////////////////////////////////////////读取mel命令
 	
-	string $JmodulesfilePath[]=` getFileList  -folder  (J_getSysPath()+"/Jmodules/")`;
+	string $JmodulesfilePath[];
+	$JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
+	J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
 	for ($JmodulesfilePathItem in $JmodulesfilePath)
 	{
-		string $J_modules[]=`getFileList  -folder (J_getSysPath()+"/Jmodules/"+$JmodulesfilePathItem) -filespec "*.mel" `;
+		string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.mel" `;
 		for ($J_modelesItem in $J_modules)
 		{
-		    catch(eval("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\""));
-			print ("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\"\n");
+		    catch(eval("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\""));
+			print ("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\"");
+			print "\n";
 		}
 	}
 	////////////////////////////////////////////////////////////////读取mel命令
 	
 	////////////////////////////////////////////////////////////////读取py命令
-	
-	string $JmodulesfilePath[]=` getFileList  -folder  (J_getSysPath()+"/Jmodules/")`;
+	/*
+	string $JmodulesfilePath[];
+	$JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
+	J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
 	for ($JmodulesfilePathItem in $JmodulesfilePath)
 	{
-		string $J_modules[]=`getFileList  -folder (J_getSysPath()+"/Jmodules/"+$JmodulesfilePathItem) -filespec "*.mel" `;
+		string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.ppy" `;
 		for ($J_modelesItem in $J_modules)
 		{
-		    catch(eval("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\""));
-			print ("source  \"" +J_getSysPath()+"/Jmodules/"+ $JmodulesfilePathItem+"/"+  $J_modelesItem  + "\"\n");
+		    catch(eval("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\""));
+			print ("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\"");
+			print "\n";
 		}
 	}
 	////////////////////////////////////////////////////////////////读取py命令
-	
+	*/
 	menuItem -p $J_menuName -label "命令工具集" -c madOnion -aob 1 flying0; 
 	
+}
+//递归找文件夹
+global proc J_getFolders(string $resFolders[],string $inPutPath)
+{
+	string $JmodulesfilePath[]=` getFileList  -folder  $inPutPath`;
+	$orgCount=size($resFolders);
+	$count=0;
+	for ($item in $JmodulesfilePath)
+	{
+	    if (size(`getFileList  -folder  ($inPutPath+"/"+$item)`))
+		    {
+		        $resFolders[$count+$orgCount]=$inPutPath+"/"+$item;
+		        $count++;
+		        J_getFolders($resFolders,($inPutPath+"/"+$item));
+		    }
+	}
 }
 
