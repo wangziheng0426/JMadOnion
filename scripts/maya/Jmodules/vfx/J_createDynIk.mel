@@ -1,0 +1,77 @@
+/////////////////////////////////////////////////////////////
+///\file J_createDynIk.mel
+///
+///\brief    根据选择建立动力学ik，可以只选择单个骨节点，从选中的骨节点下一级开始创建动力学ik到最末端骨节点，或者可以选择两根骨节点，先选根骨节点再加选末端骨节点。生成动力学ik后自动添加毛发系统
+///
+///\author 桔
+///\version 1.0
+///\date  2:12 2018/1/28
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+/// 建立动力学ik
+///\return success
+global proc string J_createDynIk()
+{
+string $sel[]=`ls -sl`;
+if(!size($sel))
+	{return "请选择根骨骼";}
+if(`objectType $sel[0]`!="joint")
+    {return "请选择根骨骼";}
+string $joints[];
+//$joints[0]=$sel[0];
+string $startJoint=$sel[0];
+string $endJoint="";
+int $count=0;
+if ($sel[1]!="")
+	{
+		if(`objectType $sel[1]`=="joint")
+			$endJoint=$sel[1];
+	}    
+string $childOfStartJoint[]=`listRelatives -c $startJoint`;
+if(size($childOfStartJoint)<1||`objectType $childOfStartJoint[0]`!="joint")
+    {return "所选骨节点没有子骨节点";}
+$joints[$count]=$childOfStartJoint[0];
+int $hasChild=1;
+while ($hasChild&&$joints[$count]!=$endJoint)
+{
+    string $temp[]=`listRelatives -c $joints[$count]`;
+    if(size($temp)<1)
+        {$hasChild=0;break;}
+    if(`objectType $temp[0]`=="joint")
+    {
+        $count++;
+        $joints[$count]=$temp[0];
+    }
+}
+string $strCreateCurve="curve -degree 3 ";
+for ($i in $joints)
+	{
+		float $pos[]=`xform -q -ws -t $i`;
+		$strCreateCurve+=" -ep "+$pos[0]+" "+$pos[1]+" "+$pos[2]+" ";
+	}
+
+string $myCurve=eval($strCreateCurve);
+string $myCurveShape[]=`listRelatives -c -s $myCurve`;
+int $myCurveSpan=`getAttr ($myCurveShape[0]+".spans" )`;
+rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s $myCurveSpan -d 3 -tol 0.01 $myCurve;
+
+string $hsys = `createNode hairSystem`;
+string $parentOfHairSys[]=`listRelatives -p  $hsys`;
+connectAttr time1.outTime ($hsys + ".currentTime");
+string $dynFollicle = createHairCurveNode( $hsys, "", 0,0,10, true, true, false, false, $myCurveShape[0], 3.0, {0}, "","",1);
+string $getFollicShape[]=`listRelatives -c -s $dynFollicle`;
+string $getCurrentCurve[]=`listConnections -s 0 -d 1 -type "nurbsCurve" $getFollicShape[0]`;
+rename $getCurrentCurve[0] ($sel[0]+"dynIkSplineCurve");
+rename $parentOfHairSys[0] ($sel[0]+"HairSys");
+
+ikHandle -sol ikSplineSolver -startJoint $joints[0] -endEffector $joints[$count] -ccv false -roc 1 -pcv 0 -snapCurve 1 -curve ($sel[0]+"dynIkSplineCurve");
+parent $dynFollicle $startJoint;
+return "success";
+}
+
+
+
+
+

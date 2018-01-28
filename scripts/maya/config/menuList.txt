@@ -14,7 +14,7 @@
   #<SubMenu> 融合变形转换 J_blendTools model/J_blendTools.mel </SubMenu>  
   #<SubMenu> 模型替换 J_modelConvert model/J_modelConvert.mel </SubMenu>  
   #<SubMenu> 转换选点 J_selectPoint model/J_selectPoint.mel </SubMenu>  
-  #<SubMenu> 整理曲线工具 J_curveTools model/J_curveTools.mel </SubMenu>  
+  <SubMenu> 整理曲线工具 J_curveTools model/J_curveTools.mel </SubMenu>  
   
   
   
