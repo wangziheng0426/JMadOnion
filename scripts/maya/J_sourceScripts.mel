@@ -24,7 +24,7 @@ python("import sys");
 python("import os");
 python("import shutil");
 python("sys.path.append('"+`J_getSysPath`+""+"')");
-python("import JpyModules");
+python("import JpyModules as Jpy");
 print "PlugIn Loaded\n";
 return "success";
 }
