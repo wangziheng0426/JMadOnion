@@ -16,5 +16,5 @@ def J_deleteNode(nodes):
                 cmds.delete( nodeToDelete )
             except:
                 print nodeToDelete+'无法删除'
-    print ('场景中的'+'nodes'+'节点已被删除')
+    print ('场景中的'+nodes+'节点已被删除')
     
