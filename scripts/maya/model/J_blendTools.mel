@@ -1,0 +1,176 @@
+/////////////////////////////////////////////////////////////
+///\file J_blendTools.mel
+///\brief 模型融合变形转换工具 v1.2
+///
+///\author 桔
+///\version 1.0
+///\date  15:45 2018/3/6
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+
+global proc J_blendTools()
+{
+if(`window -ex "blendToolsWinX"`)deleteUI -wnd blendToolsWinX;
+
+string $window = `window -title "blendToolsWinX"
+       -iconName "Short Name"
+       -widthHeight 600 340   blendToolsWinX`;
+columnLayout -adjustableColumn true;
+        string $zuheanniu = `radioButtonGrp   -cw 1 10  -numberOfRadioButtons 2
+                -label "    " -labelArray2 "uv模式" "wrap模式" radioBB`;
+       string $textField01=`textField  textN1`;
+       string $button01=`button -label "读取原始模型" -c ("getGemo1")`;
+       string $textField02=`textField  textN2`;
+       string $button02=`button -label "读取目标模型" -c ("getGemo2")`;
+       string $textField03=`textScrollList -h 100 textN3`;
+       string $button03=`button -label "读取目标体" -c ("getGemo3")`;
+       string $button04=`button -label "根据uv包裹转换" -c ("gogogo(0)")`;
+       string $button05=`button -label "blend变型转换" -c ("gogogo(1)")`;
+	   string $slider01=`floatSliderGrp -label "融合度" -cc ("chGemo") -field true sliderX`;
+	   string $button06=`button -label "帮助" -c ("helpMe")`;
+       //string $button06=`button -label "帮助" -command ("deleteUI -window " + $window)`;
+setParent ..;
+showWindow $window;
+
+};
+
+global proc getGemo1()
+{
+    string $sss[]=`ls -sl`;
+    textField -e -tx $sss[0] textN1;
+    print  $sss;
+}
+global proc getGemo2()
+{
+    string $sss[]=`ls -sl`;
+    textField -e -tx $sss[0] textN2;
+    print  $sss;
+}
+
+global proc getGemo3()
+{
+    string $sss[]=`ls -sl`;
+    textScrollList -e -ra textN3;
+    for ($i in $sss)
+    {
+        textScrollList -e -a $i textN3;
+    }
+    print  $sss;
+}
+
+global proc gogogo(int $ab)
+{
+	if($ab==0)
+	convertBlendA();
+	else
+	convertBlendB();
+}
+
+global proc convertBlendA()
+{
+    string $blendGemoOrg=`textField -q  -text textN1`;
+    string $blendGemoDes=`textField -q  -text textN2`;
+    string $blendGemos[]=`textScrollList -q  -ai textN3`;
+    int $stateX=`radioButtonGrp -q -sl radioBB`;
+    if($blendGemoOrg!=""&&$blendGemoDes!=""&&$blendGemos[0]!="")
+    {
+    convertRun($blendGemoOrg,$blendGemoDes,$blendGemos,$stateX);
+    }
+    else
+    {confirmDialog -title "waring" -button "ok" -message "请选择模型！";}
+}
+
+global proc convertRun(string $blendGemoOrg,string $blendGemoDes,string $blendGemos[],int $stateX)
+{
+       if($stateX==2)
+        {
+            string $blendShapeNode[]=`blendShape $blendGemos $blendGemoOrg`;
+            select $blendGemoDes;select -tgl $blendGemoOrg;
+            CreateWrap;
+            string $temp0=`createNode transform`;
+            for ($i in $blendGemos)
+            {
+                setAttr ($blendShapeNode[0]+"."+$i) 1;
+                string $temp1[]=`duplicate -rr $blendGemoDes`;
+                parent $temp1[0] $temp0;
+                setAttr ($blendShapeNode[0]+"."+$i) 0;
+            }
+        }
+        else if($stateX==1)
+        {
+		string $temp0=`createNode transform`;
+		$blendGemos[size($blendGemos)]=$blendGemoDes;
+		string $blendShapeNode[]=`blendShape $blendGemos $blendGemoOrg`;
+		setAttr ($blendShapeNode[0]+"."+$blendGemoDes) 1;
+            for ($i=0;$i<size($blendGemos)-1;$i++)
+            {
+                setAttr ($blendShapeNode[0]+"."+$blendGemos[$i]) 1;
+                string $temp1[]=`duplicate -rr $blendGemoOrg`;
+                parent $temp1[0] $temp0;
+                setAttr ($blendShapeNode[0]+"."+$blendGemos[$i]) 0;
+				vector $iP=`xform -q -ws -t $blendGemos[$i]`;
+				setAttr ($temp1[0]+".translateX") ($iP.x);
+				setAttr ($temp1[0]+".translateY") ($iP.y);
+				setAttr ($temp1[0]+".translateZ") ($iP.z);
+            }
+		}
+        else
+        {confirmDialog -title "waring" -button "ok" -message "请选择转换模式！";}
+}
+global proc convertBlendB()
+{
+
+    string $blendGemoOrg=`textField -q  -text textN1`;
+    string $blendGemoDes=`textField -q  -text textN2`;
+    string $blendGemos[]=`textScrollList -q  -ai textN3`;
+
+ for ($i in $blendGemos)
+    {
+		string $temp[]=`duplicate -rr $blendGemoOrg`;
+		string $blendShapeNode[]=`blendShape $blendGemoDes $i $temp[0]`;
+		setAttr ($blendShapeNode[0]+"."+$blendGemoDes) 1;
+        setAttr ($blendShapeNode[0]+"."+$i) 1;
+		vector $iP=`xform -q -ws -t $i`;
+		DeleteHistory $temp;
+		delete $i;
+		rename $temp[0] $i;
+		setAttr ($i+".translateX") ($iP.x);
+		setAttr ($i+".translateY") ($iP.y);
+		setAttr ($i+".translateZ") ($iP.z);
+
+     }
+}
+
+global proc chGemo()
+{
+	string $sel[]=`ls -sl`;
+	float $vel=`floatSliderGrp -q -v sliderX`;
+	$vel=$vel*0.1;
+	for ($i in $sel)
+	{
+		string $getShape[]=`listRelatives -c -s $i`;
+		string $getBlendShape[]=`listConnections -s 1 -t blendShape $getShape[0]`;
+		float $getWeight[]=`getAttr ($getBlendShape[0]+".weight")`;
+		string $exp="setAttr  "+($getBlendShape[0]+".weight") 
+					+" ";
+		for($k=0;$k<size($getWeight);$k++)
+			{setAttr ($getBlendShape[0]+".weight["+$k+"]") $vel;}
+	
+	}
+	
+	
+}
+global proc helpMe()
+{
+confirmDialog -title "哦" -message "选择对应的模型，然后点击相应按钮。选好后选择转换模式，uv或者包裹。选择生成融合变型的模型，拖动滑杆可以修改所生成模型的融合比例（仅限blend方式）"
+    -cancelButton "知道了" -dismissString "知道了";
+
+}
+
+
+
+
+
+
