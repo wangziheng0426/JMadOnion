@@ -1,0 +1,238 @@
+/////////////////////////////////////////////////////////////
+///\file J_runYetiCache.mel
+///
+///\brief    yeti出缓存
+///
+///\author 桔
+///\version 1.0
+///\date  15:23 2018/3/6
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_runYetiCache()//yeti出缓存
+{
+//
+//自动生产yeti缓存工具
+/////////////////////////////////////////////////////////////窗口
+string $checkBoxs[];
+int $winWidth=300;
+int $count=10;
+if (`window -ex runYetiCacheWin`)
+	deleteUI -window runYetiCacheWin;
+	window -w 300 -h 600 -title "yeti批量缓存工具" runYetiCacheWin;
+		int $ButtonW=80;
+		int $ButtonH=30;
+		frameLayout -cll 1 -cl 0 -h ($count*20) -l "yeti批量缓存"  myColum;
+		formLayout  -numberOfDivisions 100  yetiCacheLayout;
+		textScrollList -width 300  -h 300 -allowMultiSelection 1 yetiList;
+		radioButtonGrp -numberOfRadioButtons 2 -select 1
+    			-label "yeti版本" -labelArray2 "2.1.6之前版本"  "2.1.6及之后" rbg;
+
+		separator  -w $winWidth -bgc .5 .5 .5 -st "in"  sepx1 ;
+		textField  -w 260 -h 25 pathText;
+		text -w 40 -h 25 -label "开始帧" startFrameInputText;
+		textField  -w 40 -h 25 startFrameInputTextField;
+		text -w 40 -h 25 -label "结束帧" endFrameInputText;
+		textField  -w 40 -h 25 endFrameInputTextField;
+		
+		text -w 40 -h 25 -label "采样率" sampleInputText;
+		textField  -text "1" -w 40 -h 25  sampleInputTextField;
+
+		button -l "读取路径" -w $ButtonW  -h $ButtonH -c  "J_yetiGetPath" buPath ;
+		button -l "为所有yeti建立缓存" -w $ButtonW  -h $ButtonH -c  "runYetiCacheAllBtn" buUp ;
+		button -l "为选择的yeti建立缓存" -w $ButtonW  -h $ButtonH -c  "runYetiCacheBtn" buUpS ;
+
+	/////////////////////////////////////////////////////////
+	int $apx=5;
+	int $apy=5;
+
+	formLayout -e
+		-ap yetiList left 0 1
+		-af yetiList top 0
+		-ap yetiList right 0 99
+
+		-af rbg left -15
+		-ac rbg top $apy yetiList
+		-af rbg right 0
+
+
+		-af sepx1 left 0
+		-ac sepx1 top $apy rbg
+		-af sepx1 right 0
+
+		-af pathText left $apx
+		-ac pathText top $apy sepx1
+		-af pathText right $apx
+
+		-af startFrameInputText left $apx
+		-ac startFrameInputText top $apy pathText
+		-ap startFrameInputText right 0 15
+
+		-ac startFrameInputTextField left $apx startFrameInputText
+		-ac startFrameInputTextField top $apy pathText
+		-ap startFrameInputTextField right 0 30
+
+		-ac endFrameInputText left $apx startFrameInputTextField
+		-ac endFrameInputText top $apy pathText
+		-ap endFrameInputText right 0 45
+
+		-ac endFrameInputTextField left $apx endFrameInputText
+		-ac endFrameInputTextField top $apy pathText
+		-ap endFrameInputTextField right 0 60
+
+		-ac sampleInputText left $apx endFrameInputTextField
+		-ac sampleInputText top $apy pathText
+		-ap sampleInputText right 0 75
+
+		-ac sampleInputTextField left $apx sampleInputText
+		-ac sampleInputTextField top $apy pathText
+		-ap sampleInputTextField right 0 99
+		
+
+
+		-af buPath left $apx
+		-ac buPath top $apy startFrameInputText
+		-ap buPath right 0 33
+
+		-ac buUp left $apx buPath
+		-ac buUp top $apy startFrameInputText
+		-ap buUp right 0 66
+
+		-ac buUpS left $apx buUp
+		-ac buUpS top $apy startFrameInputText
+		-ap buUpS right 0 99
+
+
+		yetiCacheLayout;
+
+showWindow runYetiCacheWin;
+J_runYetiCacheInit();
+}
+
+
+global proc J_yetiGetPath()//读取路径
+{
+	string $temp[];
+   //if(!catch($temp=`fileDialog2 -fm 0`))
+   //{
+    $temp=`fileDialog2 -fm 3`;
+   //}
+	textField -e -tx $temp[0]  pathText;
+}
+//初始化工具信息，读取yeti节点，设置输出路径
+global proc J_runYetiCacheInit()
+{
+	string $allYetiMayaNodes[]=`ls -type pgYetiMaya`;
+	for($i in $allYetiMayaNodes)
+	{
+		textScrollList -e -a $i yetiList;
+    }
+	string $filePath=`file -q -sn`;
+	if($filePath!="")
+	{
+		string $buffer[];
+		$numTokens = `tokenize $filePath "." $buffer`;
+		string $cachePath=$buffer[0];
+		for($j=1;$j<(size($buffer)-1);$j++)
+		{
+			$cachePath+="."+$buffer[$j];
+		}
+		string $buffer1[];
+		$numTokens = `tokenize $buffer[size($buffer)-2] "/" $buffer1`;
+		$cachePath+="_yetiCache/";//输出路径
+		textField  -e -text $cachePath pathText;
+
+		int $startFrame =`playbackOptions -q -min`;
+		textField  -e -tx $startFrame startFrameInputTextField;
+
+		int $endFrame  =`playbackOptions -q -max`;
+		textField  -e -tx $endFrame endFrameInputTextField;
+
+    }
+}
+
+//输出列表中所选yeti节点缓存
+global proc runYetiCacheBtn()
+{
+	string $seletedYetiNode[]=`textScrollList -q -si yetiList`;
+	string $yetiCachePath=`textField  -q -text  pathText`;
+	string $yetiSimpale=`textField  -q -text  sampleInputTextField`;
+	int $yetiRunSimpale=$yetiSimpale;
+	$yetiCachePath=substituteAllString($yetiCachePath, "\\", "/");
+	//$yetiCachePath+="_yetiCache/";
+	int $optionVersion=`radioButtonGrp -q -select  rbg`;
+	int $startFrame=`textField  -q -tx startFrameInputTextField`;
+	int $endFrame=`textField  -q -tx endFrameInputTextField`;
+	if(size($seletedYetiNode)&&$optionVersion==1)
+	{
+		for($yetiNode in $seletedYetiNode)
+		{
+		string $yetiFileName=substituteAllString($yetiNode, ":", "_");
+		catch(runYetiCache($yetiNode,$yetiCachePath,$yetiFileName,$startFrame,$endFrame,$yetiRunSimpale));
+        }
+    }
+	else if(size($seletedYetiNode)&&$optionVersion==2)
+	{
+		runYetiCachePlugs($seletedYetiNode,$yetiCachePath,"",$startFrame,$endFrame,$yetiRunSimpale);
+    }
+}
+
+
+global proc runYetiCacheAllBtn()
+{
+	string $allYetiNode[]=`textScrollList -q -ai yetiList`;
+	for ($i in  $allYetiNode)
+	{textScrollList -e -si $i yetiList;}
+	runYetiCacheBtn();
+}
+
+
+
+
+
+//输出yeti缓存方法（节点名，缓存路径，缓存名，起始时间，结束时间，采样率）
+global proc runYetiCache(string $yetiMayaNode,string $yetiCachePath,string $yetiFileName,int $yetiCacheStartTime,int $yetiCacheEndTime,int $yetiSamples)
+{
+		if(!`file -q -ex $yetiCachePath`)
+		{sysFile -makeDir $yetiCachePath;}
+		print $yetiCachePath;
+		select $yetiMayaNode;
+		setAttr ($yetiMayaNode+".fileMode") 0;
+		string $temp=$yetiCachePath+$yetiFileName+"_%04d.fur";
+		pgYetiCommand -writeCache $temp -range $yetiCacheStartTime $yetiCacheEndTime -samples $yetiSamples   ;
+		setAttr -type "string" ($yetiMayaNode+".cacheFileName") $temp;
+		setAttr ($yetiMayaNode+".fileMode") 1;
+
+}
+
+
+global proc runYetiCachePlugs(string $yetiMayaNode[],string $yetiCachePath,string $yetiFileName,int $yetiCacheStartTime,int $yetiCacheEndTime,int $yetiSamples)
+{
+	if(!`file -q -ex $yetiCachePath`)
+		{sysFile -makeDir $yetiCachePath;}
+		print $yetiCachePath;
+	for($i in $yetiMayaNode)
+	{
+		setAttr ($i+".fileMode") 0;
+	}
+	///////////////////////////////
+	select $yetiMayaNode;
+	string $yetiCacheName=$yetiCachePath+$yetiFileName+"_<NAME>.%04d.fur";
+	pgYetiCommand -writeCache $yetiCacheName -range $yetiCacheStartTime $yetiCacheEndTime -samples $yetiSamples   ;
+
+	for($i in $yetiMayaNode)
+	{
+		string $buffer1[];
+		string $tempA="";
+		$numTokens = `tokenize $i ":" $buffer1`;
+		for($ix in $buffer1)
+		{
+			$tempA+="_"+$ix;
+		}
+		string $finalCacheName=$yetiCachePath+$yetiFileName+$tempA+".%04d.fur";
+		setAttr -type "string" ($i+".cacheFileName") $finalCacheName;
+		setAttr ($i+".fileMode") 1;
+	}
+}
+

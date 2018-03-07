@@ -1,0 +1,68 @@
+/////////////////////////////////////////////////////////////
+///\file J_selectPoint.mel
+///\brief 选点工具
+///
+///\author 桔
+///\version 1.0
+///\date  16:59 2018/3/6
+///History:  
+///
+///////////////////////////////////////////////////////////////
+global proc J_selectPoint()
+{
+if (`window -ex getGemPoint`)
+	deleteUI -window getGemPoint;
+	window -w 300 -h 200 -title "选点" getGemPoint;
+		formLayout  -h 160 getGemPointLayout;
+		separator  -w 300 -bgc .5 .5 .5 -st "in"  sepx ;	
+		button -w 100 -h 40 -l "记录点" -c  "write" checkButton ;
+		button -w 100 -h 40 -l "转换点" -c  "read" checkButton1 ;
+	/////////////////////////////////////////////////////////编辑窗体	
+	formLayout -e 
+        
+	    -af sepx left 0 
+		-af sepx top 0
+		-af sepx right 0
+		
+		-af checkButton left 30 
+		-ac checkButton top 50 sepx
+		
+		-ac checkButton1 left 30 checkButton
+		-ac checkButton1 top 50 sepx
+		
+		getGemPointLayout;
+		
+    showWindow getGemPoint;
+}
+global proc write()
+{
+    string $path=`internalVar -userPresetsDir`;
+    int $fileId=`fopen ($path+"temp.txt") "w"`;
+    string $sel[]=`ls -sl`;
+    string $writeT="";
+    for ($i in $sel)
+    {
+        string $buff[];
+        int $numTokens=`tokenize $i "." $buff`;
+        $writeT+=$buff[1]+" "+"\n";
+    }
+    fwrite $fileId $writeT;
+    fclose $fileId;
+    }
+    
+global proc read()
+{
+    string $path=`internalVar -userPresetsDir`;
+    int $fileId=`fopen ($path+"temp.txt") "r"`;
+    string $sel[]=`ls -sl`;
+    string $nextWord=`fgetword $fileId`;
+    while($nextWord!="")
+        {
+            for ($i in $sel)
+                        {
+                            catch(`select -tgl ($i+"."+$nextWord)`);
+                            }
+            print $nextWord;$nextWord=`fgetword $fileId`;
+            
+            }
+}

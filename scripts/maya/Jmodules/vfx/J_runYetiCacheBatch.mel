@@ -9,7 +9,7 @@
 ///
 ///////////////////////////////////////////////////////////////
 
-///打开主界面窗口
+
 ///\param string $startFrame 开始时间
 ///\param string $endFrame 结束时间
 ///\return "success";
@@ -22,7 +22,7 @@ global proc string J_runYetiCacheBatch()
 	string $yetiCachePath=J_getSceneFilePath()+"_yetiCache/";
 	for ($yetiNode in $seletedYetiNode)
 	{
-		catch(runYetiCache($yetiNode,$yetiCachePath,$yetiNode,$startFrame,$endFrame,3));
+		catch(J_runYetiCacheBatchEX($yetiNode,$yetiCachePath,$yetiNode,$startFrame,$endFrame,3));
 	}
 return "success";
 }
@@ -35,7 +35,7 @@ return "success";
 ///\param string $yetiCacheEndTime 解算结束时间
 ///\param string $yetiSamples 解算采样率
 ///\return "success";
-global proc string runYetiCache(string $yetiMayaNode,string $yetiCachePath,string $yetiFileName,int $yetiCacheStartTime,int $yetiCacheEndTime,int $yetiSamples)
+global proc string J_runYetiCacheBatchEX(string $yetiMayaNode,string $yetiCachePath,string $yetiFileName,int $yetiCacheStartTime,int $yetiCacheEndTime,int $yetiSamples)
 {
 		if(!`file -q -ex $yetiCachePath`)
 		{sysFile -makeDir $yetiCachePath;}

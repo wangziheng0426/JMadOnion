@@ -7,13 +7,12 @@
   
   
   <MainMenu> 模型组 model </MainMenu>  
-  #<SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
-  #<SubMenu> 添加眼球 J_eyeBall model/J_eyeBall.mel </SubMenu>  
-  #<SubMenu> 添加眼球new J_eyeBallNew model/J_eyeBallNew.mel </SubMenu>  
-  #<SubMenu> 表情工具 J_facial_tool model/J_facial_tool.mel </SubMenu>  
-  #<SubMenu> 融合变形转换 J_blendTools model/J_blendTools.mel </SubMenu>  
-  #<SubMenu> 模型替换 J_modelConvert model/J_modelConvert.mel </SubMenu>  
-  #<SubMenu> 转换选点 J_selectPoint model/J_selectPoint.mel </SubMenu>  
+  <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
+  <SubMenu> 添加眼球 J_eyeBall model/J_eyeBall.mel </SubMenu>  
+  <SubMenu> 表情工具 J_facial_tool model/J_facial_tool.mel </SubMenu>  
+  <SubMenu> 融合变形转换 J_blendTools model/J_blendTools.mel </SubMenu>  
+  <SubMenu> 模型替换 J_modelConvert model/J_modelConvert.mel </SubMenu>  
+  <SubMenu> 转换选点 J_selectPoint model/J_selectPoint.mel </SubMenu>  
   <SubMenu> 整理曲线工具 J_curveTools model/J_curveTools.mel </SubMenu>  
   
   

@@ -1,0 +1,230 @@
+/////////////////////////////////////////////////////////////
+///\file J_modelClearMC.mel
+///\brief 模型整理工具v1
+///
+///\author 桔
+///\version 1.0
+///\date  16:35 2018/3/6
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+
+global proc J_modelClearMC()//主程序
+{
+/////////////////////////////////////////////////////////////生成窗体
+string $checkBoxs[];
+int $winWidth=300;
+int $count=10;
+string $J_modelClearMCcommandName[]={"整理模型","单面显示","错误检查","选择边缘","对称检查","删所有组",
+									"解锁所有属性","清除所有多余的组","删除多余shape","清理无用节点","删除无连接材质",
+									"单双面显示切换","删除无用uvset","整理法线"};
+string $J_modelClearMCcommand[]={"runModelClearMC","J_doubleFaceLight","GetInfoA","J_hardEdgeIm","J_symTool","J_deleteAllGroup",
+									"J_unLockAttrs","J_deleteAllGroup","J_removeShape","J_getJunk","J_deleteMat",
+									"J_doubleFaceLight","J_removeUV","runRNor"};
+string $J_modelClearMC_btn[];
+if (`window -ex checkNodesWin`)
+	deleteUI -window checkNodesWin;
+	window -w 300 -h ($count*2+200) -title "模型检查" checkNodesWin;
+		
+		frameLayout -cll 1 -cl 0  -h ($count*20) -l "检查项目"  myColum;
+		formLayout  -nd 100  -h ($count*20) checkNodesLayout;
+		separator  -w $winWidth -bgc .5 .5 .5 -st "in"  sepx ;	
+	for($i=0;$i< size($J_modelClearMCcommandName);$i++)
+		{
+			$J_modelClearMC_btn[$i]=`button -l $J_modelClearMCcommandName[$i] -c $J_modelClearMCcommand[$i]`;		
+		}
+		separator  -w $winWidth -bgc .5 .5 .5 -st "in"  sepx1 ;	
+		textField  -w 260 -h 25 pathText;
+		J_tempPath("pathText",1);
+		button -l "选择路径" -c  "GetPath" buPath ;
+		button -l "导出文件" -c  "UpLoad" buUp ;
+	/////////////////////////////////////////////////////////编辑窗体	
+	int $apx=1;
+	int $apy=2;
+
+	formLayout -e 
+		-af sepx left 0 
+		-af sepx top 0
+		-af sepx right 0
+		
+		-af $J_modelClearMC_btn[0] left $apx 
+		-ac $J_modelClearMC_btn[0] top $apy sepx
+		-ap $J_modelClearMC_btn[0] right 0 99
+	checkNodesLayout;
+	for($i=1;$i< size($J_modelClearMCcommandName);$i++)
+	{
+	formLayout -e 
+		-af $J_modelClearMC_btn[$i] left $apx 
+		-ac $J_modelClearMC_btn[$i] top $apy $J_modelClearMC_btn[$i-1]
+		-ap $J_modelClearMC_btn[$i] right 0 99	
+	checkNodesLayout;
+	}
+	
+	formLayout -e 
+		-af sepx1 left 0 
+		-ac sepx1 top $apy $J_modelClearMC_btn[size($J_modelClearMC_btn)-1]
+		-af sepx1 right 0 
+		
+		-af pathText left $apx  
+		-ac pathText top $apy sepx1
+		-af pathText right $apx  
+		
+		-af buPath left $apx 
+		-ac buPath top $apy pathText
+		-ap buPath right 0 50
+		
+		-ac buUp left $apx buPath
+		-ac buUp top $apy pathText
+		-ap buUp right 0 99
+		
+		checkNodesLayout;
+		
+showWindow checkNodesWin;
+}
+global proc runModelClearMC()
+{
+    J_softEdges();
+    J_getHistory();
+	J_getExp();
+	
+	J_getPivet();
+	J_getJunk();
+	J_getKeys();
+	
+	
+	J_killLightLink();
+	J_removeUV();
+	
+	
+	J_deleteEmptyGrp;
+	J_deleteMat();
+	J_getHistory();
+	J_doubleFaceLight;
+	select `ls`;
+	ToggleBackfaceGeometry;
+	//danmian;
+	setWireframeOnShadedOption true modelPanel4;
+	modelEditor -e -udm true modelPanel4;
+	setRendererInModelPanel base_OpenGL_Renderer modelPanel4;
+	select -cl;
+}
+
+global proc ShowInfos()
+{
+string $n="法线  轴心  垃圾历史  无用关键帧  材质球  空组  灯光连接  多余uv";
+$n+="已被清除";
+confirmDialog -title "提示" -message $n;
+
+}
+
+
+global proc GetPath()//设置路径
+{
+	string $temp =`J_getPath`;
+	textField -e -tx $temp -w 260 -h 25 pathText;
+	J_tempPath("pathText",0);
+}
+
+global proc UpLoad()//上传
+{
+	string $paths=`textField -q -tx  pathText`;
+	J_outFile($paths,1);
+}
+
+
+global proc GetInfoA()
+{
+	if (`window -ex lookWin`)
+		deleteUI -window lookWin;
+	window -title "节点信息" -wh 370 700 lookWin;
+	columnLayout -w 240 -h 400 -adj true  lookLayout;
+	J_getFace();
+	J_getFaceC();
+	J_getTexture();
+	showWindow lookWin;
+}
+
+//////////////////////////////////////////////////////////////////////////检查相关
+
+
+global proc selObj(string $text)
+{
+	select `textScrollList -q -si $text`;
+}
+global proc danmian()
+{
+string $currentPanel = `getPanel -withFocus`;   
+string $panelType = `getPanel -to $currentPanel`;
+if ($panelType ==  "modelPanel") {     int $culling = `modelEditor -query -backfaceCulling $currentPanel`;
+      modelEditor -edit -backfaceCulling (1 - $culling) $currentPanel;  } 
+else if ($panelType ==  "scriptedPanel") 
+   { 	
+   scriptedPanelRunTimeCmdBackfaceCulling( $currentPanel ); 
+   }
+}
+
+global proc runRNor()
+{
+J_rebuildNormal;J_softEdges();
+}
+
+global proc J_getFace()//不规则的边
+{
+	string $fr=`frameLayout -l "不规则的边"  -w 340 -cll 1 -cl 1 -bs "etchedIn" -p lookLayout `;
+	string $ts=`textScrollList -nr 10 -ams 1 -sc "selObj tsDm" tsDm`;
+	string $allMesh[]=`ls -ni -v -type mesh`;
+	string $all[]=`polyInfo -nme $allMesh`;
+	for($i in $all)
+		{
+			textScrollList -e -append $i $ts;
+		}
+	string $title ="不规则的边"+size($all);
+	frameLayout -e -l $title $fr;
+}
+global proc J_getFaceC()//查多边面
+{		
+string $fr=`frameLayout -l "多边面"  -w 340 -cll 1 -cl 1 -bs "etchedIn" -p lookLayout `;
+string $ts=`textScrollList -nr 10 -ams 1 -sc "selObj tsDms" tsDms`;
+string $selectedItems[]=`ls -typ mesh`;
+string $all[];
+if(size($selectedItems))
+{
+select -r $selectedItems;
+string $returnSelected[];
+		polySelectConstraint -m 3 -t 8 -sz 2;
+		string $selected[] = `ls -sl`;
+		polySelectConstraint -m 0 -t 8 -sz 0;
+		InvertSelection;
+		$all=`ls -sl`;
+}
+	for($i in $all)
+		{
+			textScrollList -e -append $i $ts;
+		}
+	string $title ="多边面"+size($all);
+	frameLayout -e -l $title $fr;
+}
+global proc J_getTexture()//查贴图
+	{
+		string $fr=`frameLayout -l "无效贴图" -w 340  -cll 1 -cl 1 -bs "etchedIn" -p lookLayout `;
+		string $ts=`textScrollList -nr 10 -ams 1 -sc "selObj tsTt" tsTt`;
+		string $temp[]=`ls -type file`;
+		int $x;
+		for($i in $temp)
+		{
+			string $filePath=`getAttr ($i+".fileTextureName")`;
+			if(!(`filetest -e $filePath`))
+			//{textScrollList -e -append ($i+" "+$filePath) $ts;};
+			{textScrollList -e -append ($i) $ts;$x++;}
+		}
+		
+			string $title ="无效贴图"+$x;
+			frameLayout -e -l $title $fr;
+	}
+global proc string J_getPath()//设置路径
+{
+	string $path=`textField -q -text pathText`;
+	string $temp[]=`fileDialog2 -dir $path -fm 0 `;
+	return $temp[0];
+}
