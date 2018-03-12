@@ -1,0 +1,23 @@
+/////////////////////////////////////////////////////////////
+///\file J_addZero.mel
+///
+///\brief    字符串按位补零
+///
+///\author 桔
+///\version 1.0
+///\date  15:44 2018/1/9
+///History:  
+///
+///////////////////////////////////////////////////////////////
+global proc string J_addZero(int $padding ,int $numToAddZero)
+{
+	string $temp=$numToAddZero;
+	if(`size($temp)`<$padding)
+	{
+		for($i=0;$i<=($padding-size($temp));$i++)
+		{
+			$temp="0"+$temp;
+		}
+	}
+	return $temp;
+}
