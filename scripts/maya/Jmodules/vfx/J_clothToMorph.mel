@@ -1,0 +1,47 @@
+/////////////////////////////////////////////////////////////
+///\file  J_clothToMorph.mel
+///\brief  布料转blend动画
+///
+///\author 桔
+///\version 1.0
+///\date   16:59 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_clothToMorph(int $J_subRate)//布料转morph
+{
+string $sel[]=`ls -sl`;
+int $startFrame =`playbackOptions -q -min`;
+int $endFrame  =`playbackOptions -q -max`;
+$endFrame=$endFrame/$J_subRate;
+string $xulie[];
+for($i=0;$i<=($endFrame-$startFrame);$i++)
+	{
+	    currentTime ($startFrame+$i*$J_subRate);
+	    string $temp[]=`duplicate $sel[0]`;
+	    $xulie[$i]=$temp[0];
+	}
+if(`objExists ($sel[0]+"BlendShape")`)
+    {delete ($sel[0]+"BlendShape");}
+	
+	
+	//currentTime ($startFrame);string $tempX[]=`duplicate $sel[0]`;
+	//$xulie[size($xulie)]=$tempX[0];
+
+string $blendShapeNode[]=`blendShape-n ($sel[0]+"BlendShape") $xulie `;
+
+for($i=$startFrame;$i<=$endFrame;$i++)
+{
+    for($j=0;$j<size($xulie)-1;$j++)
+    {
+        setKeyframe -t ($i*$J_subRate) -v 0 { ($sel[0]+"BlendShape")+".w["+$j+"]"};
+        if($j==$i-$startFrame){setKeyframe -t ($i*$J_subRate) -v 1 { (($sel[0]+"BlendShape")+".w["+$j+"]")};}
+        
+    }
+}
+for($i=0;$i<size($xulie)-1;$i++)
+{
+	delete $xulie[$i];
+}
+}
