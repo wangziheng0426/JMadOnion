@@ -11,3 +11,33 @@
 
 ///列出命令和工具
 ///\return "success";
+global proc J_ls()
+{
+    string $JmodulesfilePath[];
+    $JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
+    J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePath)
+    {
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.mel" `;
+        print  ("-----------"+$JmodulesfilePathItem+"\n");
+        for ($J_modelesItem in $J_modules)
+        {
+            print ($J_modelesItem);
+            print "\n";
+        }
+    }
+    
+    string $JmodulesfilePath[];
+    $JmodulesfilePath[0]=J_getSysPath()+"/Jpymodules";
+    J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePath)
+    {
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.py" `;
+        print  ("-----------"+$JmodulesfilePathItem+"\n");
+        for ($J_modelesItem in $J_modules)
+        {
+            print ($J_modelesItem);
+            print "\n";
+        }
+    }
+}
