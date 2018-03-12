@@ -33,6 +33,4 @@ def J_renameFileWithStr(jKey, jNewKey, jpPath):
                     print  (item+"-->"+ newName)
                 except:
                     print item.decode('gbk')
- 
- 
-J_renameFileWithStr(u"ccc",u"Y",ur"c:\aa")
+
