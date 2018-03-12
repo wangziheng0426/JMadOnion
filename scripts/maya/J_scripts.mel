@@ -12,109 +12,109 @@
 
 global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 {
-	////////////////////////////////////////////////////////////////创建菜单
-	//string $J_menuLabel="疯狂的桔子";
-	string $J_menuName="madOrange";
-	if (`menu -exists  $J_menuName`) deleteUI $J_menuName;
-		{string $menu=`menu  -l $J_menuLabel -p MayaWindow  $J_menuName`;}	
-	//读取菜单列表
-	string $J_menuList=$J_mainPath+"/config/menuList.txt";
-	
-	int $J_fileId=`fopen $J_menuList "r"`;
-	int $loopRun=1;
-	fgetline $J_fileId;
-	string $J_getWord=`fgetword $J_fileId`;
-	print "----------------------------------------------------------------";
-	print $J_getWord;
-	print "\n";
-	string $J_mainMenuName="";
-	string $J_mainMenuLabel="";
-	string $J_subInfo[];
-	string $J_menuItems[];
-	int $J_menuItemsCount=0;
-	while ( $loopRun ) 
-	{
-		if($J_getWord=="<MainMenu>")
-		{
-		    $J_getWord = `fgetword $J_fileId`;
-		    $J_mainMenuLabel=$J_getWord;
-		    $J_getWord = `fgetword $J_fileId`;
-		    $J_mainMenuName=$J_getWord ;
-	        $J_menuItems[$J_menuItemsCount]=`menuItem -p $J_menuName -subMenu 1 -label $J_mainMenuLabel -to 1 -aob 1 $J_mainMenuName`;
-			$J_menuItemsCount++;
-			$J_getWord = `fgetword $J_fileId`;
-		}
-		else{ $J_getWord = `fgetword $J_fileId`;}					
-    	if($J_getWord=="<SubMenu>")
-    	{
+    ////////////////////////////////////////////////////////////////创建菜单
+    //string $J_menuLabel="疯狂的桔子";
+    string $J_menuName="madOrange";
+    if (`menu -exists  $J_menuName`) deleteUI $J_menuName;
+        {string $menu=`menu  -l $J_menuLabel -p MayaWindow  $J_menuName`;}  
+    //读取菜单列表
+    string $J_menuList=$J_mainPath+"/config/menuList.txt";
+    
+    int $J_fileId=`fopen $J_menuList "r"`;
+    int $loopRun=1;
+    fgetline $J_fileId;
+    string $J_getWord=`fgetword $J_fileId`;
+    print "----------------------------------------------------------------";
+    print $J_getWord;
+    print "\n";
+    string $J_mainMenuName="";
+    string $J_mainMenuLabel="";
+    string $J_subInfo[];
+    string $J_menuItems[];
+    int $J_menuItemsCount=0;
+    while ( $loopRun ) 
+    {
+        if($J_getWord=="<MainMenu>")
+        {
             $J_getWord = `fgetword $J_fileId`;
-    		$J_subInfo[0]=$J_getWord;
-    		$J_getWord = `fgetword $J_fileId`;
-    		$J_subInfo[1]=$J_getWord ;
-    	    $J_getWord = `fgetword $J_fileId`;
-    		$J_subInfo[2]=$J_getWord ;
-    			
-    	    string $fileToSource="source \""+$J_mainPath+"/"+$J_subInfo[2]+"\"";
-    		catch(`eval $fileToSource `);
-    	    menuItem -p $J_mainMenuName -label $J_subInfo[0] -c $J_subInfo[1] -to 1 ;
-			$J_getWord = `fgetword $J_fileId`;
-    	}
-		if($J_getWord==""){$loopRun =0;}
-		
-	}
-	fclose $J_fileId;
-	////////////////////////////////////////////////////////////////创建菜单
-	////////////////////////////////////////////////////////////////读取mel命令
-	
-	string $JmodulesfilePath[];
-	$JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
-	J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
-	for ($JmodulesfilePathItem in $JmodulesfilePath)
-	{
-		string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.mel" `;
-		for ($J_modelesItem in $J_modules)
-		{
-		    catch(eval("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\""));
-			print ("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\"");
-			print "\n";
-		}
-	}
-	////////////////////////////////////////////////////////////////读取mel命令
-	
-	////////////////////////////////////////////////////////////////读取py命令
-	/*
-	string $JmodulesfilePath[];
-	$JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
-	J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
-	for ($JmodulesfilePathItem in $JmodulesfilePath)
-	{
-		string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.ppy" `;
-		for ($J_modelesItem in $J_modules)
-		{
-		    catch(eval("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\""));
-			print ("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\"");
-			print "\n";
-		}
-	}
-	////////////////////////////////////////////////////////////////读取py命令
-	*/
-	menuItem -p $J_menuName -label "命令工具集" -c madOnion -aob 1 flying0; 
-	
+            $J_mainMenuLabel=$J_getWord;
+            $J_getWord = `fgetword $J_fileId`;
+            $J_mainMenuName=$J_getWord ;
+            $J_menuItems[$J_menuItemsCount]=`menuItem -p $J_menuName -subMenu 1 -label $J_mainMenuLabel -to 1 -aob 1 $J_mainMenuName`;
+            $J_menuItemsCount++;
+            $J_getWord = `fgetword $J_fileId`;
+        }
+        else{ $J_getWord = `fgetword $J_fileId`;}                   
+        if($J_getWord=="<SubMenu>")
+        {
+            $J_getWord = `fgetword $J_fileId`;
+            $J_subInfo[0]=$J_getWord;
+            $J_getWord = `fgetword $J_fileId`;
+            $J_subInfo[1]=$J_getWord ;
+            $J_getWord = `fgetword $J_fileId`;
+            $J_subInfo[2]=$J_getWord ;
+                
+            string $fileToSource="source \""+$J_mainPath+"/"+$J_subInfo[2]+"\"";
+            catch(`eval $fileToSource `);
+            menuItem -p $J_mainMenuName -label $J_subInfo[0] -c $J_subInfo[1] -to 1 ;
+            $J_getWord = `fgetword $J_fileId`;
+        }
+        if($J_getWord==""){$loopRun =0;}
+        
+    }
+    fclose $J_fileId;
+    ////////////////////////////////////////////////////////////////创建菜单
+    ////////////////////////////////////////////////////////////////读取mel命令
+    
+    string $JmodulesfilePath[];
+    $JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
+    J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePath)
+    {
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.mel" `;
+        for ($J_modelesItem in $J_modules)
+        {
+            catch(eval("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\""));
+            print ("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\"");
+            print "\n";
+        }
+    }
+    ////////////////////////////////////////////////////////////////读取mel命令
+    
+    ////////////////////////////////////////////////////////////////读取py命令
+    /*
+    string $JmodulesfilePath[];
+    $JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
+    J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePath)
+    {
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.ppy" `;
+        for ($J_modelesItem in $J_modules)
+        {
+            catch(eval("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\""));
+            print ("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\"");
+            print "\n";
+        }
+    }
+    ////////////////////////////////////////////////////////////////读取py命令
+    */
+    menuItem -p $J_menuName -label "命令工具集" -c madOnion -aob 1 flying0; 
+    
 }
 //递归找文件夹
 global proc J_getFolders(string $resFolders[],string $inPutPath)
 {
-	string $JmodulesfilePath[]=` getFileList  -folder  $inPutPath`;
-	$orgCount=size($resFolders);
-	$count=0;
-	for ($item in $JmodulesfilePath)
-	{
-	    if (size(`getFileList  -folder  ($inPutPath+"/"+$item)`))
-		    {
-		        $resFolders[$count+$orgCount]=$inPutPath+"/"+$item;
-		        $count++;
-		        J_getFolders($resFolders,($inPutPath+"/"+$item));
-		    }
-	}
+    string $JmodulesfilePath[]=` getFileList  -folder  $inPutPath`;
+    $orgCount=size($resFolders);
+    $count=0;
+    for ($item in $JmodulesfilePath)
+    {
+        if (size(`getFileList  -folder  ($inPutPath+"/"+$item)`))
+            {
+                $resFolders[$count+$orgCount]=$inPutPath+"/"+$item;
+                $count++;
+                J_getFolders($resFolders,($inPutPath+"/"+$item));
+            }
+    }
 }
 

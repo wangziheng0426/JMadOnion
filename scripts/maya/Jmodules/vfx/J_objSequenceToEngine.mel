@@ -1,0 +1,52 @@
+/////////////////////////////////////////////////////////////
+///\file  J_objSequenceToEngine.mel
+///\brief  骨骼带模型序列
+///
+///\author 桔
+///\version 1.0
+///\date   16:59 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_objSequenceToEngine()//骨骼带模型序列
+{
+	string $sel[]=`ls -sl`;
+	string $jointNode=`createNode joint`;
+	string $gemoGrp=`createNode transform`;
+	string $subJoints[];
+	
+	int $count=0;
+	int $startFrame =`playbackOptions -q -min`;
+	int $endFrame  =`playbackOptions -q -max`;
+	for($i=$startFrame;$i<=$endFrame;$i++)
+	{
+		currentTime $i;
+		string $temp[]=`duplicate -rr $sel[0]`;
+			$subJoints[$count] =`createNode joint`;
+			select $temp[0];
+			select -tgl $subJoints[$count] ;
+			SmoothBindSkin;
+			parent $subJoints[$count]  $jointNode;
+			parent $temp[0]  $gemoGrp;$count++;
+	}
+
+	for($i=$startFrame;$i<=$endFrame;$i++)
+	{
+		for($j=0;$j<$count;$j++)
+		{
+			setKeyframe -t $i -v 0.0001 ($subJoints[$j]+".sx");
+			setKeyframe -t $i -v 0.0001 ($subJoints[$j]+".sy");
+			setKeyframe -t $i -v 0.0001 ($subJoints[$j]+".sz");
+			
+			if($j==$i-$startFrame)
+			{
+	    	    setKeyframe -t $i -v 1 ($subJoints[$j]+".sx");
+			    setKeyframe -t $i -v 1 ($subJoints[$j]+".sy");
+			    setKeyframe -t $i -v 1 ($subJoints[$j]+".sz");
+			    
+			}
+			
+		}
+	}
+}

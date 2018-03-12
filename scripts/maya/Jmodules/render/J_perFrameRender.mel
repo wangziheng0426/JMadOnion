@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////
-///\file Ju_perFrameRender.mel
+///\file J_perFrameRender.mel
 ///
 ///\brief    前台渲染
 ///
@@ -9,7 +9,7 @@
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
-global proc Ju_perFrameRender(int $startframe,int $endFrame,string $paths)
+global proc J_perFrameRender(int $startframe,int $endFrame,string $paths)
 {	
 
 	string $array[];
