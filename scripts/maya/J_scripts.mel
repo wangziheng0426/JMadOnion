@@ -65,7 +65,6 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
     fclose $J_fileId;
     ////////////////////////////////////////////////////////////////创建菜单
     ////////////////////////////////////////////////////////////////读取mel命令
-    
     string $JmodulesfilePath[];
     $JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
     J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
@@ -84,11 +83,11 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
     ////////////////////////////////////////////////////////////////读取py命令
     /*
     string $JmodulesfilePath[];
-    $JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
+    $JmodulesfilePath[0]=J_getSysPath()+"/Jpymodules";
     J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
     for ($JmodulesfilePathItem in $JmodulesfilePath)
     {
-        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.ppy" `;
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.py" `;
         for ($J_modelesItem in $J_modules)
         {
             catch(eval("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\""));
@@ -98,7 +97,7 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
     }
     ////////////////////////////////////////////////////////////////读取py命令
     */
-    menuItem -p $J_menuName -label "命令工具集" -c madOnion -aob 1 flying0; 
+    menuItem -p $J_menuName -label "命令工具集" -c J_madOnionTools -aob 1 flying0; 
     
 }
 //递归找文件夹
@@ -117,4 +116,34 @@ global proc J_getFolders(string $resFolders[],string $inPutPath)
             }
     }
 }
+//生成工具列表
+/*
+global proc  J_madOnionTools()
+{
 
+
+
+if (`window -ex J_madOnionTools`)
+	deleteUI -window J_madOnionTools;
+	window -w 300 -h 650 -title "madOnion" J_madOnionTools;
+	formLayout  -nd 100  -h 295 J_attr_mainFormLayout;
+    string $j_buttons[];
+    string $j_buttonsCommand[];
+    int $buttonCount=0;
+    string $JmodulesfilePath[];
+    $JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
+    J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePath)
+    {
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.mel" `;
+        print  ("-----------"+$JmodulesfilePathItem+"\n");
+        for ($J_modelesItem in $J_modules)
+        {
+            $j_buttons[$buttonCount]=`button -l $Ju_commandLabel[$Ju_commandCount] -c  $Ju_commandName[$Ju_commandCount] -p $Ju_formLayout[$Ju_groupCount-1]`;
+        }
+    }
+    
+    showWindow;
+    }
+    
+    */
