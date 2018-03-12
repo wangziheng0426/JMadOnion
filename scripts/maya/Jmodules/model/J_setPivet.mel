@@ -1,0 +1,35 @@
+/////////////////////////////////////////////////////////////
+///\file J_setPivet.mel
+///\brief  设置轴心点
+///
+///\author 桔
+///\version 1.0
+///\date   12:00 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_setPivet()//居中轴心
+{
+string $x[]=`ls -l -type mesh`;
+for($i in $x)
+	{
+		string $t[]=`listRelatives -f -p -typ transform $i`;
+		if(!`attributeExists "orx" $t[0]`)
+		addAttr -ln "orx"  -at double  $t[0];
+		if(!`attributeExists "ory" $t[0]`)
+		addAttr -ln "ory"  -at double  $t[0];
+		if(!`attributeExists "orz" $t[0]`)
+		addAttr -ln "orz"  -at double  $t[0];
+		vector $rp=`xform -q -ws -rp $t[0]`;
+		setAttr ($t[0]+".orx") ($rp.x);
+		setAttr ($t[0]+".ory") ($rp.y);
+		setAttr ($t[0]+".orz") ($rp.z);
+		select $t;
+		CenterPivot;
+		FreezeTransformations;
+		
+	}
+
+
+}

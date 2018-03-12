@@ -1,0 +1,22 @@
+/////////////////////////////////////////////////////////////
+///\file J_randSelect.mel
+///
+///\brief    随机选择工具
+///
+///\author 桔
+///\version 1.0
+///\date  15:44 2018/1/9
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_randSelect()//检查错误的点
+{
+	string $sel[] = `ls -sl`;
+	int $f=rand(size($sel)*0.3,size($sel)*0.5);
+	for($xx=0;$xx<$f;$xx++)
+	{
+		int $n=rand(size($sel));
+		select -tgl $sel[$n];
+	}
+}

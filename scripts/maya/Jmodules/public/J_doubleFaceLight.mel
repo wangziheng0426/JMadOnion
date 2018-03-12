@@ -1,0 +1,21 @@
+/////////////////////////////////////////////////////////////
+///\file J_doubleFaceLight.mel
+///\brief  µ¥Ë«ÃæÏÔÊ¾ÇÐ»»
+///
+///\author ½Û
+///\version 1.0
+///\date   14:57 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_doubleFaceLight()
+{if(`modelEditor -q -twoSidedLighting  modelPanel4`)
+	{
+	modelEditor -e -twoSidedLighting false modelPanel4;
+	}
+	else
+	{
+	modelEditor -e -twoSidedLighting true modelPanel4;
+	}
+}
