@@ -27,10 +27,10 @@ global proc J_ls()
         }
     }
     
-    string $JmodulesfilePath[];
-    $JmodulesfilePath[0]=J_getSysPath()+"/Jpymodules";
-    J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
-    for ($JmodulesfilePathItem in $JmodulesfilePath)
+    string $JmodulesfilePathX[];
+    $JmodulesfilePathX[0]=J_getSysPath()+"/Jpymodules";
+    J_getFolders($JmodulesfilePathX,$JmodulesfilePathX[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePathX)
     {
         string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.py" `;
         print  ("-----------"+$JmodulesfilePathItem+"\n");
