@@ -1,0 +1,5 @@
+[Enabled]
+Type=boolean
+Label=Enabled
+Default=True
+Description=Enable MapDrive Event.
