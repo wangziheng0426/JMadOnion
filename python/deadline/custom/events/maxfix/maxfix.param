@@ -1,0 +1,8 @@
+[Enabled]
+Type=boolean
+Category=Options
+CategoryOrder=0
+Index=0
+Label=Enabled
+Default=true
+Description=If we want this plugin to do something, you'd better set this to 'true'
