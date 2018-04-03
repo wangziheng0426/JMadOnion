@@ -1214,7 +1214,7 @@ global proc  select_obj()
 	for ($i in $selFluid)
 	{select -tgl $i;}*/
 }
-J_easyFire;
+
 /*
                                   使用说明
    窗口中包含一个列表框和5个按钮，制作烟火时首先选择需要建立烟火的物体，点击
