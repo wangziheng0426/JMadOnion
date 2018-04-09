@@ -1,4 +1,4 @@
 # -*- coding:utf-8 -*-
-import J_deleteNode 
-import J_deleteUnknownNode 
-import J_renameDefaultRenderLayer 
+from J_deleteNode import *
+from J_deleteUnknownNode import *
+from J_renameDefaultRenderLayer import *
