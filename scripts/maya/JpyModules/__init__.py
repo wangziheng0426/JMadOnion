@@ -1,2 +1,3 @@
 # -*- coding:utf-8 -*-
-import public as pub
+import public
+import check
