@@ -16,23 +16,23 @@
 ///\return success
 global proc string J_sourceScripts(string $inPath)
 {
-string $J_runScript="source \""+$inPath+"/J_scripts.mel\"";
-eval($J_runScript);
-J_scripts(J_getSysPath(),"Mad Onion");
-python("import maya.cmds as cmds");
-python("import sys");
-python("import os");
-python("import shutil");
-python("sys.path.append('"+`J_getSysPath`+""+"')");
-python("import JpyModules as Jpy");
-print "PlugIn Loaded\n";
-return "success";
+    string $J_runScript="source \""+$inPath+"/J_scripts.mel\"";
+    eval($J_runScript);
+    J_scripts(J_getSysPath(),"Mad Onion");
+    python("import maya.cmds as cmds");
+    python("import sys");
+    python("import os");
+    python("import shutil");
+    python("sys.path.append('"+`J_getSysPath`+""+"')");
+    python("import JpyModules");
+    print "PlugIn Loaded\n";
+    return "success";
 }
 ///反馈素材目录
 ///\return string 素材文件目录
 global proc string J_getFilePath()
 {
-return (`J_getSysPath`+"/J_file/");
+    return (`J_getSysPath`+"/J_file/");
 } 
 ///反馈插件目录
 ///\return string 插件文件目录

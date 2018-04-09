@@ -1,0 +1,30 @@
+/////////////////////////////////////////////////////////////
+///\file J_fixPespCam.mel
+///\brief  ÐÞ¸´ÉãÏñ»ú
+///
+///\author ½Û
+///\version 1.0
+///\date   15:18 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///ÐÞ¸´ÉãÏñ»ú
+///\return "success";
+global proc string J_fixPespCam()
+{
+    string $J_C_attrs[]={"translateX","translateY","translateZ","rotateX","rotateY","rotateZ","rotatePivotX","rotatePivotY","rotatePivotZ","rotatePivotTranslateX","rotatePivotTranslateY","rotatePivotTranslateZ"};
+    catch(modelPanelBarCameraCallback("CameraBtn", "MayaWindow|formLayout1|viewPanes|modelPanel4|modelPanel4|modelPanel4", "MayaWindow|formLayout1|viewPanes|modelPanel4|modelPanel4|modelEditorIconBar"));
+    string $J_sel[]=`ls -sl`;
+    for ($J_item in $J_C_attrs)
+        {
+            setAttr ($J_sel[0]+"."+$J_item) 0;
+            
+        }
+        
+    string $tempObj[]=`polyCube`;
+    select $tempObj[0];
+    FrameSelected;
+    delete $tempObj;
+    return "success";
+} 
