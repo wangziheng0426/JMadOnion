@@ -42,24 +42,101 @@
    <widget class="QComboBox" name="comboBox">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>70</y>
-      <width>141</width>
+      <x>120</x>
+      <y>10</y>
+      <width>271</width>
       <height>21</height>
      </rect>
     </property>
+    <item>
+     <property name="text">
+      <string>草稿</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>低精度</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>高精度</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>全尺寸</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>91</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>精度选择</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>91</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>摄像机选择</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox_2">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>50</y>
+      <width>271</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>透视图</string>
+     </property>
+    </item>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
-      <width>441</width>
-      <height>21</height>
+      <y>90</y>
+      <width>54</width>
+      <height>12</height>
      </rect>
     </property>
     <property name="text">
-     <string>2d投射转换工具</string>
+     <string>序列名称</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>90</y>
+      <width>271</width>
+      <height>20</height>
+     </rect>
     </property>
    </widget>
   </widget>
