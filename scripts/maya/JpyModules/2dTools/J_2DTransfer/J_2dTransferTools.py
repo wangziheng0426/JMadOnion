@@ -7,7 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+from PySide import QtCore, QtGui
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -132,3 +132,34 @@ class Ui_J_2DTransfer(object):
         self.pushButton_5.setText(_translate("J_2DTransfer", "修改投射贴图", None))
         self.pushButton_6.setText(_translate("J_2DTransfer", "替换投射材质", None))
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+           
+        
+        
+#########################################start up
+
+class J_mainWin(QtGui.QMainWindow):
+    def __init__(self):
+        super(J_mainWin, self).__init__()
+        self.J_mainWindow = Ui_J_2DTransfer()
+        self.J_mainWindow.setupUi(self)
+        #self.initWidgets()
+#app = QtGui.QApplication(sys.argv)
+def J_mainWinRun():
+    run = J_mainWin()
+    run.show()
+if   __name__=='__main__':
+    J_mainWinRun()
