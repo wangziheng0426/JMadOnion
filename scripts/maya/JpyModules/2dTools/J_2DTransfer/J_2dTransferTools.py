@@ -8,6 +8,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
+import sys
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -134,21 +135,6 @@ class Ui_J_2DTransfer(object):
 
         
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-           
-        
-        
 #########################################start up
 
 class J_mainWin(QtGui.QMainWindow):
@@ -158,8 +144,19 @@ class J_mainWin(QtGui.QMainWindow):
         self.J_mainWindow.setupUi(self)
         #self.initWidgets()
 #app = QtGui.QApplication(sys.argv)
-def J_mainWinRun():
+
+    
+if   __name__=='__main__':
+    ######直接运行时需要修改编码#######
+    reload(sys)
+    sys.setdefaultencoding('gbk')
+    try:
+        _encoding = QtGui.QApplication.UnicodeUTF8
+        def _translate(context, text, disambig):
+            return unicode(text)
+    except AttributeError:
+        def _translate(context, text, disambig):
+            return QtGui.QApplication.translate(context, text, disambig)
+    ######直接运行时需要修改编码#######
     run = J_mainWin()
     run.show()
-if   __name__=='__main__':
-    J_mainWinRun()
