@@ -42,7 +42,7 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboBox_quelity">
+   <widget class="QComboBox" name="comboBox_quality">
     <property name="geometry">
      <rect>
       <x>120</x>
@@ -130,11 +130,14 @@
    <widget class="QLineEdit" name="lineEdit_filePath">
     <property name="geometry">
      <rect>
-      <x>120</x>
+      <x>118</x>
       <y>130</y>
       <width>271</width>
       <height>20</height>
      </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="label_S">

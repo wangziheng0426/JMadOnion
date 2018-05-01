@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'J_2DTransfer.ui'
 #
-# Created: Sat Apr 28 13:01:59 2018
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -37,13 +36,13 @@ class Ui_J_2DTransfer(object):
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName(_fromUtf8("line"))
-        self.comboBox_quelity = QtGui.QComboBox(self.centralwidget)
-        self.comboBox_quelity.setGeometry(QtCore.QRect(120, 10, 271, 21))
-        self.comboBox_quelity.setObjectName(_fromUtf8("comboBox_quelity"))
-        self.comboBox_quelity.addItem(_fromUtf8(""))
-        self.comboBox_quelity.addItem(_fromUtf8(""))
-        self.comboBox_quelity.addItem(_fromUtf8(""))
-        self.comboBox_quelity.addItem(_fromUtf8(""))
+        self.comboBox_quality = QtGui.QComboBox(self.centralwidget)
+        self.comboBox_quality.setGeometry(QtCore.QRect(120, 10, 271, 21))
+        self.comboBox_quality.setObjectName(_fromUtf8("comboBox_quality"))
+        self.comboBox_quality.addItem(_fromUtf8(""))
+        self.comboBox_quality.addItem(_fromUtf8(""))
+        self.comboBox_quality.addItem(_fromUtf8(""))
+        self.comboBox_quality.addItem(_fromUtf8(""))
         self.label_A = QtGui.QLabel(self.centralwidget)
         self.label_A.setGeometry(QtCore.QRect(10, 10, 91, 16))
         self.label_A.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
@@ -59,7 +58,8 @@ class Ui_J_2DTransfer(object):
         self.label_Sq.setGeometry(QtCore.QRect(10, 130, 54, 21))
         self.label_Sq.setObjectName(_fromUtf8("label_Sq"))
         self.lineEdit_filePath = QtGui.QLineEdit(self.centralwidget)
-        self.lineEdit_filePath.setGeometry(QtCore.QRect(120, 130, 271, 20))
+        self.lineEdit_filePath.setGeometry(QtCore.QRect(118, 130, 271, 20))
+        self.lineEdit_filePath.setText(_fromUtf8(""))
         self.lineEdit_filePath.setObjectName(_fromUtf8("lineEdit_filePath"))
         self.label_S = QtGui.QLabel(self.centralwidget)
         self.label_S.setGeometry(QtCore.QRect(10, 90, 54, 21))
@@ -113,10 +113,10 @@ class Ui_J_2DTransfer(object):
 
     def retranslateUi(self, J_2DTransfer):
         J_2DTransfer.setWindowTitle(_translate("J_2DTransfer", "J_2DTransfer", None))
-        self.comboBox_quelity.setItemText(0, _translate("J_2DTransfer", "草稿", None))
-        self.comboBox_quelity.setItemText(1, _translate("J_2DTransfer", "低精度", None))
-        self.comboBox_quelity.setItemText(2, _translate("J_2DTransfer", "高精度", None))
-        self.comboBox_quelity.setItemText(3, _translate("J_2DTransfer", "全尺寸", None))
+        self.comboBox_quality.setItemText(0, _translate("J_2DTransfer", "草稿", None))
+        self.comboBox_quality.setItemText(1, _translate("J_2DTransfer", "低精度", None))
+        self.comboBox_quality.setItemText(2, _translate("J_2DTransfer", "高精度", None))
+        self.comboBox_quality.setItemText(3, _translate("J_2DTransfer", "全尺寸", None))
         self.label_A.setText(_translate("J_2DTransfer", "精度选择", None))
         self.label_Cam.setText(_translate("J_2DTransfer", "摄像机选择", None))
         self.label_Sq.setText(_translate("J_2DTransfer", "序列名称", None))
