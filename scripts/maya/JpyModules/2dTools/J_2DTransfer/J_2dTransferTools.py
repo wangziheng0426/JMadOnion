@@ -10,7 +10,7 @@
 from PySide import QtCore, QtGui
 import sys
 import maya.cmds as cmds
-
+import maya.mel as mel
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -39,13 +39,13 @@ class Ui_J_2DTransfer(object):
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName(_fromUtf8("line"))
-        self.comboBox_quelity = QtGui.QComboBox(self.centralwidget)
-        self.comboBox_quelity.setGeometry(QtCore.QRect(120, 10, 271, 21))
-        self.comboBox_quelity.setObjectName(_fromUtf8("comboBox_quelity"))
-        self.comboBox_quelity.addItem(_fromUtf8(""))
-        self.comboBox_quelity.addItem(_fromUtf8(""))
-        self.comboBox_quelity.addItem(_fromUtf8(""))
-        self.comboBox_quelity.addItem(_fromUtf8(""))
+        self.comboBox_quality = QtGui.QComboBox(self.centralwidget)
+        self.comboBox_quality.setGeometry(QtCore.QRect(120, 10, 271, 21))
+        self.comboBox_quality.setObjectName(_fromUtf8("comboBox_quality"))
+        self.comboBox_quality.addItem(_fromUtf8(""))
+        self.comboBox_quality.addItem(_fromUtf8(""))
+        self.comboBox_quality.addItem(_fromUtf8(""))
+        self.comboBox_quality.addItem(_fromUtf8(""))
         self.label_A = QtGui.QLabel(self.centralwidget)
         self.label_A.setGeometry(QtCore.QRect(10, 10, 91, 16))
         self.label_A.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
@@ -61,7 +61,7 @@ class Ui_J_2DTransfer(object):
         self.label_Sq.setGeometry(QtCore.QRect(10, 130, 54, 21))
         self.label_Sq.setObjectName(_fromUtf8("label_Sq"))
         self.lineEdit_filePath = QtGui.QLineEdit(self.centralwidget)
-        self.lineEdit_filePath.setGeometry(QtCore.QRect(120, 130, 271, 20))
+        self.lineEdit_filePath.setGeometry(QtCore.QRect(118, 130, 271, 20))
         self.lineEdit_filePath.setObjectName(_fromUtf8("lineEdit_filePath"))
         self.label_S = QtGui.QLabel(self.centralwidget)
         self.label_S.setGeometry(QtCore.QRect(10, 90, 54, 21))
@@ -115,13 +115,14 @@ class Ui_J_2DTransfer(object):
 
     def retranslateUi(self, J_2DTransfer):
         J_2DTransfer.setWindowTitle(_translate("J_2DTransfer", "J_2DTransfer", None))
-        self.comboBox_quelity.setItemText(0, _translate("J_2DTransfer", "草稿", None))
-        self.comboBox_quelity.setItemText(1, _translate("J_2DTransfer", "低精度", None))
-        self.comboBox_quelity.setItemText(2, _translate("J_2DTransfer", "高精度", None))
-        self.comboBox_quelity.setItemText(3, _translate("J_2DTransfer", "全尺寸", None))
+        self.comboBox_quality.setItemText(0, _translate("J_2DTransfer", "草稿", None))
+        self.comboBox_quality.setItemText(1, _translate("J_2DTransfer", "低精度", None))
+        self.comboBox_quality.setItemText(2, _translate("J_2DTransfer", "高精度", None))
+        self.comboBox_quality.setItemText(3, _translate("J_2DTransfer", "全尺寸", None))
         self.label_A.setText(_translate("J_2DTransfer", "精度选择", None))
         self.label_Cam.setText(_translate("J_2DTransfer", "摄像机选择", None))
         self.label_Sq.setText(_translate("J_2DTransfer", "序列名称", None))
+        self.lineEdit_filePath.setText(_translate("J_2DTransfer", "", None))
         self.label_S.setText(_translate("J_2DTransfer", "软件选择", None))
         self.comboBox_softWare.setItemText(0, _translate("J_2DTransfer", "photoshop", None))
         self.pushButton_setPath.setText(_translate("J_2DTransfer", "设置路径", None))
@@ -131,6 +132,8 @@ class Ui_J_2DTransfer(object):
         self.pushButton_deleteModel.setText(_translate("J_2DTransfer", "删除投射", None))
         self.pushButton_readTexture.setText(_translate("J_2DTransfer", "修改投射贴图", None))
         self.pushButton_replaceMet.setText(_translate("J_2DTransfer", "替换投射材质", None))
+
+
 
 
 
@@ -144,20 +147,36 @@ class J_mainWin(QtGui.QMainWindow):
         self.J_mainWindow = Ui_J_2DTransfer()
         self.J_mainWindow.setupUi(self)
         self.J_mainWindow.comboBox_cam.addItems(cmds.ls(type='camera'))
+        self.J_mW()
+    
+    def J_getFileOutPutPath(self):
+        self.J_mainWindow.lineEdit_filePath.setText(cmds.fileDialog2(fileMode=2)[0])
     
     
+    def J_mW(self):
+        self.J_mainWindow.pushButton_setPath.clicked.connect(self.J_getFileOutPutPath)
+        self.J_mainWindow.pushButton_render2Soft.clicked.connect(self.J_renderOut)
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    def J_renderOut(self):
+        J_renderWidth=cmds.getAttr('defaultResolution.width')
+        J_renderHeight=cmds.getAttr('defaultResolution.height')
+        cmds.setAttr("defaultRenderGlobals.animation",1)
+        cmds.setAttr("defaultRenderGlobals.outFormatControl",0)
+        J_startFrame=cmds.playbackOptions(minTime=True,query=True)
+        J_endFrame=cmds.playbackOptions(maxTime=True,query=True)
+        cmds.setAttr("defaultRenderGlobals.startFrame",J_startFrame)
+        cmds.setAttr("defaultRenderGlobals.endFrame",J_endFrame)
+        
+        resSetting=((self.J_mainWindow.comboBox_quality.currentIndex()+1.0)/4.0)
+        
+        cmds.setAttr('defaultResolution.width',(J_renderWidth*resSetting))
+        cmds.setAttr('defaultResolution.height',(J_renderHeight*resSetting))
+        renderPath=self.J_mainWindow.lineEdit_filePath.text()
+        if renderPath!='':
+            cmds.setAttr('defaultRenderGlobals.imageFilePrefix',(renderPath+'/seq'),type="string")
+        mel.eval('BatchRender')
+        cmds.setAttr('defaultResolution.width',J_renderWidth)
+        cmds.setAttr('defaultResolution.height',J_renderHeight)
     
     
     
