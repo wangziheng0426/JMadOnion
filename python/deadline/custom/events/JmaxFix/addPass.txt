@@ -1,0 +1,11 @@
+import sys
+import os
+
+
+for iCount in range(101,132,2):
+    customIp='192.168.67.'+str(iCount)
+    customName='B410-C67'+str(iCount)
+    print customIp
+    #os.popen('Cmdkey /add:'+customIp+' /user:administrator /pass:8SQEtBJw~_~*')
+    os.popen('Cmdkey /add:'+customName+' /user:administrator /pass:8SQEtBJw~_~*')
+    #print ('Cmdkey /add:'+customIp+' /user:administrator /pass:8SQEtBJw~_~*')
