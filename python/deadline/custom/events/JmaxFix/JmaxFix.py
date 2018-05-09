@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 #-*- coding:utf-8 -*-
 ##############################################
 # Author        : zhangqianju
@@ -14,6 +14,7 @@ import subprocess
 import os ,platform
 import random
 import time
+import threading
 
 ######################################################################
 ## This is the function that Deadline calls to get an instance of the
@@ -36,10 +37,12 @@ def CleanupDeadlineEventListener( deadlinePlugin ):
 class JmaxFix (DeadlineEventListener):
     def __init__( self ):
         self.OnSlaveStartingJobCallback += self.OnJobStart
+        self.OnSlaveRenderingCallback +=self.OnStartRender
         self.OnJobFinishedCallback  += self.OnJobFinisheJ
         #self.LogInfo('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
     def Cleanup( self ):
         del self.OnSlaveStartingJobCallback 
+        del self.OnSlaveRenderingCallback
         del self.OnJobFinishedCallback  
         
     def OnJobStart( self,en, job ):
@@ -49,83 +52,47 @@ class JmaxFix (DeadlineEventListener):
             if softWare=='3dsmax':
                 versionOfsoft=job.GetJobPluginInfoKeyValue('Version')
                 self.LogInfo (versionOfsoft)
-                if versionOfsoft>2017:
-                    self.LogInfo('192.168.90.225')
-                    J_createClient('192.168.90.225')
+                if str(versionOfsoft)=='2018':
+                    self.LogInfo('172.31.70.13')
+                    J_createClient('172.31.70.13')
         
+    def OnStartRender( self,en, job ):
+        print 'start rending'
+        try:            
+            print 'killing mstsc'
+            subprocess.Popen('c:/python27/python.exe //172.31.70.13/DeadlineRepository7/custom/events/JmaxFix/killMstsc.py')
+            print 'mstsc killed'
+        except:
+           print "Error: unable to start thread"
 
     def OnJobFinisheJ(self, job):
         # TODO: Connect to pipeline site to notify it that the job for a particular
-        self.LogInfo('aaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-#建立远程链接服务端 #param 服务端ip
-def J_createServer(serverIp):
-    server =socket.socket()
-    server.bind((serverIp,9992))
-    print "runing"
-    server.listen(5)
-    while True:
-        connects,addr=server.accept()
-        print ('%s is connecting' %(addr[0]))
-        res=connects.recv(1024)
-        connects.send('connected')
-        J_runRemote(res)
-    server.close
+        self.LogInfo('JmaxFix is done')
 #获取本地活动网卡ip
-def J_getIpAddr():
+def J_getIpAddr(serverIp):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('172.31.87.141', 80))
+        s.connect((serverIp, 80))
         ip = s.getsockname()[0]
     finally:
         s.close()
     return ip
-#在指定路径,讲本机ip作为文件名建立文件 #param 路径  ip
-def J_writeFileWithIpInit(J_filePath,J_fileName):
-    file=open(J_filePath+'/'+J_fileName,'w')
-    file.write('0')
-#读取指定目录下的文件,取文件名中的ip  #param  搜索路径
-def J_readFile(J_filePath):
-    serverList=[]
-    fileid=0
-    for item in os.listdir(J_filePath):
-        if os.path.isfile(J_filePath+'/'+item):
-            print item
-            serverList.append(item)
-    if len(serverList)>0:
-        fileid=random.randrange(0,len(serverList),1)
-        
-    return fileid
-#服务端运行远程琢磨 #param  客户ip
-def J_runRemote(J_clientIp):
-    #add pass\
-    if J_clientIp.strip():
-        print 'add user pass word'
-        subPKey=subprocess.Popen('Cmdkey /add:'+J_clientIp+' /user:evenslave /pass:qwerty#8')
-        print ('remote to '+J_clientIp)
-        try:
-            subPRDP=subprocess.Popen('mstsc /admin /console /v:'+J_clientIp)
-        except:
-            print "connection failed"
-        time.sleep(30)
-        subPRDP=subprocess.Popen('taskkill /im mstsc.exe -f')
-def J_writeRdpFile():
-    pass
+
 #客户端连接服务端 #param 服务端ip
 def J_createClient(serverIp):
     client =socket.socket()
-    client.connect((serverIp,9992))
-    temp=J_getIpAddr()
-    print ('myIP is %s' %(temp))
-    client.send(temp)
-    res=client.recv(1024)
-    time.sleep(10)
-    for connectTImes in range(1,20):
-        if len(res)<1:
-            client.send(temp)
-            res=client.recv(1024)
-    client.close()
-    
-    
+    try:
+        client.connect((serverIp,9993))
+        temp=J_getIpAddr(serverIp)
+        print temp
+        client.send(temp)
+        res=client.recv(1024)
+        client.close()
+        print 'over'
+    except :
+        print 'connection failed'
+        
+
 if   __name__=='__main__':
-    J_createServer('192.168.90.225')
+    J_createServer('172.31.70.13')
  
