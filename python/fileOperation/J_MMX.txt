@@ -1,0 +1,23 @@
+#-*- coding:utf-8*-
+import os
+import subprocess
+def convertMM(inPath,fileTypes,startTime,reslution):
+    for item in os.walk(inPath):
+        print '-------------------'
+        print item[0].decode('gbk')
+        for items in item[2]:
+            filePath='\\'.join((item[0].decode('gbk'),items.decode('gbk'))).replace('\\','/')
+            if filePath.endswith('.torrent'):
+                os.remove(filePath)
+                print ('%s is removed' %(filePath))
+            for movetype in fileTypes:
+                if filePath.endswith(movetype):
+                    fileOutPath=filePath.replace(movetype,'b.mp4')
+                    aaaa= ('c:/ffmpeg.exe -i "%s"  -vcodec h264 -ss %s -s %s "%s"'%(filePath,startTime,reslution,fileOutPath)).encode('gbk')
+                    print aaaa
+                    pps=os.popen(aaaa).read()
+                    for abc in pps:
+                        print abc
+                    print (fileOutPath+"---------------------")
+#ss=subprocess.Popen(['c:/ffmpeg.exe','-i', 'C:/testfff/capture-1.avi',  '-vcodec', 'h264', 'C:/testfff/test.mp4'],stdout=subprocess.PIPE)
+convertMM(r'C:\testfff',['.avi','.mp4'],'0','960*540')
