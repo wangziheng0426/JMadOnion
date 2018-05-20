@@ -11,6 +11,10 @@ from PySide2 import QtCore, QtGui,QtWidgets
 import sys
 import maya.cmds as cmds
 import maya.mel as mel
+import maya.OpenMayaUI as omui 
+from shiboken2 import wrapInstance
+mayaMainWindowPtr = omui.MQtUtil.mainWindow()
+mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)  
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -144,10 +148,14 @@ class Ui_J_2DTransfer(object):
 class J_mainWin(QtWidgets.QMainWindow):
     def __init__(self):
         super(J_mainWin, self).__init__()
+        self.setParent(mayaMainWindow)        
+        self.setWindowFlags(QtCore.Qt.Window) 
         self.J_mainWindow = Ui_J_2DTransfer()
         self.J_mainWindow.setupUi(self)
         self.J_mainWindow.comboBox_cam.addItems(cmds.ls(type='camera'))
         self.J_mW()
+        self.listView_projectObjs.setObjectName(_fromUtf8("listView_projectObjs"))
+        
     
     def J_getFileOutPutPath(self):
         self.J_mainWindow.lineEdit_filePath.setText(cmds.fileDialog2(fileMode=2)[0])
@@ -177,7 +185,12 @@ class J_mainWin(QtWidgets.QMainWindow):
         mel.eval('BatchRender')
         cmds.setAttr('defaultResolution.width',J_renderWidth)
         cmds.setAttr('defaultResolution.height',J_renderHeight)
-    
+    def runScriptJob()
+        num=cmds.scriptJob( e=['SelectionChanged','print cmds.ls(sl=True)'])
+        cmds.scriptJob( kill=num, force=True)
+        print cmds.scriptJob(le=True)
+        if omui.MQtUtil.findWindow('J_2DTransfer'):
+            print 'window exist'    
     
     
     
