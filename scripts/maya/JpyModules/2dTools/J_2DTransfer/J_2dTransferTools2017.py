@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'J_2DTransfer.ui'
 #
 # Created: Mon Apr 23 10:40:45 2018
@@ -154,7 +153,7 @@ class J_mainWin(QtWidgets.QMainWindow):
         self.J_mainWindow.setupUi(self)
         self.J_mainWindow.comboBox_cam.addItems(cmds.ls(type='camera'))
         self.J_mW()
-        self.listView_projectObjs.setObjectName(_fromUtf8("listView_projectObjs"))
+        #self.listView_projectObjs.setObjectName(_fromUtf8("listView_projectObjs"))
         
     
     def J_getFileOutPutPath(self):
@@ -185,11 +184,13 @@ class J_mainWin(QtWidgets.QMainWindow):
         mel.eval('BatchRender')
         cmds.setAttr('defaultResolution.width',J_renderWidth)
         cmds.setAttr('defaultResolution.height',J_renderHeight)
-    def runScriptJob()
+    def runScriptJob(self):
         num=cmds.scriptJob( e=['SelectionChanged','print cmds.ls(sl=True)'])
-        cmds.scriptJob( kill=num, force=True)
+        #cmds.scriptJob(uid=['J_2DTransfer',('cmds.scriptJob( kill=%s, force=True)'%str(num))])
+        cmds.scriptJob(uid=['J_2DTransfer','print "job killed"'])
+        #cmds.scriptJob( kill=num, force=True)
         print cmds.scriptJob(le=True)
-        if omui.MQtUtil.findWindow('J_2DTransfer'):
+        if omui.MQtUtil.findWindow('J_2DTransfer',):
             print 'window exist'    
     
     
@@ -208,3 +209,4 @@ if   __name__=='__main__':
     ######直接运行时需要修改编码#######
     run = J_mainWin()
     run.show()
+    run.runScriptJob()
