@@ -31,7 +31,7 @@ def J_getDependFiles():
                     fileCount[(filetypes[J_parm.eval().split('.')[-1].lower()] + 'Missing')]=\
                         fileCount[(filetypes[J_parm.eval().split('.')[-1].lower()]+'Missing')]+1
                 # 存储路径
-                temp['path']='/'.join(J_parm.eval().replace('\\','/').split('/')[0:-1])
+                temp['path']='/'.join(J_parm.eval().replace('\\','/').split('/')[0:-1]).replace(hou.hscriptExpandString('$hip'),'$hip')
                 # 文件名
                 temp['filename']=J_parm.eval().split('/')[-1]
                 # 检测文件是否为序列
@@ -62,32 +62,36 @@ def J_getSetting():
     settings['framesrangeconfig']['startFrame'] = 0           #无用参数便于前台调用
     settings['framesrangeconfig']['endFrame'] = 1             #无用参数便于前台调用
     settings['framesoffset'] = 1                                #无用参数便于前台调用
-    settings['driver'] = []
+    houdiniHip=hou.hscriptExpandString('$hip')
     # 定义读取节点类型和对应参数
     outType={'hq_sim':{},'arnold':{},'ifd':{}}
     outType['hq_sim']={'slice_type':'slice_type','slicediv1':'slicediv1','slicediv2':'slicediv2',\
         'slicediv3':'slicediv3','num_slices':'particle_Slices','hq_driver':'outPutCache'}
     outType['ifd'] = {'f1':'startframe','f2':'stopframe','f3':'subframe', 'vm_picture':'output'}
     # 定义读取节点类型和对应参数
-    for nodeToEval in hou.node('/out').allSubChildren():
-        if nodeToEval.type().name() in outType:
-            tempDirver={}
-            tempDirver["driver_name"]=nodeToEval.name()
-            tempDirver["driver_type"]=nodeToEval.type().name()
-            for paramOfNode in outType[nodeToEval.type().name()]:
-                if paramOfNode=='hq_driver':
-                    # 临时读取缓存路径方法
-                    driverNodePath=nodeToEval.parm(paramOfNode).eval()
-                    driverNode=hou.node(driverNodePath)
-                    temp = driverNode.parm('sopoutput').eval().split('.')
-                    tempDirver[outType[nodeToEval.type().name()][paramOfNode]]= ('.'.join(temp[0:-3])+'.#.bgeo.sc')
-                    # 临时读取缓存路径方法
-                elif paramOfNode=='vm_picture':
-                    temp=nodeToEval.parm(paramOfNode).eval().split('.')
-                    tempDirver[outType[nodeToEval.type().name()][paramOfNode]]='.'.join(temp[0:-2])+'.$F4.'+temp[-1]
-                else:
-                    tempDirver[outType[nodeToEval.type().name()][paramOfNode]] = nodeToEval.parm(paramOfNode).eval()
-            settings['driver'].append(tempDirver)
+    for driverType in outType:
+        settings[driverType]=[]
+        for nodeToEval in hou.node('/out').allSubChildren():
+            if nodeToEval.type().name()==driverType:
+                tempDirver={}
+                tempDirver["driver_name"]=nodeToEval.path()
+                tempDirver["driver_type"]=nodeToEval.type().name()
+
+                for paramOfNode in outType[nodeToEval.type().name()]:
+                    if paramOfNode=='hq_driver':
+                        # 临时读取缓存路径方法
+                        driverNodePath=nodeToEval.parm(paramOfNode).eval()
+                        driverNode=hou.node(driverNodePath)
+                        temp = driverNode.parm('sopoutput').eval().split('.')
+                        tempDirver[outType[nodeToEval.type().name()][paramOfNode]]= ('.'.join(temp[0:-3])+'.#.bgeo.sc').replace(houdiniHip,'$hip')
+                        # 临时读取缓存路径方法
+                    elif paramOfNode=='vm_picture':
+                        temp=nodeToEval.parm(paramOfNode).eval().split('.')
+                        tempDirver[outType[nodeToEval.type().name()][paramOfNode]]=('.'.join(temp[0:-2])+'.$F4.'+temp[-1]).replace(houdiniHip,'$hip')
+                    else:
+                        tempDirver[outType[nodeToEval.type().name()][paramOfNode]] = nodeToEval.parm(paramOfNode).eval()
+
+                settings[driverType].append(tempDirver)
     return settings
 def J_runAnalysis(hanalysisPath,houHipFile):
     if os.path.exists(houHipFile):
@@ -115,4 +119,4 @@ def J_runAnalysis(hanalysisPath,houHipFile):
         settingfile.close()
         return 'success'
     else :return 'file not found'
-J_runAnalysis('E:/testFile/houdiniRun/fx','E:/testFile/houdiniRun/fx/ccc.hip')
+J_runAnalysis('E:/testFile/houdiniRun/fx','E:/testFile/houdiniRun/fx/cccd.hip')
