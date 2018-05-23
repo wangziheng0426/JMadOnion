@@ -8,29 +8,54 @@
 #  History:  
 
 import os
-
+import string
 ## @param jKey 源字符
 ## @param jNewKey 替换字符
 ## @param jpPath 根目录路径
 def J_renameFileWithStr(jKey, jNewKey, jpPath):
     allch = os.listdir(jpPath)
+
     for item in allch:
         if (os.path.isfile(jpPath + "/" + item)):
-              if item.lower().find(jKey) > -1 and not item == jKey:
-                newName = item.lower().replace(jKey, jNewKey)
+            if item.find(jKey) > -1 and not item == jKey:
+                newName = item.replace(jKey, jNewKey)
                 try:
                     os.rename(jpPath + '/' + item, jpPath + '/' + newName)
                     print  (item+"-->"+ newName)
                 except:
-                    print item.decode('gbk')
+                    print item
         elif (os.path.isdir(jpPath + '/' + item)):
             if (len(os.listdir(jpPath + '/' + item)) > 0):
                 J_renameFileWithStr(jKey, jNewKey, jpPath + '/' + item)
-            if item.lower().find(jKey) > -1 and not item == jKey:
-                newName = item.lower().replace(jKey, jNewKey)
+            if item.find(jKey) > -1 and not item == jKey:
+                newName = item.replace(jKey, jNewKey)
                 try:
                     os.rename(jpPath + '/' + item, jpPath + '/' + newName)
                     print  (item+"-->"+ newName)
                 except:
-                    print item.decode('gbk')
+                    print item
+######################################################################################
+def J_renameFileWithParFolder(jpPath):
+    jpPath=jpPath.replace('\\','/')
+    allch = os.listdir(jpPath)
+    count=0
+    for item in allch:
+        if (os.path.isfile(jpPath + "/" + item)):
+            newName = jpPath.split('/')[-1]+'_x'+str(count)+'.'+item.split('.')[-1]
+            print newName
+            count+=1
+            try:
+                os.rename(jpPath + '/' + item, jpPath + '/' + newName)
+                print  (item+"-->"+ newName)
+            except:
+                print item
+        elif (os.path.isdir(jpPath + '/' + item)):
+            if (len(os.listdir(jpPath + '/' + item)) > 0):
+                J_renameFileWithParFolder(jpPath + '/' + item)
 
+###################################################################################
+j1='heydouga-'.decode('utf-8')
+j2='heydouga '.decode('utf-8')
+j3=r'H:\J2\heydouga'.decode('utf-8')
+#J_renameFileWithStr(j1, j2,j3)
+J_renameFileWithParFolder(j3)

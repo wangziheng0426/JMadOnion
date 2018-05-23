@@ -1,0 +1,28 @@
+#-*- coding:utf-8*-
+import os
+import subprocess
+def convertMM(inPath,fileTypes,startTime='0',reslution='960*540',crf='18',codeMode='hevc'):
+    inPath=inPath.decode('utf-8')
+    for item in os.walk(inPath):
+        print '-------------------'
+        print item[0]
+        writeFile=open((item[0]+'/run.bat'),'w')
+        stringToWrite=''
+        for items in item[2]:
+            filePath='\\'.join((item[0],items)).replace('\\','/')
+            if filePath.endswith('.torrent'):
+                os.remove(filePath)
+            for movetype in fileTypes:
+                if filePath.endswith(movetype):
+                    fileOutPath=filePath.replace(movetype,'_bxx.mp4')
+                    print 'file start %s' %filePath
+                    aaaa= ('c:/ffmpeg.exe -i "%s" -ss %s -s %s -crf %s -c:v %s -y "%s"'%(filePath,startTime,reslution,crf,codeMode,fileOutPath)).encode('gbk')
+                    stringToWrite+=aaaa
+                    stringToWrite+='\n'
+                    #pps=os.popen(aaaa).read()
+                    print 'file finished %s' %fileOutPath
+        writeFile.write(stringToWrite)
+        writeFile.close()
+#convertMM(r'D:\临时文件\ys\000',['.avi','.mp4','wmv'],'500','1920*1080',18,'hevc')
+convertMM(r'G:\J1\H4610エッチな 4610\h4610_ori1626高江 裕奈',['.avi','.mp4','wmv'],'00:13:33','960*540',20,'hevc')
+#os.popen('shutdown -f -s -t 200')
