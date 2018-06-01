@@ -12,8 +12,9 @@ import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMayaUI as omui 
 from shiboken2 import wrapInstance
-mayaMainWindowPtr = omui.MQtUtil.mainWindow()
-mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)  
+def maya_main_window():
+    mayaMainWindowPtr = omui.MQtUtil.mainWindow()
+    return wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)  
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -145,16 +146,17 @@ class Ui_J_2DTransfer(object):
 #########################################start up
 
 class J_mainWin(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(J_mainWin, self).__init__()
-        self.setParent(mayaMainWindow)        
-        self.setWindowFlags(QtCore.Qt.Window) 
+    def __init__(self,parent=maya_main_window()):
+        if omui.MQtUtil.findWindow('J_2DTransfer'):
+            cmds.deleteUI('J_2DTransfer')
+        self.scriptJobNum=10000
+        super(J_mainWin, self).__init__(parent)
+        self.setWindowFlags(QtCore.Qt.Window)
         self.J_mainWindow = Ui_J_2DTransfer()
         self.J_mainWindow.setupUi(self)
         self.J_mainWindow.comboBox_cam.addItems(cmds.ls(type='camera'))
         self.J_mW()
-        #self.listView_projectObjs.setObjectName(_fromUtf8("listView_projectObjs"))
-        
+        self.runScriptJob()
     
     def J_getFileOutPutPath(self):
         self.J_mainWindow.lineEdit_filePath.setText(cmds.fileDialog2(fileMode=2)[0])
@@ -163,6 +165,11 @@ class J_mainWin(QtWidgets.QMainWindow):
     def J_mW(self):
         self.J_mainWindow.pushButton_setPath.clicked.connect(self.J_getFileOutPutPath)
         self.J_mainWindow.pushButton_render2Soft.clicked.connect(self.J_renderOut)
+        model = QtGui.QStandardItemModel()
+        mmm=['aaa','bbb','cccc']
+        self.J_mainWindow.listView_projectObjs.setModel(model)
+        for ii in mmm:
+            
     
     def J_renderOut(self):
         J_renderWidth=cmds.getAttr('defaultResolution.width')
@@ -185,16 +192,18 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.setAttr('defaultResolution.width',J_renderWidth)
         cmds.setAttr('defaultResolution.height',J_renderHeight)
     def runScriptJob(self):
-        num=cmds.scriptJob( e=['SelectionChanged','print cmds.ls(sl=True)'])
+        self.scriptJobNum=cmds.scriptJob( e=['SelectionChanged','print cmds.ls(sl=True)'],parent='J_2DTransfer')
         #cmds.scriptJob(uid=['J_2DTransfer',('cmds.scriptJob( kill=%s, force=True)'%str(num))])
-        cmds.scriptJob(uid=['J_2DTransfer','print "job killed"'])
+        #cmds.scriptJob(uid=['J_2DTransfer','print "job killed"'])
         #cmds.scriptJob( kill=num, force=True)
         print cmds.scriptJob(le=True)
         if omui.MQtUtil.findWindow('J_2DTransfer',):
             print 'window exist'    
-    
-    
-    
+            
+    def closeEvent( self, event ):
+        # Kill the ScriptJob prior to closing the dialog.
+        cmds.scriptJob( kill=self.scriptJobNum, force=True )
+        super( J_mainWin, self ).closeEvent( event )
 if   __name__=='__main__':
     ######直接运行时需要修改编码#######
     reload(sys)
@@ -209,4 +218,3 @@ if   __name__=='__main__':
     ######直接运行时需要修改编码#######
     run = J_mainWin()
     run.show()
-    run.runScriptJob()
