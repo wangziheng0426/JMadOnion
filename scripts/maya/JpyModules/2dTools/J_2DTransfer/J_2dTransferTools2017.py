@@ -12,8 +12,9 @@ import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMayaUI as omui 
 from shiboken2 import wrapInstance
-mayaMainWindowPtr = omui.MQtUtil.mainWindow()
-mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)  
+def maya_main_window():
+    mayaMainWindowPtr = omui.MQtUtil.mainWindow()
+    return wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)  
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -31,7 +32,7 @@ except AttributeError:
 class Ui_J_2DTransfer(object):
     def setupUi(self, J_2DTransfer):
         J_2DTransfer.setObjectName(_fromUtf8("J_2DTransfer"))
-        J_2DTransfer.resize(449, 567)
+        J_2DTransfer.resize(450, 560)
         self.centralwidget = QtWidgets.QWidget(J_2DTransfer)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.line = QtWidgets.QFrame(self.centralwidget)
@@ -86,9 +87,18 @@ class Ui_J_2DTransfer(object):
         self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_2.setObjectName(_fromUtf8("line_2"))
+        
         self.listView_projectObjs = QtWidgets.QListView(self.centralwidget)
-        self.listView_projectObjs.setGeometry(QtCore.QRect(10, 260, 421, 211))
+        self.listView_projectObjs.setGeometry(QtCore.QRect(10, 260, 200, 210))
         self.listView_projectObjs.setObjectName(_fromUtf8("listView_projectObjs"))
+        self.listView_projectObjs.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        self.listView_projectObjs.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        
+        self.listView_mat = QtWidgets.QListView(self.centralwidget)
+        self.listView_mat.setGeometry(QtCore.QRect(230, 260, 200, 210))
+        self.listView_mat.setObjectName(_fromUtf8("listView_mat"))
+        self.listView_mat.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        
         self.label_M = QtWidgets.QLabel(self.centralwidget)
         self.label_M.setGeometry(QtCore.QRect(10, 240, 241, 21))
         self.label_M.setObjectName(_fromUtf8("label_M"))
@@ -145,16 +155,22 @@ class Ui_J_2DTransfer(object):
 #########################################start up
 
 class J_mainWin(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(J_mainWin, self).__init__()
-        self.setParent(mayaMainWindow)        
-        self.setWindowFlags(QtCore.Qt.Window) 
+    def __init__(self,parent=maya_main_window()):
+        if omui.MQtUtil.findWindow('J_2DTransfer'):
+            cmds.deleteUI('J_2DTransfer')
+        #监控选择脚本
+        self.scriptJobNum0=10000
+        self.scriptJobNum1=10000
+        #监控选择脚本
+        super(J_mainWin, self).__init__(parent)
+        self.setWindowFlags(QtCore.Qt.Window)
         self.J_mainWindow = Ui_J_2DTransfer()
         self.J_mainWindow.setupUi(self)
         self.J_mainWindow.comboBox_cam.addItems(cmds.ls(type='camera'))
+        self.addModelItemToList()
+        self.addMatItemToList()
         self.J_mW()
-        #self.listView_projectObjs.setObjectName(_fromUtf8("listView_projectObjs"))
-        
+        self.runScriptJob()
     
     def J_getFileOutPutPath(self):
         self.J_mainWindow.lineEdit_filePath.setText(cmds.fileDialog2(fileMode=2)[0])
@@ -163,7 +179,17 @@ class J_mainWin(QtWidgets.QMainWindow):
     def J_mW(self):
         self.J_mainWindow.pushButton_setPath.clicked.connect(self.J_getFileOutPutPath)
         self.J_mainWindow.pushButton_render2Soft.clicked.connect(self.J_renderOut)
-    
+        #self.J_mainWindow.pushButton_addModel.clicked.connect(self.addItemToList)
+        #模型列表
+        self.J_mainWindow.listView_projectObjs.clicked.connect(self.listViewSelectGeom)
+    def listViewSelectGeom(self):
+        res=[]
+        selectedItem=self.J_mainWindow.listView_projectObjs.model()
+        selectedIndexs=self.J_mainWindow.listView_projectObjs.selectedIndexes()
+        for ooo in selectedIndexs:
+            res.append( selectedItem.itemFromIndex(ooo).text())
+        print res
+        return res
     def J_renderOut(self):
         J_renderWidth=cmds.getAttr('defaultResolution.width')
         J_renderHeight=cmds.getAttr('defaultResolution.height')
@@ -175,7 +201,7 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.setAttr("defaultRenderGlobals.endFrame",J_endFrame)
         
         resSetting=((self.J_mainWindow.comboBox_quality.currentIndex()+1.0)/4.0)
-        
+ 
         cmds.setAttr('defaultResolution.width',(J_renderWidth*resSetting))
         cmds.setAttr('defaultResolution.height',(J_renderHeight*resSetting))
         renderPath=self.J_mainWindow.lineEdit_filePath.text()
@@ -185,16 +211,125 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.setAttr('defaultResolution.width',J_renderWidth)
         cmds.setAttr('defaultResolution.height',J_renderHeight)
     def runScriptJob(self):
-        num=cmds.scriptJob( e=['SelectionChanged','print cmds.ls(sl=True)'])
-        #cmds.scriptJob(uid=['J_2DTransfer',('cmds.scriptJob( kill=%s, force=True)'%str(num))])
-        cmds.scriptJob(uid=['J_2DTransfer','print "job killed"'])
-        #cmds.scriptJob( kill=num, force=True)
-        print cmds.scriptJob(le=True)
-        if omui.MQtUtil.findWindow('J_2DTransfer',):
-            print 'window exist'    
-    
-    
-    
+        scriptText=str(self)+".addItemToList()"
+        #print scriptText
+        self.scriptJobNum0=cmds.scriptJob( e=['SelectionChanged','run.addModelItemToList()'],parent='J_2DTransfer')
+        self.scriptJobNum1=cmds.scriptJob( e=['SelectionChanged','run.addMatItemToList()'],parent='J_2DTransfer')
+    def addModelItemToList(self):
+        model = QtGui.QStandardItemModel()
+        temp=cmds.ls(sl=True)
+        if len(temp)==0:
+            temp0=cmds.ls(type='mesh')
+            for ii in temp0:
+                temp.append(cmds.listRelatives(ii,parent=True)[0])
+        self.J_mainWindow.listView_projectObjs.setModel(model)
+        for i in temp:
+            item = QtGui.QStandardItem(i)
+            model.appendRow(item)
+            
+    def addMatItemToList(self):
+        model = QtGui.QStandardItemModel()
+        temp=cmds.ls(mat=True)
+        self.J_mainWindow.listView_mat.setModel(model)
+        for i in temp:
+            item = QtGui.QStandardItem(i)
+            model.appendRow(item)
+#############
+    def createProjNodes(nodeName,nodeType,asShader,asTexture,asUtility,isColorManaged):
+        count=0
+        while cmds.objExists(nodeName+str(count)):
+            count+=1
+        temp= cmds.shadingNode(nodeType,asShader=asShader,asTexture=asTexture,asUtility=asUtility,isColorManaged=isColorManaged,n=(nodeName+str(count)))
+        cmds.addAttr(temp, longName='J_shadingNetwork', dataType='string' )
+        return temp
+    def createShaderNetworks(message=''):
+        projectNode=createProjNodes('proj','projection',False,True,False,False)
+        cmds.setAttr( projectNode+'.J_shadingNetwork',message,type='string')#######################################################
+        cmds.setAttr( projectNode+'.projType',8)
+        seqFileNode=createProjNodes('seqTex','file',False,True,False,True)
+        cmds.setAttr( seqFileNode+'.J_shadingNetwork',message,type='string')#######################################################
+        utilityNode=createProjNodes('proj3dut','place3dTexture',False,False,True,False)
+        cmds.setAttr( utilityNode+'.J_shadingNetwork',message,type='string')#######################################################
+
+        cmds.connectAttr(utilityNode+'.wim[0]',projectNode+'.pm')
+
+        cmds.connectAttr(seqFileNode+'.outColor',projectNode+'.image')
+
+        utility2DNode=createProjNodes('proj2dut','place2dTexture',False,False,True,False)
+        cmds.setAttr( utility2DNode+'.J_shadingNetwork',message,type='string')#######################################################
+        cmds.connectAttr(utility2DNode+'.coverage',seqFileNode+'.coverage')
+        cmds.connectAttr(utility2DNode+'.translateFrame',seqFileNode+'.translateFrame')
+        cmds.connectAttr(utility2DNode+'.rotateFrame',seqFileNode+'.rotateFrame')
+        cmds.connectAttr(utility2DNode+'.mirrorU',seqFileNode+'.mirrorU')
+        cmds.connectAttr(utility2DNode+'.mirrorV',seqFileNode+'.mirrorV')
+        cmds.connectAttr(utility2DNode+'.stagger',seqFileNode+'.stagger')
+        cmds.connectAttr(utility2DNode+'.wrapU',seqFileNode+'.wrapU')
+        cmds.connectAttr(utility2DNode+'.wrapV',seqFileNode+'.wrapV')
+        cmds.connectAttr(utility2DNode+'.repeatUV',seqFileNode+'.repeatUV')
+        cmds.connectAttr(utility2DNode+'.offset',seqFileNode+'.offset')
+        cmds.connectAttr(utility2DNode+'.rotateUV',seqFileNode+'.rotateUV')
+        cmds.connectAttr(utility2DNode+'.noiseUV',seqFileNode+'.noiseUV')
+        cmds.connectAttr(utility2DNode+'.vertexUvOne',seqFileNode+'.vertexUvOne')
+        cmds.connectAttr(utility2DNode+'.vertexUvTwo',seqFileNode+'.vertexUvTwo')
+        cmds.connectAttr(utility2DNode+'.vertexUvThree',seqFileNode+'.vertexUvThree')
+        cmds.connectAttr(utility2DNode+'.vertexCameraOne',seqFileNode+'.vertexCameraOne')
+        cmds.connectAttr(utility2DNode+'.outUV',seqFileNode+'.uv')
+        cmds.connectAttr(utility2DNode+'.outUvFilterSize',seqFileNode+'.uvFilterSize')
+
+        fileNodeBase=createProjNodes('baseTex','file',False,True,False,True)
+        cmds.setAttr( fileNodeBase+'.J_shadingNetwork',message,type='string')#######################################################
+        utility2DNodeBase=createProjNodes('base2dut','place2dTexture',False,False,True,False)
+        cmds.setAttr( utility2DNodeBase+'.J_shadingNetwork',message,type='string')#######################################################
+
+        cmds.connectAttr(utility2DNodeBase+'.coverage',fileNodeBase+'.coverage')
+        cmds.connectAttr(utility2DNodeBase+'.translateFrame',fileNodeBase+'.translateFrame')
+        cmds.connectAttr(utility2DNodeBase+'.rotateFrame',fileNodeBase+'.rotateFrame')
+        cmds.connectAttr(utility2DNodeBase+'.mirrorU',fileNodeBase+'.mirrorU')
+        cmds.connectAttr(utility2DNodeBase+'.mirrorV',fileNodeBase+'.mirrorV')
+        cmds.connectAttr(utility2DNodeBase+'.stagger',fileNodeBase+'.stagger')
+        cmds.connectAttr(utility2DNodeBase+'.wrapU',fileNodeBase+'.wrapU')
+        cmds.connectAttr(utility2DNodeBase+'.wrapV',fileNodeBase+'.wrapV')
+        cmds.connectAttr(utility2DNodeBase+'.repeatUV',fileNodeBase+'.repeatUV')
+        cmds.connectAttr(utility2DNodeBase+'.offset',fileNodeBase+'.offset')
+        cmds.connectAttr(utility2DNodeBase+'.rotateUV',fileNodeBase+'.rotateUV')
+        cmds.connectAttr(utility2DNodeBase+'.noiseUV',fileNodeBase+'.noiseUV')
+        cmds.connectAttr(utility2DNodeBase+'.vertexUvOne',fileNodeBase+'.vertexUvOne')
+        cmds.connectAttr(utility2DNodeBase+'.vertexUvTwo',fileNodeBase+'.vertexUvTwo')
+        cmds.connectAttr(utility2DNodeBase+'.vertexUvThree',fileNodeBase+'.vertexUvThree')
+        cmds.connectAttr(utility2DNodeBase+'.vertexCameraOne',fileNodeBase+'.vertexCameraOne')
+        cmds.connectAttr(utility2DNodeBase+'.outUV',fileNodeBase+'.uv')
+        cmds.connectAttr(utility2DNodeBase+'.outUvFilterSize',fileNodeBase+'.uvFilterSize')
+        '''
+        rampBlendNode=createProjNodes('rampBlend','ramp',False,True,False,False)
+        utility2DNodeRamp=createProjNodes('ramp2dut','place2dTexture',False,False,True,False)
+
+        cmds.connectAttr(utility2DNodeRamp+'.outUV',rampBlendNode+'.uv')
+        cmds.connectAttr(utility2DNodeRamp+'.outUvFilterSize',rampBlendNode+'.uvFilterSize')
+        '''
+
+        blendColorsNode=createProjNodes('blendColorsNode','blendColors',False,False,True,False)
+        cmds.setAttr( blendColorsNode+'.J_shadingNetwork',message,type='string')#######################################################
+        cmds.connectAttr(projectNode+'.outColor',blendColorsNode+'.color1')
+        cmds.connectAttr(fileNodeBase+'.outColor',blendColorsNode+'.color2')
+        cmds.connectAttr(seqFileNode+'.outAlpha',blendColorsNode+'.blender')
+
+        myShaderLambert=createProjNodes('mat','lambert',True,False,False,False)
+        cmds.setAttr( myShaderLambert+'.J_shadingNetwork',message,type='string')#######################################################
+        cmds.connectAttr(blendColorsNode+'.output',myShaderLambert+'.color')
+
+            
+            
+            
+            
+            
+            
+###############
+    def closeEvent( self, event ):
+        # Kill the ScriptJob prior to closing the dialog.
+        cmds.scriptJob( kill=self.scriptJobNum0, force=True )
+        cmds.scriptJob( kill=self.scriptJobNum1, force=True )
+        #有bug 目前不影响 super( J_mainWin, self).closeEvent( event )
+        
 if   __name__=='__main__':
     ######直接运行时需要修改编码#######
     reload(sys)
@@ -209,4 +344,3 @@ if   __name__=='__main__':
     ######直接运行时需要修改编码#######
     run = J_mainWin()
     run.show()
-    run.runScriptJob()

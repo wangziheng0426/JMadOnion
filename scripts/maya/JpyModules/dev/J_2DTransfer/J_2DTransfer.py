@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'J_2DTransfer.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Wed Jun 06 14:39:59 2018
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -25,7 +26,7 @@ except AttributeError:
 class Ui_J_2DTransfer(object):
     def setupUi(self, J_2DTransfer):
         J_2DTransfer.setObjectName(_fromUtf8("J_2DTransfer"))
-        J_2DTransfer.resize(449, 567)
+        J_2DTransfer.resize(442, 567)
         self.centralwidget = QtGui.QWidget(J_2DTransfer)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.line = QtGui.QFrame(self.centralwidget)
@@ -82,7 +83,10 @@ class Ui_J_2DTransfer(object):
         self.line_2.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_2.setObjectName(_fromUtf8("line_2"))
         self.listView_projectObjs = QtGui.QListView(self.centralwidget)
-        self.listView_projectObjs.setGeometry(QtCore.QRect(10, 260, 421, 211))
+        self.listView_projectObjs.setGeometry(QtCore.QRect(10, 260, 201, 211))
+        self.listView_projectObjs.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.listView_projectObjs.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+        self.listView_projectObjs.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         self.listView_projectObjs.setObjectName(_fromUtf8("listView_projectObjs"))
         self.label_M = QtGui.QLabel(self.centralwidget)
         self.label_M.setGeometry(QtCore.QRect(10, 240, 241, 21))
@@ -99,9 +103,12 @@ class Ui_J_2DTransfer(object):
         self.pushButton_replaceMet = QtGui.QPushButton(self.centralwidget)
         self.pushButton_replaceMet.setGeometry(QtCore.QRect(340, 480, 91, 23))
         self.pushButton_replaceMet.setObjectName(_fromUtf8("pushButton_replaceMet"))
+        self.listView_mat = QtGui.QListView(self.centralwidget)
+        self.listView_mat.setGeometry(QtCore.QRect(230, 260, 201, 211))
+        self.listView_mat.setObjectName(_fromUtf8("listView_mat"))
         J_2DTransfer.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(J_2DTransfer)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 449, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 442, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         J_2DTransfer.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(J_2DTransfer)

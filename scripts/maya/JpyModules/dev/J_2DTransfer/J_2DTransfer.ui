@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>449</width>
+    <width>442</width>
     <height>567</height>
    </rect>
   </property>
@@ -218,9 +218,18 @@
      <rect>
       <x>10</x>
       <y>260</y>
-      <width>421</width>
+      <width>201</width>
       <height>211</height>
      </rect>
+    </property>
+    <property name="editTriggers">
+     <set>QAbstractItemView::NoEditTriggers</set>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::MultiSelection</enum>
+    </property>
+    <property name="selectionBehavior">
+     <enum>QAbstractItemView::SelectItems</enum>
     </property>
    </widget>
    <widget class="QLabel" name="label_M">
@@ -288,13 +297,23 @@
      <string>替换投射材质</string>
     </property>
    </widget>
+   <widget class="QListView" name="listView_mat">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>260</y>
+      <width>201</width>
+      <height>211</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>449</width>
+     <width>442</width>
      <height>23</height>
     </rect>
    </property>
