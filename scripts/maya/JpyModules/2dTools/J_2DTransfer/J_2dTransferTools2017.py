@@ -87,18 +87,18 @@ class Ui_J_2DTransfer(object):
         self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_2.setObjectName(_fromUtf8("line_2"))
-        
+        ##########################################################
         self.listView_projectObjs = QtWidgets.QListView(self.centralwidget)
         self.listView_projectObjs.setGeometry(QtCore.QRect(10, 260, 200, 210))
         self.listView_projectObjs.setObjectName(_fromUtf8("listView_projectObjs"))
         self.listView_projectObjs.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
         self.listView_projectObjs.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        
+        ##########################################################
         self.listView_mat = QtWidgets.QListView(self.centralwidget)
         self.listView_mat.setGeometry(QtCore.QRect(230, 260, 200, 210))
         self.listView_mat.setObjectName(_fromUtf8("listView_mat"))
         self.listView_mat.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        
+        ##########################################################
         self.label_M = QtWidgets.QLabel(self.centralwidget)
         self.label_M.setGeometry(QtCore.QRect(10, 240, 241, 21))
         self.label_M.setObjectName(_fromUtf8("label_M"))
@@ -179,16 +179,16 @@ class J_mainWin(QtWidgets.QMainWindow):
     def J_mW(self):
         self.J_mainWindow.pushButton_setPath.clicked.connect(self.J_getFileOutPutPath)
         self.J_mainWindow.pushButton_render2Soft.clicked.connect(self.J_renderOut)
+        self.J_mainWindow.pushButton_addModel.clicked.connect(self.createShaderNetworks)
         #self.J_mainWindow.pushButton_addModel.clicked.connect(self.addItemToList)
         #模型列表
-        self.J_mainWindow.listView_projectObjs.clicked.connect(self.listViewSelectGeom)
+        self.J_mainWindow.listView_mat.doubleClicked.connect(self.listViewSelectGeom)
     def listViewSelectGeom(self):
         res=[]
         selectedItem=self.J_mainWindow.listView_projectObjs.model()
         selectedIndexs=self.J_mainWindow.listView_projectObjs.selectedIndexes()
         for ooo in selectedIndexs:
             res.append( selectedItem.itemFromIndex(ooo).text())
-        print res
         return res
     def J_renderOut(self):
         J_renderWidth=cmds.getAttr('defaultResolution.width')
@@ -213,8 +213,8 @@ class J_mainWin(QtWidgets.QMainWindow):
     def runScriptJob(self):
         scriptText=str(self)+".addItemToList()"
         #print scriptText
-        self.scriptJobNum0=cmds.scriptJob( e=['SelectionChanged','run.addModelItemToList()'],parent='J_2DTransfer')
-        self.scriptJobNum1=cmds.scriptJob( e=['SelectionChanged','run.addMatItemToList()'],parent='J_2DTransfer')
+        self.scriptJobNum0=cmds.scriptJob( e=['SelectionChanged','J_2DTransferIns.addModelItemToList()'],parent='J_2DTransfer')
+        self.scriptJobNum1=cmds.scriptJob( e=['SelectionChanged','J_2DTransferIns.addMatItemToList()'],parent='J_2DTransfer')
     def addModelItemToList(self):
         model = QtGui.QStandardItemModel()
         temp=cmds.ls(sl=True)
@@ -235,27 +235,37 @@ class J_mainWin(QtWidgets.QMainWindow):
             item = QtGui.QStandardItem(i)
             model.appendRow(item)
 #############
-    def createProjNodes(nodeName,nodeType,asShader,asTexture,asUtility,isColorManaged):
+    def createProjNodes(self,nodeName,nodeType,asShader,asTexture,asUtility,isColorManaged):
         count=0
         while cmds.objExists(nodeName+str(count)):
             count+=1
         temp= cmds.shadingNode(nodeType,asShader=asShader,asTexture=asTexture,asUtility=asUtility,isColorManaged=isColorManaged,n=(nodeName+str(count)))
         cmds.addAttr(temp, longName='J_shadingNetwork', dataType='string' )
         return temp
-    def createShaderNetworks(message=''):
-        projectNode=createProjNodes('proj','projection',False,True,False,False)
-        cmds.setAttr( projectNode+'.J_shadingNetwork',message,type='string')#######################################################
-        cmds.setAttr( projectNode+'.projType',8)
-        seqFileNode=createProjNodes('seqTex','file',False,True,False,True)
+    
+    def createShaderNetworks(self,message=''):
+        projectNode=self.createProjNodes('proj','projection',False,True,False,False)###投射节点
+        selectedCamera=self.J_mainWindow.comboBox_cam.currentText()###读摄像机
+        ####################
+        cmds.setAttr( projectNode+'.J_shadingNetwork',message,type='string')###设置标记#############################################
+        cmds.setAttr( projectNode+'.projType',8)##设置参数
+        cmds.connectAttr(selectedCamera+'.message',projectNode+'.linkedCamera')
+        seqFileNode=self.createProjNodes('seqTex','file',False,True,False,True)
         cmds.setAttr( seqFileNode+'.J_shadingNetwork',message,type='string')#######################################################
-        utilityNode=createProjNodes('proj3dut','place3dTexture',False,False,True,False)
+        utilityNode=self.createProjNodes('proj3dut','place3dTexture',False,False,True,False)###3d坐标
+        #####连接摄像机和投射节点
+        cameraTransformNode=cmds.listRelatives(selectedCamera,p=True)[0]
+        cmds.connectAttr(cameraTransformNode+'.translateX',utilityNode+'.translateX')####连接坐标和投射
+        cmds.connectAttr(cameraTransformNode+'.translateY',utilityNode+'.translateY')
+        cmds.connectAttr(cameraTransformNode+'.translateZ',utilityNode+'.translateZ')
+        cmds.connectAttr(cameraTransformNode+'.rotateX',utilityNode+'.rotateX')####连接坐标和投射
+        cmds.connectAttr(cameraTransformNode+'.rotateY',utilityNode+'.rotateY')
+        cmds.connectAttr(cameraTransformNode+'.rotateZ',utilityNode+'.rotateZ')
+        
         cmds.setAttr( utilityNode+'.J_shadingNetwork',message,type='string')#######################################################
-
-        cmds.connectAttr(utilityNode+'.wim[0]',projectNode+'.pm')
-
-        cmds.connectAttr(seqFileNode+'.outColor',projectNode+'.image')
-
-        utility2DNode=createProjNodes('proj2dut','place2dTexture',False,False,True,False)
+        cmds.connectAttr(utilityNode+'.wim[0]',projectNode+'.pm')####连接坐标和投射
+        cmds.connectAttr(seqFileNode+'.outColor',projectNode+'.image')        #################链接贴图
+        utility2DNode=self.createProjNodes('proj2dut','place2dTexture',False,False,True,False)###2d坐标
         cmds.setAttr( utility2DNode+'.J_shadingNetwork',message,type='string')#######################################################
         cmds.connectAttr(utility2DNode+'.coverage',seqFileNode+'.coverage')
         cmds.connectAttr(utility2DNode+'.translateFrame',seqFileNode+'.translateFrame')
@@ -275,12 +285,12 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.connectAttr(utility2DNode+'.vertexCameraOne',seqFileNode+'.vertexCameraOne')
         cmds.connectAttr(utility2DNode+'.outUV',seqFileNode+'.uv')
         cmds.connectAttr(utility2DNode+'.outUvFilterSize',seqFileNode+'.uvFilterSize')
-
-        fileNodeBase=createProjNodes('baseTex','file',False,True,False,True)
+        #############
+        fileNodeBase=self.createProjNodes('baseTex','file',False,True,False,True)###基础色贴图
         cmds.setAttr( fileNodeBase+'.J_shadingNetwork',message,type='string')#######################################################
-        utility2DNodeBase=createProjNodes('base2dut','place2dTexture',False,False,True,False)
+        utility2DNodeBase=self.createProjNodes('base2dut','place2dTexture',False,False,True,False)###基础色坐标
         cmds.setAttr( utility2DNodeBase+'.J_shadingNetwork',message,type='string')#######################################################
-
+        #############
         cmds.connectAttr(utility2DNodeBase+'.coverage',fileNodeBase+'.coverage')
         cmds.connectAttr(utility2DNodeBase+'.translateFrame',fileNodeBase+'.translateFrame')
         cmds.connectAttr(utility2DNodeBase+'.rotateFrame',fileNodeBase+'.rotateFrame')
@@ -299,30 +309,30 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.connectAttr(utility2DNodeBase+'.vertexCameraOne',fileNodeBase+'.vertexCameraOne')
         cmds.connectAttr(utility2DNodeBase+'.outUV',fileNodeBase+'.uv')
         cmds.connectAttr(utility2DNodeBase+'.outUvFilterSize',fileNodeBase+'.uvFilterSize')
-        '''
-        rampBlendNode=createProjNodes('rampBlend','ramp',False,True,False,False)
-        utility2DNodeRamp=createProjNodes('ramp2dut','place2dTexture',False,False,True,False)
-
-        cmds.connectAttr(utility2DNodeRamp+'.outUV',rampBlendNode+'.uv')
-        cmds.connectAttr(utility2DNodeRamp+'.outUvFilterSize',rampBlendNode+'.uvFilterSize')
-        '''
-
-        blendColorsNode=createProjNodes('blendColorsNode','blendColors',False,False,True,False)
-        cmds.setAttr( blendColorsNode+'.J_shadingNetwork',message,type='string')#######################################################
-        cmds.connectAttr(projectNode+'.outColor',blendColorsNode+'.color1')
-        cmds.connectAttr(fileNodeBase+'.outColor',blendColorsNode+'.color2')
-        cmds.connectAttr(seqFileNode+'.outAlpha',blendColorsNode+'.blender')
-
-        myShaderLambert=createProjNodes('mat','lambert',True,False,False,False)
+        ################################################################################
+        layerTexNode=self.createProjNodes('layerTexNode','layeredTexture',False,True,False,False)
+        cmds.connectAttr(projectNode+'.outAlpha',layerTexNode+'.inputs[0].alpha')
+        cmds.connectAttr(projectNode+'.outColor',layerTexNode+'.inputs[0].color')
+        cmds.connectAttr(fileNodeBase+'.outAlpha',layerTexNode+'.inputs[1].alpha')
+        cmds.connectAttr(fileNodeBase+'.outColor',layerTexNode+'.inputs[1].color')
+        ###############
+        myShaderLambert=self.createProjNodes('mat','lambert',True,False,False,False)
         cmds.setAttr( myShaderLambert+'.J_shadingNetwork',message,type='string')#######################################################
-        cmds.connectAttr(blendColorsNode+'.output',myShaderLambert+'.color')
-
-            
-            
-            
-            
-            
-            
+        cmds.connectAttr(layerTexNode+'.outColor',myShaderLambert+'.color')
+        print '---------------------------------'
+        self.assignMtlToGeom(myShaderLambert)
+        print '+++++++++++++++++++'
+    def assignMtlToGeom(self,mat):
+        selectedNode=self.listViewSelectGeom()
+        print selectedNode
+        for item in selectedNode:
+            print item
+            try:
+                cmds.select(item)
+                
+                cmds.hyperShade(assign=mat)
+            except:
+                print (item+'failed')
 ###############
     def closeEvent( self, event ):
         # Kill the ScriptJob prior to closing the dialog.
@@ -342,5 +352,5 @@ if   __name__=='__main__':
         def _translate(context, text, disambig):
             return (text).decode('gbk')
     ######直接运行时需要修改编码#######
-    run = J_mainWin()
-    run.show()
+    J_2DTransferIns = J_mainWin()
+    J_2DTransferIns.show()
