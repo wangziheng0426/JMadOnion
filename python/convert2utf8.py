@@ -44,8 +44,8 @@ def J_convertFile(J_sourceFile,J_destinationFile):
         print ('file copy' +J_destinationFile)
         
 ##设置输出路径 转换并输出文档
-J_madOnionPath=r'E:\JmadOnionGit'
-outPath=r'e:\madOnionHelp'
+J_madOnionPath=r'D:/Projects/JmadOnionGit'
+outPath=r'd:/madOnionHelp'
 J_convert2utf8(J_madOnionPath,outPath)
 doxygenPath=J_madOnionPath+r'\other\thirdParty\doxygen\doxygen.exe  '+outPath+r'\other\thirdParty\doxygen\madonion'
 doxygenConfigPathOrg=J_madOnionPath+r'\other\thirdParty\doxygen\madonionOrig'
