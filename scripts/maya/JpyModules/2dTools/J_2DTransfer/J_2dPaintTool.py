@@ -44,49 +44,48 @@ class J_2dPaintTool_UI(object):
         self.listView = QtWidgets.QListView(self.centralwidget)
         self.listView.setGeometry(QtCore.QRect(2, 42, 240, 250))
         self.listView.setObjectName(u"Layers")
+        self.listView.setEditTriggers(0)
         model = QtGui.QStandardItemModel()
         self.listView.setModel(model)
         
 
             
             
-    def closeEvent( self, event ):
-        pass
-        # Kill the ScriptJob prior to closing the dialog.
-        #cmds.scriptJob( kill=self.scriptJobNum0, force=True )
-        #cmds.scriptJob( kill=self.scriptJobNum1, force=True )
-        #有bug 目前不影响 super( J_mainWin, self).closeEvent( event )
+
         
 class J_mainWin(QtWidgets.QMainWindow):
     def __init__(self,parent=maya_main_window()):
         if omui.MQtUtil.findWindow(u'J_2dPaintTool'):
             cmds.deleteUI(u'J_2dPaintTool')
+        #pram
         self.layerCount=0
+        self.scriptJobNumber0=0
+        #pram
         super(J_mainWin, self).__init__(parent)
         self.setWindowFlags(QtCore.Qt.Window)
         self.J_mainWindow=J_2dPaintTool_UI()
         self.J_mainWindow.J_create2dPaintTool_UI(self)
         self.J_createSlots()#关联按钮
         self.J_mainWindow.comboBox_cam.addItems(cmds.ls(type='camera'))#给列表添加摄像机
+        self.scriptJobNumber0=self.scriptJobNum0=cmds.scriptJob( e=['SelectionChanged','J_2DTransferIns.J_changeState()'],parent='J_2dPaintTool')
         self.J_initListView()
         
     ####初始化列表
     def J_initListView(self):
         allTransformNodes=cmds.ls(type='transform')
         J_layers=[]
+        J_indexs=[]
         for item in allTransformNodes:
             if cmds.attributeQuery('J_layerManager',node=item,exists=True):
+                if cmds.getAttr(item+'.J_layerManager')!=item:
+                    cmds.setAttr((item+'.J_layerManager'),item,type='string')
                 if cmds.getAttr(item+'.J_layerManager') not in J_layers:
-                    J_layers.append(cmds.getAttr(item+'.J_layerManager'))
-        J_layerNumber=[]
-        for itemA in J_layers:
-            J_layerNumber.append(int(itemA.replace('J_layer','')))
-        addItems=sorted(J_layerNumber)
-        for itemB in addItems:
-            self.addMatItemToList('J_layer%d'%itemB)
-        model = self.J_mainWindow.listView.model()
-
-    ####初始化列表
+                    J_layers.append([cmds.getAttr(item+'.J_layerManagerIndex'),cmds.getAttr(item+'.J_layerManager')])
+        for itemB in sorted(J_layers):
+            self.J_addMatItemToList(itemB[1])
+        cmds.select(allTransformNodes)
+        
+            ####初始化列表
     def J_createLayer(self):
         ####创建平面
         self.layerCount+=1
@@ -97,8 +96,8 @@ class J_mainWin(QtWidgets.QMainWindow):
             J_itemListExistsText.append(model.item(irr).text())
         while  (('J_layer%s' % self.layerCount)  in J_itemListExistsText):
             self.layerCount+=1
-        self.addMatItemToList('J_layer%s' % self.layerCount)
-        polyPlaneNode=cmds.polyPlane(sx=1,sy=1,w=12,h=8)
+        self.J_addMatItemToList('J_layer%s' % self.layerCount)
+        polyPlaneNode=cmds.polyPlane(sx=1,sy=1,w=12,h=8,name=('J_layer%s' % self.layerCount))
         cmds.setAttr((polyPlaneNode[0]+'.rotateX'),90)
         cmds.setAttr((polyPlaneNode[0]+'.translateZ'),-10)
         cmds.makeIdentity( polyPlaneNode[0],apply=True, t=1, r=1, s=1, n=2 )
@@ -106,10 +105,12 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.setAttr((polyPlaneNode[0]+'.rotatePivot'),0, 0 ,0,type="double3")
         cmds.DeleteHistory()
         cmds.addAttr(polyPlaneNode[0], longName='J_layerManager', dataType='string' )
-        cmds.setAttr((polyPlaneNode[0]+'.J_layerManager'),'J_layer%d'%(self.layerCount),type='string')
+        cmds.setAttr(polyPlaneNode[0]+'.J_layerManager','J_layer%d'%(self.layerCount),type='string')
+        cmds.addAttr(polyPlaneNode[0], longName='J_layerManagerDisplay',attributeType='short',defaultValue=1,maxValue=1 )
+        cmds.addAttr(polyPlaneNode[0], longName='J_layerManagerIndex',attributeType='short',defaultValue=self.layerCount,maxValue=512 )
         ####创建平面
         ####加透明材质
-        myShaderLambert=self.createShaderNodes('J_layer%d'%(self.layerCount),'mat','lambert',True,False,False,False)
+        myShaderLambert=self.J_createShaderNodes('J_layer%d'%(self.layerCount),'mat','lambert',True,False,False,False)
         cmds.select(polyPlaneNode[0])
         cmds.hyperShade(assign=myShaderLambert)
         cmds.setAttr((myShaderLambert+'.transparency'),1,1,1,type="double3")
@@ -124,7 +125,7 @@ class J_mainWin(QtWidgets.QMainWindow):
             cmds.connectAttr(('%s%s'%(cameraTransform[0],item)), ('%s%s'%(polyPlaneNode[0],item) ))
         ####关联摄像机
     ######################创建材质###################################
-    def createShaderNodes(self,J_massage,nodeName,nodeType,asShader,asTexture,asUtility,isColorManaged):
+    def J_createShaderNodes(self,J_massage,nodeName,nodeType,asShader,asTexture,asUtility,isColorManaged):
         count=0
         while cmds.objExists(nodeName+str(count)):
             count+=1
@@ -134,17 +135,67 @@ class J_mainWin(QtWidgets.QMainWindow):
         return temp
     ######################创建材质###################################
     ####列表添加项目
-    def addMatItemToList(self,layerName):
+    def J_addMatItemToList(self,layerName):
         model = self.J_mainWindow.listView.model()
         item = QtGui.QStandardItem(layerName)
         item.setCheckable(True)
         item.setCheckState(QtCore.Qt.Checked)
         model.appendRow(item)
     ####列表添加项目
+    def J_changeState(self):
+        getSelection=cmds.ls(sl=True,type='transform')
+        model = self.J_mainWindow.listView.model()
+        for item in getSelection:
+            if cmds.attributeQuery('J_layerManager',node=item,exists=True):
+                getVisable=cmds.getAttr(item+'.visibility')
+                getListItem=model.findItems(item)
+                for itemInList in getListItem:
+                    if getVisable:
+                        itemInList.setCheckState(QtCore.Qt.CheckState.Checked)
+                    else:
+                        itemInList.setCheckState(QtCore.Qt.CheckState.Unchecked)
+    ####删除列表项
+    def J_deleteItemFromList(self):
+        model = self.J_mainWindow.listView.model()
+        modelIndexs = self.J_mainWindow.listView.selectedIndexes()
+        for item in modelIndexs:
+            objectName=model.itemFromIndex(item).text()
+            try:
+                cmds.delete(objectName)
+                model.removeRows(item.row(),1)
+            except:
+                print ('can not delete %s'%objectName)
+    ####隐藏层
+    
+    def J_hideShowLayer(self):
+        model = self.J_mainWindow.listView.model()
+        modelIndexs = self.J_mainWindow.listView.selectedIndexes()
+        for item in modelIndexs:
+            selectedItem=model.itemFromIndex(item)
+            if selectedItem.checkState()==QtCore.Qt.CheckState.Checked:
+                selectedItem.setCheckState(QtCore.Qt.CheckState.Unchecked)
+                try:
+                    cmds.setAttr(selectedItem.text()+'.visibility',False)
+                except:
+                    pass
+            else :
+                selectedItem.setCheckState(QtCore.Qt.CheckState.Checked)
+                try:
+                    cmds.setAttr(selectedItem.text()+'.visibility',True)
+                except:
+                    pass
     ####关联信号槽
     def J_createSlots(self):
         self.J_mainWindow.pushButton_addLayer.clicked.connect(self.J_createLayer)
+        self.J_mainWindow.pushButton_deleteLayer.clicked.connect(self.J_deleteItemFromList)
+        self.J_mainWindow.listView.doubleClicked.connect(self.J_hideShowLayer)
     ####关联信号槽
+    ####杀监控脚本
+    def closeEvent( self, event ):
+        cmds.scriptJob( kill=self.scriptJobNum0, force=True )
+    #cmds.scriptJob( kill=self.scriptJobNum1, force=True )
+    #有bug 目前不影响 super( J_mainWin, self).closeEvent( event )
+    ####杀监控脚本
 if   __name__=='__main__':
     ######直接运行时需要修改编码#######
     reload(sys)
