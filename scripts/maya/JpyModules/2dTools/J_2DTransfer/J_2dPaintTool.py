@@ -101,7 +101,7 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.setAttr((polyPlaneNode[0]+'.rotateX'),90)
         cmds.setAttr((polyPlaneNode[0]+'.translateZ'),-10)
         cmds.makeIdentity( polyPlaneNode[0],apply=True, t=1, r=1, s=1, n=2 )
-        cmds.setAttr((polyPlaneNode[0]+'.scalePivot'),0, 0 ,0,type="double3")
+        #cmds.setAttr((polyPlaneNode[0]+'.scalePivot'),0, 0 ,0,type="double3")
         cmds.setAttr((polyPlaneNode[0]+'.rotatePivot'),0, 0 ,0,type="double3")
         cmds.DeleteHistory()
         cmds.addAttr(polyPlaneNode[0], longName='J_layerManager', dataType='string' )
@@ -123,6 +123,9 @@ class J_mainWin(QtWidgets.QMainWindow):
         print polyPlaneNode
         for item in attrsToConnect:
             cmds.connectAttr(('%s%s'%(cameraTransform[0],item)), ('%s%s'%(polyPlaneNode[0],item) ))
+        cmds.setAttr((polyPlaneNode[0]+'.scaleX'),12)
+        cmds.setAttr((polyPlaneNode[0]+'.scaleY'),12)
+        cmds.setAttr((polyPlaneNode[0]+'.scaleZ'),12)
         ####关联摄像机
     ######################创建材质###################################
     def J_createShaderNodes(self,J_massage,nodeName,nodeType,asShader,asTexture,asUtility,isColorManaged):
