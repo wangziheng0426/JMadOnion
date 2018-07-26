@@ -1,0 +1,69 @@
+/////////////////////////////////////////////////////////////
+///\file J_bakeCamera.mel
+///
+///\brief    保存文件
+///
+///\author 桔
+///\version 1.0
+///\date  18:52 2018/7/24
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+//18:52 2018/7/24 张千桔
+//bake摄像机参数,以及摄像机父层节点位移变换.并以每个摄像机的名称为文件名导出摄像机.
+global proc J_bakeCamera()
+{
+    string $allCams[]=`ls -type camera`;
+    string $cams[]=stringArrayRemove({"frontShape","perspShape","sideShape","topShape"},`ls -type camera`);
+    for ($ii in $cams)
+    {
+        select $ii;
+        doBakeSimulationArgList 8 { "1","0","10","1","0","0","1","1","0","1","animationList","0","0","0","0","0","1","0","1" };
+        string $J_findRootParent=J_findParent($ii);
+        string $temp_camName=$J_findRootParent;
+        while ($J_findRootParent!="")
+        {
+            select $J_findRootParent;
+            doBakeSimulationArgList 8 { "1","0","10","1","0","0","1","1","0","1","animationList","0","0","0","0","0","1","0","1" };
+            $J_findRootParent=J_findParent($J_findRootParent);
+            
+        }
+        //导出摄像机
+        J_exportSelectCam($temp_camName);
+    }
+}
+//查询父层节点
+global proc string J_findParent(string $J_object)
+{
+    string $getParent[]=`listRelatives -p $J_object`;
+    return $getParent[0];
+}
+//导出摄像机
+global proc J_exportSelectCam(string $camraName)
+{
+    string $filePath=`file -sn -q`;
+    string $buffer[];
+    string $Jpath="";
+    $numTokens = `tokenize $filePath "/" $buffer`;
+    if (`gmatch $filePath "//*"`)
+        {$Jpath="//";}
+    $Jpath+=$buffer[0];
+    for ($xx=1;$xx<size($buffer)-1;$xx++)
+    {
+        $Jpath+="/"+$buffer[$xx];
+    }
+    print $Jpath;
+    string $fileName= $buffer[size($buffer)-1];
+    string $buffer1[];
+    $numTokens = `tokenize $fileName "." $buffer1`;
+    string $JfileName= $buffer1[0];
+    for ($xx=1;$xx<size($buffer1)-1;$xx++)
+    {
+        $JfileName+="."+$buffer1[$xx];
+    }
+    print $JfileName;
+    string $outPath=$Jpath+"/"+$JfileName+"_"+$camraName+".ma";
+    file -force -options "v=0;" -typ "mayaAscii" -pr -es $outPath;
+}
+J_bakeCamera;

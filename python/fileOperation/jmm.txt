@@ -24,5 +24,5 @@ def convertMM(inPath,fileTypes,startTime='0',reslution='960*540',crf='18',codeMo
         writeFile.write(stringToWrite)
         writeFile.close()
 #convertMM(r'D:\临时文件\ys\000',['.avi','.mp4','wmv'],'500','1920*1080',18,'hevc')
-convertMM(r'c:/a',['.avi','.mp4','wmv'],'00:13:33','960*540',20,'hevc')
+convertMM(r'C:/yumefx',['.avi','.mp4','wmv'],'00:13:33','960*540',20,'hevc')
 #os.popen('shutdown -f -s -t 200')
