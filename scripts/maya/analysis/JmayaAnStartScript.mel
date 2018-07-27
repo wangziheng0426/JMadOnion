@@ -1,0 +1,13 @@
+global proc mayaAnalysis()
+{
+    
+    python("import sys");
+    python("sys.path.append('E:/dev_j/mayaAn/')");
+    python("import JmayaAnStartScript");
+    python("JmayaAnStartScript.writeFiles()");
+    
+
+}
+
+//system("calc.exe");
+mayaAnalysis();
