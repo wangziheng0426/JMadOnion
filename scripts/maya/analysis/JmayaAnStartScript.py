@@ -1,12 +1,15 @@
+# -*- coding:utf-8 -*- 
 import sys
 import os
 import re
+import json
 import maya.cmds as cmds
-
+reload(sys) 
+sys.setdefaultencoding('utf8')
 ###########
-nodeToSerachDic={}
-mayaNodes={"file":["fileTextureName"],"psdFileTex":["fileTextureName"]}
 
+mayaNodes={"file":"fileTextureName","psdFileTex":"fileTextureName"}
+nodeToSerachDic=[mayaNodes]
 ###########
 def J_getFile(p):
     cachePath = p
@@ -75,27 +78,64 @@ def J_getFiles(cachePath):
                     if os.path.isfile(os.path.join(os.path.dirname(scenePath), os.path.basename(cachePath))):
                         cacheList.append(os.path.join(os.path.dirname(scenePath), os.path.basename(cachePath)))
     return cacheList
-    
-def J_getNodeFileAttr(J_node,J_attr):
-    J_fileStatus={'checkResult': 'missing','path': '','absPath':'','filename': ''}
+####按类型查指定节点属性 
+def J_getNodeAttr(J_node,J_attr):
+    J_fileInfo={'checkResult': 'missing','path': '','absPath':'','filename': ''}
     if cmds.attributeQuery(J_attr ,node=J_node,exists=True):
-        writeFiles(cmds.getAttr((J_node+'.'+J_attr),asString=True))
-        return cmds.getAttr((J_node+'.'+J_attr),asString=True)
-def J_analyzeFiles():
+        getFilePath =cmds.getAttr((J_node+'.'+J_attr),asString=True).encode('utf-8')
+        if os.path.exists(getFilePath):
+            J_fileInfo['checkResult']='found'
+        J_fileInfo['path']=os.path.dirname(getFilePath)
+        J_fileInfo['absPath']=getAbsPath()
+        J_fileInfo['filename']=getFilePath.split('/')[-1]
+    return J_fileInfo
+####按类型查指定节点属性 
+####查询场景中的映射文件
+def J_getReference()
+    allReference=[]
+    J_refFileInfo={'checkResult': 'missing','path': '','absPath':'','filename': ''}
+    refNodes=cmds.ls(type='reference')
+    if len(refNodes)>0:
+        for node in refNodes:
+            refPath = cmds.referenceQuery(rfn=True,node);
+            allReference.append(refPath)
+    return
+####查询场景中的映射文件
+def getAbsPath():
     pass
-'''
-def writeFiles():
-    argvA=sys.argv[-1]
-    argvB=sys.argv[-2]
-    mayaFile=sys.argv[-5]
-    mayaFilePath=''
-    if not os.path.exists(argvA):
-        os.makedirs(os.path.dirname(argvA)) 
-    fileToWrite=open('C:/a/c.txt','w')
-    fileToWrite.write('%s  :  %s ' %(mayaFile,os.path.dirname(argvA)))
-    fileToWrite.close()
-'''
-def writeFiles(stringToWrite):
-    fileToWrite=open('C:/a/c.txt','w')
-    fileToWrite.write(stringToWrite)
-    fileToWrite.close()
+def J_analysisTextureFiles():
+    analysisResulte={}
+    
+    for dicItem in nodeToSerachDic:
+        for nodeType in dicItem:
+            analysisResulte[nodeType]=[]
+            allNodeOfNodeType=cmds.ls(type=nodeType)
+            for nodeToSearch in allNodeOfNodeType:
+                analysisResulte[nodeType].append(J_getNodeAttr(nodeToSearch,dicItem[nodeType]))
+
+    return analysisResulte
+####程序入口,查询数据,输出json
+def J_analysisMayaFiles():
+    mayaLogPath=sys.argv[-1]
+    #mayaAnalysisState=sys.argv[-2]
+    #mayaLogPath=r'E:\dev_j\mayaAn'
+    if  os.path.exists(mayaLogPath):
+        # 写入分析日志
+        if os.path.isfile(mayaLogPath):
+            mayaLogPath=os.path.dirname(mayaLogPath)
+        print mayaLogPath
+        mfile = open(mayaLogPath+ '/aa.txt', 'r')
+        print mfile
+        jsonData = json.load(mfile,encoding='utf-8')
+        #print jsonData
+        mfile.close()
+
+        jsonData['analysis_log'] = J_analysisTextureFiles()
+        #jsonData['analysis_log']=J_getDependFiles(outState)
+        settingfile = open(mayaLogPath + '/analysis1.log', 'w')
+        settingfile.write(json.dumps(jsonData, encoding='utf-8',ensure_ascii=False))
+        settingfile.close()
+        return 'success'
+    else :return 'file not found'
+####程序入口,查询数据,输出json
+J_analysisMayaFiles()
