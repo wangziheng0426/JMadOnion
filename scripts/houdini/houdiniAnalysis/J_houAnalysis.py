@@ -202,4 +202,4 @@ def J_runAnalysis(houPath,houHipFile,outState,hanalysisPath):
     else :return 'file not found'
 argv=sys.argv
 #J_runAnalysis(argv[1],argv[2],argv[3],argv[4])
-print J_runAnalysis('C:/Program Files/Side Effects Software/Houdini 16.0.621/bin/houdini.exe','//10.32.67.250/testFile/houdiniRun/pyro_Cluster/clusterHqDDHs2.hip','1','E:/testFile/houdiniRun/fx/')
+print J_runAnalysis('C:/Program Files/Side Effects Software/Houdini 16.5.268/bin/houdini.exe','//10.32.67.250/testFile/houdiniRun/fx/pyroFireTest.hip','1','E:/testFile/houdiniRun/fx/')
