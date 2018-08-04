@@ -57,13 +57,19 @@ class JmaxFix (DeadlineEventListener):
                     J_createClient('172.31.70.13')
         
     def OnStartRender( self,en, job ):
-        print 'start rending'
-        try:            
-            print 'killing mstsc'
-            subprocess.Popen('c:/python27/python.exe //172.31.70.13/DeadlineRepository7/custom/events/JmaxFix/killMstsc.py')
-            print 'mstsc killed'
-        except:
-           print "Error: unable to start thread"
+        softWare=job.GetJobInfoKeyValue('Plugin')
+        self.LogInfo(softWare)
+        if softWare=='3dsmax':
+            versionOfsoft=job.GetJobPluginInfoKeyValue('Version')
+            self.LogInfo (versionOfsoft)
+            if str(versionOfsoft)=='2018':
+                print 'start rending'
+                try:            
+                    print 'killing mstsc'
+                    subprocess.Popen('c:/python27/python.exe //172.31.70.13/DeadlineRepository7/custom/events/JmaxFix/killMstsc.py')
+                    print 'mstsc killed'
+                except:
+                   print "Error: unable to start thread"
 
     def OnJobFinisheJ(self, job):
         # TODO: Connect to pipeline site to notify it that the job for a particular
