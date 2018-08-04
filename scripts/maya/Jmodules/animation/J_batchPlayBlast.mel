@@ -1,0 +1,64 @@
+/////////////////////////////////////////////////////////////
+///\file J_batchPlayBlast.mel
+///
+///\brief    保存文件
+///
+///\author 桔
+///\version 1.0
+///\date  18:52 2018/7/24
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+//18:52 2018/7/24 张千桔
+//
+global proc J_batchPlayBlast()
+{
+    string $allCams[]=`ls -type camera`;
+    string $cams[]=stringArrayRemove({"frontShape","perspShape","sideShape","topShape"},`ls -type camera`);
+    for ($i in $cams)
+        {
+        string $findParent[]=`listRelatives -p $i `;
+        lookThroughModelPanel $findParent[0] modelPanel4;
+        J_runPlayBlast($findParent[0]);
+        }
+}
+global proc J_runPlayBlast(string $camraName)
+{
+    if (!`optionVar -q cameraNamesVisibility`)
+        {setCameraNamesVisibility(!`optionVar -q cameraNamesVisibility`);}
+    if (!`optionVar -q frameRateVisibility`)
+        {setCameraNamesVisibility(!`optionVar -q frameRateVisibility`);}
+    if (!`optionVar -q currentFrameVisibility`)
+        {setCameraNamesVisibility(!`optionVar -q currentFrameVisibility`);}
+     //////
+    string $filePath=`file -sn -q`;
+    string $buffer[];
+    string $Jpath="";
+    $numTokens = `tokenize $filePath "/" $buffer`;
+    if (`gmatch $filePath "//*"`)
+        {$Jpath="//";}
+    $Jpath+=$buffer[0];
+    for ($xx=1;$xx<size($buffer)-1;$xx++)
+    {
+        $Jpath+="/"+$buffer[$xx];
+    }
+    print $Jpath;
+    string $fileName= $buffer[size($buffer)-1];
+    string $buffer1[];
+    $numTokens = `tokenize $fileName "." $buffer1`;
+    string $JfileName= $buffer1[0];
+    for ($xx=1;$xx<size($buffer1)-1;$xx++)
+    {
+        $JfileName+="."+$buffer1[$xx];
+    }
+    print $JfileName;
+    string $outPath=$Jpath+"/"+$JfileName+"_"+$camraName+"";
+    ////////////
+    playblast  -offScreen   -viewer 0 -format qt -compression "H.264" -percent 100 -quality 100  -f $outPath -width 1080 -height 720;
+    
+    system("c:/ffmpeg.exe -i "+$outPath+".mov  -vf \"drawtext=fontfile=simhei.ttf: text='水印':x=500:y=500:fontsize=48\"   -crf 18 -c:v hevc -y "+$outPath+"S.mov");
+
+}
+J_batchPlayBlast;
+
