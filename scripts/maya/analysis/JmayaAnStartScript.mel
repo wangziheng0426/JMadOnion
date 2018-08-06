@@ -3,8 +3,8 @@ global proc mayaAnalysis()
     
     python("import sys");
     python("sys.path.append('E:/dev_j/mayaAn/')");
-    python("import JmayaAnStartScript");
-    python("JmayaAnStartScript.J_analysisMayaFiles()");
+    python("import JmayaAnalysisScript");
+    python("JmayaAnalysisScript.J_analysisMayaFiles()");
     
 
 }
