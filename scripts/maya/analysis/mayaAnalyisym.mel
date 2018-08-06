@@ -1,0 +1,1050 @@
+// remove "/", "\" end of path
+proc string cleanPath( string $p ) {
+  if (`endsWith $p "/"` || `endsWith $p "\\"`) {
+    return `startString $p (size($p)-1)`;
+  }
+  else {
+    return $p;
+  }
+}
+
+//-----------------globals------------------
+//get log file path from shell argv.
+python("import sys");
+string $prjPath = substituteAllString(python("sys.argv[-1]"),"\\","/");
+int $isAllPath = (int)python("sys.argv[-2]");
+
+//create log path.
+if (`filetest -d $prjPath` == 0) {
+  sysFile -md $prjPath;
+}
+string $nodeType;
+//initialize file stream.
+
+global string $reports = "";
+global string $fileCollects[];
+global string $sceneFile;
+$sceneFile= `file -q -sn`;
+global string $scenePath;
+$scenePath= cleanPath(`dirname $sceneFile`);
+global int $allFilesNum = 0;
+global int $allMissFileNum = 0;
+
+//-----------------getFile function ---------------
+python("\
+import maya.cmds as my\n\
+import os\n\
+def getFile(p):\n\
+    cachePath = p\n\
+    scenePath = my.file(q=1, sn=1)\n\
+    if os.path.isfile(cachePath):\n\
+        expath=cachePath\n\
+    elif os.path.isfile(os.path.dirname(scenePath)+\"/\"+os.path.basename(cachePath)):\n\
+        expath=os.path.dirname(scenePath)+\"/\"+os.path.basename(cachePath)\n\
+    else:\n\
+        expath=\"\"\n\
+    return expath\n\
+");
+
+//-----------------getFiles function ---------------
+python("\
+import maya.cmds as my\n\
+import os\n\
+import re\n\
+def getFiles(p):\n\
+    cacheList = []\n\
+    cachePath = p\n\
+    scenePath = my.file(q=1, sn=1)\n\
+    result = re.findall(r'(.*)%(0*)(\\d*)d(.*)', os.path.basename(cachePath))\n\
+    if result:\n\
+        str1, fill, num, str2 = result[0]\n\
+        if not fill:\n\
+            fill = ''\n\
+        pattern = str1.replace('.', r'\\.')+'('+fill+'*)'+r'(\\d+)'+str2.replace('.', r'\\.')\n\
+        if os.path.isdir(os.path.dirname(cachePath)):\n\
+            for f in os.listdir(os.path.dirname(cachePath)):\n\
+                result = re.findall(pattern, f)\n\
+                if result:\n\
+                    if len(result[0][0])+len(result[0][1]) == int(num):\n\
+                        cacheList.append(os.path.join(os.path.dirname(cachePath), f))\n\
+        if len(cacheList) == 0:\n\
+            cacheList.append(cachePath)\n\
+    else:\n\
+        result = re.findall(r'(.*?)(#+)(.*)', os.path.basename(cachePath))\n\
+        if result:\n\
+            str1, hash, str2 = result[0]\n\
+            num = len(hash)\n\
+            pattern = str1.replace('.', r'\\.')+r'(\\d+)'+str2.replace('.', r'\\.')\n\
+            if os.path.isdir(os.path.dirname(cachePath)):\n\
+                for f in os.listdir(os.path.dirname(cachePath)):\n\
+                    result = re.findall(pattern, f)\n\
+                    if result:\n\
+                        if len(result[0]) >= int(num):\n\
+                            cacheList.append(cachePath)\n\
+            else:\n\
+                cacheList.append(cachePath)\n\
+        else:\n\
+            result = re.findall(r'(.*)(<UDIM>|<udim>)(.*)', os.path.basename(cachePath))\n\
+            if result:\n\
+                str1, udim, str2 = result[0]\n\
+                pattern = str1.replace('.', r'\\.')+r'(\\d+)'+str2.replace('.', r'\\.')\n\
+                if os.path.isdir(os.path.dirname(cachePath)):\n\
+                    for f in os.listdir(os.path.dirname(cachePath)):\n\
+                        result = re.findall(pattern, f)\n\
+                        if result:\n\
+                            cacheList.append(os.path.join(os.path.dirname(cachePath), f))\n\
+                elif os.path.isdir(os.path.dirname(scenePath)):\n\
+                    for f in os.listdir(os.path.dirname(scenePath)):\n\
+                        result = re.findall(pattern, f)\n\
+                        if result:\n\
+                            cacheList.append(os.path.join(os.path.dirname(scenePath), f))\n\
+                if len(cacheList) == 0:\n\
+                    cacheList.append(cachePath)\n\
+            else:\n\
+                if os.path.isdir(cachePath):\n\
+                    for f in os.listdir(cachePath):\n\
+                        cacheList.append(os.path.join(cachePath, f))\n\
+                else:\n\
+                    if os.path.isfile(os.path.join(os.path.dirname(scenePath), os.path.basename(cachePath))):\n\
+                        cacheList.append(os.path.join(os.path.dirname(scenePath), os.path.basename(cachePath)))\n\
+    return cacheList\n\
+");
+
+//------ return name or path function-------
+proc string resolvePath( string $p, int $isap ) {
+  if ( $isap == true ) {
+    return $p;
+  } else {
+    return `basename $p ""`;
+  }
+}
+
+// collect all files
+global proc fileCollect(string $tempFiles[]){
+    global string $fileCollects[];
+    for ($tfile in $tempFiles){
+      int $isUnique=1;
+      for ($a in $fileCollects){
+        if ($a == $tfile){
+          $isUnique=0;  
+        } 
+      }
+	  if (strip($tfile)==""){
+          $isUnique=0;  
+        }
+      if ($isUnique==1){
+      $fileCollects[size($fileCollects)]=$tfile;
+    }
+  }
+}
+
+// common analyze function
+proc analyzeFiles(string $nodeAttrs[]) {
+  string $nodeType = $nodeAttrs[0];
+  stringArrayRemoveAtIndex(0, $nodeAttrs);
+  string $nodeList[] = `ls -type $nodeType`;  //proxy list.
+  string $reportArray[];
+  
+  if (size($nodeList)!=0) {
+    for ($node in $nodeList) {
+      for ($attr in $nodeAttrs) {
+        if (`attributeQuery -ex -n $node $attr` == true) {
+          string $nodeFilePath = `getAttr ($node + "." + $attr)`;
+          if(`strip $nodeFilePath` != "") {
+			string $nodeFilePathName = `basename $nodeFilePath ""`;
+            $reportArray[size($reportArray)] = substituteAllString($nodeFilePath, "\\", "/");
+          }
+        }
+      }
+    }
+    fileCollect($reportArray); 
+  }
+}
+
+// settings structrue
+//get renderer
+global proc string GetCurrentRenderer()
+{
+  string $renderer = currentRenderer();
+  if( $renderer == "_3delight" )
+    $renderer = "3delight";
+  return $renderer;
+}
+
+//get ProjectPath
+string $projectPath;
+$projectPath = `workspace -q -fullName`;
+if ( `startsWith $projectPath "C:/Users/"` || `startsWith $projectPath "C:\\Users\\"` )
+  $projectPath="";
+
+//get animation
+global proc int IsAnimatedOn()
+{
+  int $anim = false;
+  $anim = `getAttr defaultRenderGlobals.animation`;
+  return $anim;
+}
+
+//get isRenumberFrame
+global proc int isRenumberFrame()
+{
+  int $renum = false;
+  $renum = `getAttr defaultRenderGlobals.modifyExtension`;
+  return $renum;
+}
+
+
+//get frames
+global proc int[] GetFrameRange()
+{
+  int  $range[3] = { 0, 0, 1 };
+  if( IsAnimatedOn() )
+  {
+      $range[0] = `getAttr defaultRenderGlobals.startFrame`;
+      $range[1] = `getAttr defaultRenderGlobals.endFrame`;
+      $range[2] = `getAttr defaultRenderGlobals.byFrameStep`;
+  }
+  else
+  {
+    $range[0] = `currentTime -q`;
+    $range[1] = `currentTime -q`;
+    $range[2] = 1;
+  }
+  return $range;
+}
+
+// get resolution
+global proc int[] GetGlobalsResolution()
+{
+  int  $res[2] = { 320, 240 };
+  
+  string $renderer = GetCurrentRenderer();
+  if( $renderer != "vray" )
+  {
+    string $globals[] = `ls -renderGlobals`;
+    if( size( $globals[0] ) > 0 )
+    {
+      string $connect[] = `listConnections ($globals[0] + ".resolution")`;
+      if( size( $connect[0] ) > 0 )
+      {
+        $res[0] = `getAttr ( $connect[0] + ".width" )`;
+        $res[1] = `getAttr ( $connect[0] + ".height" )`;
+      }
+    }
+  }
+  else
+  {
+    $res[0] = `getAttr vraySettings.width`;
+    $res[1] = `getAttr vraySettings.height`;
+  }
+  
+  return $res;
+}
+
+// if outputPrefix is empty, return filename.
+global proc string GetStrippedSceneFileName()
+{
+  string $fileName =`file -q -sceneName`;
+  $fileName = `basename $fileName ".mb"`;
+  $fileName = `basename $fileName ".ma"`;
+  
+  return $fileName;
+}
+
+// get outputPrefix
+global proc string GetMayaOutputPrefix()
+{
+  string $renderer = GetCurrentRenderer();
+  string $prefix;
+  if( $renderer != "vray" )
+    $prefix = `getAttr defaultRenderGlobals.imageFilePrefix`;
+  else
+    $prefix = `getAttr vraySettings.fileNamePrefix`;
+  
+  if( $prefix == "" )
+    $prefix = GetStrippedSceneFileName();
+
+  return $prefix;
+}
+
+//---------------switchLayer----------------------
+global proc int switchLayer(string $layer)
+{
+  if (catch(`editRenderLayerGlobals -currentRenderLayer $layer`) == 0) {
+    print ("switchLayer currentLayer to " + $layer + "\n");
+    return 0;
+  } else {
+    fixRenderLayerOutAdjustmentErrors();
+    if (catch(`editRenderLayerGlobals -currentRenderLayer $layer`) == 1) {
+      print ("switchLayer currentLayer to " + $layer + "\n");
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+}
+
+//int $logFile = fopen($prjPath+ "/analysis.log", "r");
+//global string $result;
+//$result = `fread $logFile $result`;
+//fclose $logFile;
+//read logfile
+string $logFile = $prjPath+ "/analysis.log";
+python("logfile=open(\"" + $logFile + "\",\"r\")\n\
+readlog=logfile.read()\n\
+logfile.close()");
+global string $result;
+$result = python("readlog");
+
+$result=`substring $result 1 (size($result)-1)`;
+int $fr0[] = GetFrameRange();
+string $result = $result + ",\"settings\":{\"ProjectPath\":\""+$projectPath+"\",\"framesrangeconfig\":{\"startFrame\":\""+$fr0[0]+"\",\"endFrame\":\""+$fr0[1]+"\"},";
+// analyse settings
+string $renderLayers[] = `ls -type "renderLayer"`;
+string $enableLayers[]={};
+string $otherLayers[]={};
+for ($renderLayer in $renderLayers) {
+  if (catch(`editRenderLayerGlobals -currentRenderLayer $renderLayer`) == 1) {
+      print $renderLayer;
+  }
+  else{
+    if (`getAttr ($renderLayer + ".renderable")` == 1) {
+      $enableLayers[size($enableLayers)] = $renderLayer;
+    } else {
+      $otherLayers[size($otherLayers)] = $renderLayer;
+    }
+  }
+}
+string $camerasTransform[]={};
+string $renderCameras[]={};
+string $otherCameras[]={};
+if (size($enableLayers) > 0) {
+  $result = $result + "\"renderLayers\":[";
+  //------------------enableLayers------------------
+  for ($layer in $enableLayers) {
+    if (switchLayer($layer)) {
+      continue;
+    }
+    $result = $result + "{\"layerName\":\"" + $layer + "\"";
+    //-----------------renderer-----------------
+    string $renderer = GetCurrentRenderer();
+    $result = $result + ",\"renderer\":\"" + $renderer + "\"";
+    
+    //-------------------isRenumFrames---------------
+    int $isRenumFrames = isRenumberFrame();
+    $result = $result + ",\"isRenumFrames\":\"" + (string)$isRenumFrames + "\"";
+    
+    //-----------------cameras------------------
+    string $cameras[] = `ls -type "camera"`;
+    clear $camerasTransform;
+    clear $renderCameras;
+    clear $otherCameras;
+    for ($camera in $cameras) {
+      $camerasTransform = `listRelatives -p $camera`;
+      if (`getAttr ($camera + ".renderable")` == 1) {
+        $renderCameras[size($renderCameras)] = "\""+$camerasTransform[0]+"\"";
+      } else {
+        $otherCameras[size($otherCameras)] = "\""+$camerasTransform[0]+"\"";
+      }
+    }
+    $result = $result + "," + "\"renderCameras\":[" + stringArrayToString($renderCameras, ",") + "]";
+    $result = $result + "," + "\"otherCameras\":[" + stringArrayToString($otherCameras, ",") + "]";
+    //-----------------frames------------------
+    int $fr[] = GetFrameRange();
+    if ($fr[0]==$fr[1]){
+      if ((string)$fr[2] == "1"){
+        $result = $result + "," + "\"frames\":\"" + (string)$fr[0] + "\"";
+      }
+    } else {
+        if ((string)$fr[2] == "1"){
+          $result = $result + "," + "\"frames\":\"" + (string)$fr[0] + "~" + (string)$fr[1] + "\"";
+        } else {
+          $result = $result + "," + "\"frames\":\"" + (string)$fr[0] + "~" + (string)$fr[1] + ":" + (string)$fr[2] + "\"";  
+        }
+    }
+    //-----------------resolution------------------
+    int $res[] = GetGlobalsResolution();
+    $result = $result + "," + "\"width\":\""+ (string)$res[0] + "\",\"height\":\"" + (string)$res[1] +"\"";
+    //-----------------names------------------
+    int $extPad = `getAttr "defaultRenderGlobals.extensionPadding"`;
+    $result = $result + "," + "\"extensionPadding\":\""+ string($extPad) +"\"";
+    //-----------------outputPrefix------------------
+    string $outputPrefix = GetMayaOutputPrefix();
+    $outputPrefix = substituteAllString($outputPrefix, "\\", "/");
+    $result = $result + "," + "\"outputPrefix\":\"" + $outputPrefix + "\"";
+    $result = $result + "},";
+  }
+  $result = `substring $result 1 (size($result)-1)` + "]"; 
+}
+else{
+  $result = $result + ",\"renderLayers\":[]";
+}
+if (size($otherLayers) > 0) {
+  //-----------------otherLayers------------------
+  $result = $result + ",\"otherLayers\":[";
+  for ($layer in $otherLayers) {
+    if (switchLayer($layer)) {
+      continue;
+    }
+    $result = $result + "{\"layerName\":\"" + $layer +"\"";
+    
+    //-----------------renderer-----------------
+    string $renderer = GetCurrentRenderer();
+    $result = $result + ",\"renderer\":\"" + $renderer + "\"";
+    
+    //-------------------isRenumFrames---------------
+    int $isRenumFrames = isRenumberFrame();
+    $result = $result + ",\"isRenumFrames\":\"" + (string)$isRenumFrames + "\"";
+    
+    //-----------------cameras------------------
+    string $cameras[] = `ls -type "camera"`;
+    clear $camerasTransform;
+    clear $renderCameras;
+    clear $otherCameras;
+    for ($camera in $cameras) {
+      $camerasTransform = `listRelatives -p $camera`;
+      if (`getAttr ($camera + ".renderable")` == 1) {
+        $renderCameras[size($renderCameras)] = "\""+$camerasTransform[0]+"\"";
+      } else {
+        $otherCameras[size($otherCameras)] = "\""+$camerasTransform[0]+"\"";
+      }
+    }
+    $result = $result + "," + "\"renderCameras\":[" + stringArrayToString($renderCameras, ",") + "]";
+    $result = $result + "," + "\"otherCameras\":[" + stringArrayToString($otherCameras, ",") + "]";
+    //-----------------frames------------------
+    int $fr[] = GetFrameRange();
+    if ($fr[0]==$fr[1]){
+      if ((string)$fr[2] == "1"){
+        $result = $result + "," + "\"frames\":\"" + (string)$fr[0] + "\"";
+      }
+    } else {
+        if ((string)$fr[2] == "1"){
+          $result = $result + "," + "\"frames\":\"" + (string)$fr[0] + "~" + (string)$fr[1] + "\"";
+        } else {
+          $result = $result + "," + "\"frames\":\"" + (string)$fr[0] + "~" + (string)$fr[1] + ":" + (string)$fr[2] + "\"";  
+        }
+    }
+    //-----------------resolution------------------
+    int $res[] = GetGlobalsResolution();
+    $result = $result + "," + "\"width\":\""+ (string)$res[0] + "\",\"height\":\"" + (string)$res[1] +"\"";
+    //-----------------names------------------
+    int $extPad = `getAttr "defaultRenderGlobals.extensionPadding"`;
+    $result = $result + "," + "\"extensionPadding\":\""+ string($extPad) +"\"";
+    //-----------------outputPrefix------------------
+    string $outputPrefix = GetMayaOutputPrefix();
+    $outputPrefix = substituteAllString($outputPrefix, "\\", "/");
+    $result = $result + "," + "\"outputPrefix\":\"" + $outputPrefix + "\"";
+    $result = $result + "},";
+  }
+  $result = `substring $result 1 (size($result)-1)` + "]"; 
+}
+else{
+  $result = $result + ",\"otherLayers\":[]";
+}
+$result = $result+ "}}"; 
+
+
+//-----------------write settings------------------
+int $logFile2 = fopen($prjPath+ "/analysis.log", "w");
+fprint $logFile2 $result;
+fclose $logFile2;
+//python("logfile=open(\"" + $logFile + "\",\"w\")\n\
+//logfile.write(\"" + $result + "\")\n\
+//logfile.close()");
+
+
+//--------------analyze files---------------
+string $nodeAttrs[] = {};
+
+//-----------------texture------------------
+//file
+$nodeAttrs = {"file", "fileTextureName"};
+analyzeFiles($nodeAttrs);
+//psdfile
+$nodeAttrs = {"psdFileTex", "fileTextureName"};
+analyzeFiles($nodeAttrs);
+
+//-----------------reference------------------
+//define variables
+$nodeType = "reference";
+string $rList[] = `ls -type $nodeType`;  //reference list.
+string $rPath;
+int $isNodeReferenced = 0;
+string $reportArray[];
+
+if (size($rList)!=0) {
+  for ($r in $rList) {
+    $isNodeReferenced = `referenceQuery -inr $r`;
+    if ($r != "sharedReferenceNode" && $r != "_UNKNOWN_REF_NODE_" && $isNodeReferenced != 1) {
+      if(catch( $k=`referenceQuery -rfn $r` ) ==1){
+          print $r;
+          }
+        else{
+        string $rPath = `referenceQuery -f $r`;
+        $rPath = `match "[^\\{]+" $rPath`;
+        string $rName = `basename $rPath ""`;
+        string $tPath = `referenceQuery -f -un $r`;
+        $reportArray[size($reportArray)] = $tPath;
+		}
+      }
+  }
+  fileCollect($reportArray); 
+}
+
+//set referencepath 
+//$nodeType = "reference";
+//string $rList[] = `ls -type $nodeType`;  //reference list.
+//string $rPath;
+//int $isNodeReferenced = 0;
+//if (size($rList)!=0) {
+//string $sn=`file -q -sn`;
+//$sn=`dirname $sn`;
+//  for ($r in $rList) {
+//    $isNodeReferenced = `referenceQuery -inr $r`;
+//    if ($r != "sharedReferenceNode" && $r != "_UNKNOWN_REF_NODE_" && $isNodeReferenced != 1) {
+//      if(catch( $k=`referenceQuery -rfn $r` ) ==1){
+//          print $r;
+//          }
+//        else{
+//        string $rPath = `referenceQuery -f $r`;
+//        string $rName=`basename $rPath ""`;
+//        if (`filetest -f $rPath` != true && `filetest -f ($sn+"/"+$rName ) ` == true ){
+//        file -loadReference $r ($sn+"/"+$rName );
+//		}
+//      }
+//    }
+//  }
+//}
+
+//-----------------cacheFile------------------
+$nodeType = "cacheFile";
+string $cacheList[] = `ls -type $nodeType`;  //cacheFile list.
+string $cachePath;
+string $cache;
+string $reportArray[];
+//cacheNode
+
+if (size($cacheList)!=0) {
+  for ($cache in $cacheList) {
+    if ($cache != "sharedReferenceNode") {
+      $cacheDir = `getAttr ($cache +".cachePath")`;
+      $cacheName = `getAttr ($cache +".cacheName")`+".xml";
+      if ($cacheDir != "") {
+        $cacheDir = cleanPath($cacheDir);
+        $cachePath = $cacheDir+"/"+`getAttr ($cache+".cacheName")`+".xml";
+        if (`filetest -r $cachePath` == true) {
+          string $cfs[] = `getFileList -fld ($cacheDir+"/")`;
+          for ($cf in $cfs) {
+            string $pattern = `getAttr ($cache + ".cacheName")` + "*";
+            if (`gmatch $cf $pattern` == 1) {
+              $reportArray[size($reportArray)] =$cacheDir + "/" + $cf +".cache";
+            }
+          }
+        } else if (`filetest -f ($scenePath + "/" + $cacheName)` == true) {
+          $reportArray[size($reportArray)] =$cacheDir + "/" + $cacheName+".cache";
+          string $cfs[] = `getFileList -fld $scenePath`;
+          for ($cf in $cfs) {
+            string $pattern = `getAttr ($cache + ".cacheName")` + "*";
+            if (`gmatch $cf $pattern` == 1) {
+              $reportArray[size($reportArray)] = $cacheDir+ "/" + $cf+".cache";
+            }
+          }
+        } else {
+          $reportArray[size($reportArray)] =$cachePath+".cache";
+        }
+      }
+    }
+  }
+  fileCollect($reportArray);  
+}
+
+//-----------------mentalRay------------------
+if (stringArrayContains("Mayatomr", `pluginInfo -q -ls`)) {
+  //aiStandInShape
+  $nodeAttrs = {"mentalrayIblShape", "texture"};
+  analyzeFiles($nodeAttrs);
+  //mentalRay Proxy
+  $nodeAttrs = {"mesh", "miProxyFile"};
+  analyzeFiles($nodeAttrs);
+  //mentalRay Texture
+  $nodeAttrs = {"mentalrayTexture", "fileTextureName"};
+  analyzeFiles($nodeAttrs);
+  //mentalRayLightProfile
+  $nodeAttrs = {"mentalrayLightProfile", "fileName"};
+  analyzeFiles($nodeAttrs);
+  //mentalRayImport
+  $nodeAttrs = {"abcimport", "filename"};
+  analyzeFiles($nodeAttrs);
+  //mentalRay contour_ps
+  $nodeAttrs = {"contour_ps", "file_name"};
+  analyzeFiles($nodeAttrs);
+  //mentalRay mib_ptex_lookup
+  $nodeAttrs = {"mib_ptex_lookup", "filename"};
+  analyzeFiles($nodeAttrs);
+}
+
+//--------------------arnold--------------------
+if (stringArrayContains("mtoa", `pluginInfo -q -ls`)) {
+  //aiStandInShape
+  $nodeAttrs = {"aiStandIn", "dso"};
+  analyzeFiles($nodeAttrs);
+  //aiImage
+  $nodeAttrs = {"aiImage", "filename"};
+  analyzeFiles($nodeAttrs);
+  //aiPhotometricLight
+  $nodeAttrs = {"aiPhotometricLight", "aiFilename", "templatePath", "iconName"};
+  analyzeFiles($nodeAttrs);
+  //alTriplanar
+  $nodeAttrs = {"alTriplanar", "texture"};
+  analyzeFiles($nodeAttrs);
+  //aiSky
+  $nodeAttrs = {"aiSky", "templatePath", "iconName"};
+  analyzeFiles($nodeAttrs);
+  //aiSkyDomeLight
+  $nodeAttrs = {"aiSkyDomeLight", "templatePath", "iconName"};
+  analyzeFiles($nodeAttrs);
+  //aiLightBlocker
+  $nodeAttrs = {"aiLightBlocker", "templatePath", "iconName"};
+  analyzeFiles($nodeAttrs);
+}
+
+//--------------------vray--------------------
+if (stringArrayContains("vrayformaya", `pluginInfo -q -ls`)) {
+  //VRayLightIESShape
+  $nodeAttrs = {"VRayLightIESShape", "iesFile"};
+  analyzeFiles($nodeAttrs);
+  //VRayMeshMaterial
+  $nodeAttrs = {"VRayMeshMaterial", "fileName", "overrideFileName"};
+  analyzeFiles($nodeAttrs);
+  //VRayMtlGLSL
+  $nodeAttrs = {"VRayMtlGLSL", "fileName"};
+  analyzeFiles($nodeAttrs);
+  //VRayScannedMtl
+  $nodeAttrs = {"VRayScannedMtl", "file"};
+  analyzeFiles($nodeAttrs);
+  //VRaySimbiont
+  $nodeAttrs = {"VRaySimbiont", "file"};
+  analyzeFiles($nodeAttrs);
+  //VRayVRmatMtl
+  $nodeAttrs = {"VRayVRmatMtl", "fileName"};
+  analyzeFiles($nodeAttrs);
+  //VRayTexGLSL
+  $nodeAttrs = {"VRayTexGLSL", "fileName"};
+  analyzeFiles($nodeAttrs);
+  //VRayTexOCIO
+  $nodeAttrs = {"VRayTexOCIO", "ocioConfigFile"};
+  analyzeFiles($nodeAttrs);
+  //VRayTexOSL
+  $nodeAttrs = {"VRayTexOSL", "fileName"};
+  analyzeFiles($nodeAttrs);
+  //VRayPtex
+  $nodeAttrs = {"VRayPtex", "ptexFile"};
+  analyzeFiles($nodeAttrs);
+  //VRayShInfo
+  $nodeAttrs = {"VRayShInfo", "vrshFileName"};
+  analyzeFiles($nodeAttrs);
+  //VRayFurPreview
+  $nodeAttrs = {"VRayFurPreview", "templatePath", "iconName"};
+  analyzeFiles($nodeAttrs);
+  //VRayVolumeGrid
+  $nodeAttrs = {"VRayVolumeGrid", "inFile"};
+  analyzeFiles($nodeAttrs);
+}
+
+//--------------------redshift-------------------
+if (stringArrayContains("redshift4maya", `pluginInfo -q -ls`)) {
+  //RedshiftDomeLight
+  $nodeAttrs = {"RedshiftDomeLight", "tex0"};
+  analyzeFiles($nodeAttrs);
+  //RedshiftIESLight
+  $nodeAttrs = {"RedshiftIESLight", "profile"};
+  analyzeFiles($nodeAttrs);
+  //RedshiftVolume
+  $nodeAttrs = {"RedshiftVolumeShape", "fileName"};
+  analyzeFiles($nodeAttrs);
+  //RedshiftProxy
+  $nodeAttrs = {"RedshiftProxyMesh", "fileName"};
+  analyzeFiles($nodeAttrs);
+  //redshiftEnvironment
+  $nodeAttrs = {"RedshiftEnvironment", "tex0", "tex1", "tex2", "tex3", "tex4"};
+  analyzeFiles($nodeAttrs);
+  //RedshiftBokeh
+  $nodeAttrs = {"RedshiftBokeh", "dofBokehImage"};
+  analyzeFiles($nodeAttrs);
+  //RedshiftLensDistortion
+  $nodeAttrs = {"RedshiftLensDistortion", "LDimage"};
+  analyzeFiles($nodeAttrs);
+}
+//--------------------maxwell--------------------
+if (stringArrayContains("maxwell", `pluginInfo -q -ls`)) {
+  //maxwellBsdf
+  $nodeAttrs = {"maxwellBsdf", "iorFile"};
+  analyzeFiles($nodeAttrs);
+  //maxwellOptions
+  $nodeAttrs = {"maxwellRenderOptions", "mxsPath", "extraSamplingBitmap", "simApertureMap", "simObstacleMap"};
+  analyzeFiles($nodeAttrs);
+  //maxwellInstance
+  $nodeAttrs = {"maxwellInstance", "templatePath", "iconName"};
+  analyzeFiles($nodeAttrs);
+  //-----------------environment------------------
+  $nodeType = "maxwellRenderOptions";
+  string $maxwellBackground = "maxwellRenderOptions.environment[0]";  //cacheFile list.
+  string $maxwellReflection = "maxwellRenderOptions.environment[1]";
+  string $maxwellRefraction = "maxwellRenderOptions.environment[2]";
+  string $maxwellIllumination = "maxwellRenderOptions.environment[3]";
+  string $reportArray[];
+  string $maxwellBackgroundPath = `getAttr ($maxwellBackground +".envTexture")`;
+  string $maxwellReflectionPath = `getAttr ($maxwellReflection +".envTexture")`;
+  string $maxwellRefractionPath = `getAttr ($maxwellRefraction +".envTexture")`;
+  string $maxwellIlluminationPath = `getAttr ($maxwellIllumination +".envTexture")`;
+  //maxwellBackgroundPath
+  if ($maxwellBackgroundPath != "") {
+      // image sequence
+      if (`getAttr ($maxwellBackground + ".envUseSequence")` == 1) {
+        string $imageName = `basename $maxwellBackgroundPath ""`;
+        string $prefix = `python("re.findall(r'(.*)[._]\\d+[._].*', \"" + $imageName + "\")[0]")`;
+        string $pattern = ($prefix + "*");
+        string $imageDir = cleanPath(`dirname $maxwellBackgroundPath`);
+        string $fileList[] = `getFileList -fld ($imageDir + "/")`;
+        for ($f in $fileList) {
+          if (`gmatch $f $pattern` == 1) {
+            $reportArray[size($reportArray)] = $imageDir+"/"+$f;
+          }
+        }
+      } else {
+        $reportArray[size($reportArray)] = $maxwellBackgroundPath;
+      }
+  }
+  //maxwellReflectionPath
+  if ($maxwellReflectionPath != "") {
+      // image sequence
+      if (`getAttr ($maxwellReflection + ".envUseSequence")` == 1) {
+        string $imageName = `basename $maxwellReflectionPath ""`;
+        string $prefix = `python("re.findall(r'(.*)[._]\\d+[._].*', \"" + $imageName + "\")[0]")`;
+        string $pattern = ($prefix + "*");
+        string $imageDir = cleanPath(`dirname $maxwellReflectionPath`);
+        string $fileList[] = `getFileList -fld ($imageDir + "/")`;
+        for ($f in $fileList) {
+          if (`gmatch $f $pattern` == 1) {
+            $reportArray[size($reportArray)] = $imageDir+"/"+$f;
+          }
+        }
+      } else {
+        $reportArray[size($reportArray)] = $maxwellReflectionPath;
+      }
+  }
+  //maxwellRefractionPath
+  if ($maxwellRefractionPath != "") {
+      // image sequence
+      if (`getAttr ($maxwellRefraction + ".envUseSequence")` == 1) {
+        string $imageName = `basename $maxwellRefractionPath ""`;
+        string $prefix = `python("re.findall(r'(.*)[._]\\d+[._].*', \"" + $imageName + "\")[0]")`;
+        string $pattern = ($prefix + "*");
+        string $imageDir = cleanPath(`dirname $maxwellRefractionPath`);
+        string $fileList[] = `getFileList -fld ($imageDir + "/")`;
+        for ($f in $fileList) {
+          if (`gmatch $f $pattern` == 1) {
+            $reportArray[size($reportArray)] = $imageDir+"/"+$f;
+          }
+        }
+      } else {
+        $reportArray[size($reportArray)] = $maxwellRefractionPath;
+      } 
+  }
+  //maxwellIlluminationPath
+  if ($maxwellIlluminationPath != "") {
+      // image sequence
+      if (`getAttr ($maxwellIllumination + ".envUseSequence")` == 1) {
+        string $imageName = `basename $maxwellIlluminationPath ""`;
+        string $prefix = `python("re.findall(r'(.*)[._]\\d+[._].*', \"" + $imageName + "\")[0]")`;
+        string $pattern = ($prefix + "*");
+        string $imageDir = cleanPath(`dirname $maxwellIlluminationPath`);
+        string $fileList[] = `getFileList -fld ($imageDir + "/")`;
+        for ($f in $fileList) {
+          if (`gmatch $f $pattern` == 1) {
+            $reportArray[size($reportArray)] = $imageDir+"/"+$f;
+          }
+        }
+      } else {
+        $reportArray[size($reportArray)] = $maxwellIlluminationPath;
+      }
+    } 
+  fileCollect($reportArray);
+}
+
+//-----------------yeti------------------
+//define variables
+if (stringArrayContains("pgYetiMaya", `pluginInfo -q -ls`)) {
+  string $pgYetiMayaShapeList[] = `ls -type "pgYetiMaya"`;  //cacheFile list.
+  string $textureNodes[];
+  string $textureNode;
+  string $texturePath;
+  string $referenceNodes[];
+  string $reference;
+  string $referencePath;
+  string $cachePathArray[];
+  string $cachePath;
+  string $groomPath="";
+  string $reportArray[];
+  
+  if (size($pgYetiMayaShapeList)!=0) {
+    for ($pgYetiMayaShape in $pgYetiMayaShapeList) {
+      select $pgYetiMayaShape;
+      //cachePath
+      if (`attributeExists "cacheFileName" $pgYetiMayaShape`) {
+        string $cfn = `getAttr ($pgYetiMayaShape + ".cacheFileName")`;
+        $reportArray[size($reportArray)] = $cachePath;
+      }
+      //groomPath
+      if (`attributeExists "groomFileName" $pgYetiMayaShape`) {
+        $groomPath = `getAttr ($pgYetiMayaShape + ".groomFileName")`;
+        $reportArray[size($reportArray)] = $groomPath;
+      }
+      //textureNode
+      if (catch(`pgYetiGraph -listNodes -type "texture" $pgYetiMayaShape`) == 0) {
+        $texturePathList = `pgYetiCommand -listTextures $pgYetiMayaShape`;
+        for ($texturePath in $texturePathList) {
+          $reportArray[size($reportArray)] = $texturePath;
+        }
+      }
+      //referenceNode
+      if (catch(`pgYetiGraph -listNodes -type "reference" $pgYetiMayaShape`) == 0) {
+        $referenceNodes = `pgYetiGraph -listNodes -type "reference" $pgYetiMayaShape`;
+        for ($referenceNode in $referenceNodes) {
+          $referencePath = `pgYetiGraph -getParamValue -node $referenceNode -param "reference_file"`;
+          $reportArray[size($reportArray)] = $referencePath;
+        }
+      }
+    }
+  fileCollect($reportArray);
+  }
+}
+
+//--------------------shave--------------------
+if (stringArrayContains("shaveNode", `pluginInfo -q -ls`)) {
+  //shaveGlobals
+  $nodeAttrs = {"shaveGlobals", "vrayDraFile", "tmpDir"};
+  analyzeFiles($nodeAttrs);
+}
+
+$nodeType = "imagePlane";
+string $imagePlaneList[] = `ls -type $nodeType`;  //cacheFile list.
+string $imagePlane;
+string $imagePlanePath;
+string $reportArray[];
+
+if (size($imagePlaneList)!=0) {
+  for ($imagePlane in $imagePlaneList) {
+    $imagePlanePath = `getAttr ($imagePlane +".imageName")`;
+    if ($imagePlanePath != "") {
+        // image sequence
+        if (`getAttr ($imagePlane + ".useFrameExtension")` == 1) {
+          string $imageName = `basename $imagePlanePath ""`;
+          string $prefix = `python("re.findall(r'(.*)[._]\\d+[._].*', \"" + $imageName + "\")[0]")`;
+          string $pattern = ($prefix + "*");
+          string $imageDir = cleanPath(`dirname $imagePlanePath`);
+          string $fileList[] = `getFileList -fld ($imageDir + "/")`;
+          for ($f in $fileList) {
+            if (`gmatch $f $pattern` == 1) {
+              $reportArray[size($reportArray)] = $imageDir+"/"+$f;
+            }
+          }
+      }
+    }
+  }
+  fileCollect($reportArray);
+}
+
+// maya internal nodes
+
+//-----------------alembicNode------------------
+if (stringArrayContains("AbcImport", `pluginInfo -q -ls`)) {
+  //AlembicNode
+  $nodeAttrs = {"AlembicNode", "fn"};
+  analyzeFiles($nodeAttrs);
+}
+
+//gpuCache
+if (stringArrayContains("gpuCache", `pluginInfo -q -ls`)) {
+  $nodeAttrs = {"gpuCache", "cacheFileName"};
+  analyzeFiles($nodeAttrs);
+}
+//container
+$nodeAttrs = {"container", "iconName", "templatePath"};
+analyzeFiles($nodeAttrs);
+//assemblyReference
+$nodeAttrs = {"assemblyReference", "definition"};
+analyzeFiles($nodeAttrs);
+
+
+// get real path and json
+python("import os\n\
+import json\n\
+import sys\n\
+allFiles=\"" + stringArrayToString($fileCollects, ";") + "\".decode(\"gbk\",\"ignore\").split(\";\")\n\
+jsonoutput={\"global\":{}}\n\
+assmisscount=0\n\
+cachemisscount=0\n\
+mayamisscount=0\n\
+filemisscount=0\n\
+allUniqueFiles=[]\n\
+i=0\n\
+\
+while i < len(allFiles):\n\
+    f=allFiles[i]\n\
+\
+    if f[-4:].lower()=='.ass':\n\
+        if not jsonoutput.has_key(\"aiStandIn\"):\n\
+            jsonoutput[\"aiStandIn\"]={\"files\":[]}\n\
+        filepath=getFile(f)\n\
+        finfo={}\n\
+        finfo[\"absPath\"]=f\n\
+        finfo[\"filename\"]=os.path.basename(f)\n\
+        if filepath!=\"\" and filepath not in allUniqueFiles:\n\
+            finfo[\"checkResult\"]=\"found\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(filepath)+'/'\n\
+            assfile = open(filepath, 'r+')\n\
+            asslines = assfile.readlines()\n\
+            for l in xrange(len(asslines)):\n\
+                templine=asslines[l].split('\"')\n\
+                if (\" filename \" in templine[0]) or (\" dso \" in templine[0]):\n\
+                    if len(templine)>1 and templine[1] not in allFiles:\n\
+                        allFiles.append(templine[1]) \n\
+            assfile.close()\n\
+            allUniqueFiles.append(filepath)\n\
+        elif filepath==\"\":\n\
+            finfo[\"checkResult\"]=\"missing\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(f)+'/'\n\
+            assmisscount+=1\n\
+            allUniqueFiles.append(f)\n\
+        jsonoutput[\"aiStandIn\"][\"files\"].append(finfo)\n\
+\
+    elif (\"#\" in f) or (\"<udim>\" in f.lower()) or os.path.isdir(f): \n\
+        filelist=getFiles(f)\n\
+        for fs in filelist:\n\
+            if fs!=\"\" and fs not in allUniqueFiles:\n\
+                finfo={}\n\
+                if os.path.isdir(f):\n\
+                    finfo[\"absPath\"]=f+'/'+os.path.basename(fs)\n\
+                else:\n\
+                    finfo[\"absPath\"]=os.path.dirname(f)+os.path.basename(fs)\n\
+                finfo[\"filename\"]=os.path.basename(fs)\n\
+                if os.path.isfile(fs):\n\
+                    finfo[\"checkResult\"]=\"found\"\n\
+                else:\n\
+                    finfo[\"checkResult\"]=\"missing\"\n\
+                if str(sys.argv[-2])=='1':\n\
+                    finfo[\"path\"]=os.path.dirname(fs)+'/'\n\
+                if not jsonoutput.has_key(\"file\"):\n\
+                    jsonoutput[\"file\"]={\"files\":[]}\n\
+                jsonoutput[\"file\"][\"files\"].append(finfo)\n\
+                allUniqueFiles.append(fs)\n\
+        if len(filelist)==0:\n\
+            finfo={}\n\
+            finfo[\"absPath\"]=f\n\
+            finfo[\"filename\"]=os.path.basename(f)\n\
+            finfo[\"checkResult\"]=\"missing\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(f)+'/'\n\
+            if not jsonoutput.has_key(\"file\"):\n\
+                jsonoutput[\"file\"]={\"files\":[]}\n\
+            jsonoutput[\"file\"][\"files\"].append(finfo)\n\
+            allUniqueFiles.append(f)\n\
+\
+    elif (f[-3:].lower()=='.ma') or (f[-3:].lower()=='.mb'):\n\
+        if not jsonoutput.has_key(\"reference\"):\n\
+            jsonoutput[\"reference\"]={\"files\":[]}\n\
+        filepath=getFile(f)\n\
+        finfo={}\n\
+        finfo[\"absPath\"]=f\n\
+        finfo[\"filename\"]=os.path.basename(f)\n\
+        if filepath!=\"\" and filepath not in allUniqueFiles:\n\
+            finfo[\"checkResult\"]=\"found\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(filepath)+'/'\n\
+            allUniqueFiles.append(filepath)\n\
+            jsonoutput[\"reference\"][\"files\"].append(finfo)\n\
+        elif filepath==\"\":\n\
+            finfo[\"checkResult\"]=\"missing\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(f)+'/'\n\
+            mayamisscount+=1\n\
+            allUniqueFiles.append(f)\n\
+            jsonoutput[\"reference\"][\"files\"].append(finfo)\n\
+\
+    elif f[-6:] == \".cache\":\n\
+        f = f[:-6]\n\
+        if not jsonoutput.has_key(\"cache\"):\n\
+            jsonoutput[\"cache\"]={\"files\":[]}\n\
+        filepath=getFile(f)\n\
+        finfo={}\n\
+        finfo[\"absPath\"]=f\n\
+        finfo[\"filename\"]=os.path.basename(f)\n\
+        if filepath!=\"\" and filepath not in allUniqueFiles:\n\
+            finfo[\"checkResult\"]=\"found\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(filepath)+'/'\n\
+            allUniqueFiles.append(filepath)\n\
+            jsonoutput[\"cache\"][\"files\"].append(finfo)\n\
+        elif filepath==\"\":\n\
+            finfo[\"checkResult\"]=\"missing\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(f)+'/'\n\
+            cachemisscount+=1\n\
+            allUniqueFiles.append(f)\n\
+            jsonoutput[\"cache\"][\"files\"].append(finfo)\n\
+    elif f!='':\n\
+        if not jsonoutput.has_key(\"file\"):\n\
+            jsonoutput[\"file\"]={\"files\":[]}\n\
+        filepath=getFile(f)\n\
+        finfo={}\n\
+        finfo[\"absPath\"]=f\n\
+        finfo[\"filename\"]=os.path.basename(f)\n\
+        if filepath!=\"\" and filepath not in allUniqueFiles:\n\
+            finfo[\"checkResult\"]=\"found\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(filepath)+'/'\n\
+            allUniqueFiles.append(filepath)\n\
+            jsonoutput[\"file\"][\"files\"].append(finfo)\n\
+        elif filepath==\"\":\n\
+            finfo[\"checkResult\"]=\"missing\"\n\
+            if str(sys.argv[-2])=='1':\n\
+                finfo[\"path\"]=os.path.dirname(f)+'/'\n\
+            filemisscount+=1\n\
+            allUniqueFiles.append(f)\n\
+            jsonoutput[\"file\"][\"files\"].append(finfo)\n\
+    i+=1\n\
+\
+if jsonoutput.has_key(\"aiStandIn\"):\n\
+    jsonoutput[\"aiStandIn\"][\"summary\"]={\"allFiles\":str(len(jsonoutput[\"aiStandIn\"][\"files\"])),\"missingFiles\":str(assmisscount)}\n\
+if jsonoutput.has_key(\"reference\"):\n\
+    jsonoutput[\"reference\"][\"summary\"]={\"allFiles\":str(len(jsonoutput[\"reference\"][\"files\"])),\"missingFiles\":str(mayamisscount)}\n\
+if jsonoutput.has_key(\"cache\"):\n\
+    jsonoutput[\"cache\"][\"summary\"]={\"allFiles\":str(len(jsonoutput[\"cache\"][\"files\"])),\"missingFiles\":str(cachemisscount)}\n\
+if jsonoutput.has_key(\"file\"):\n\
+    jsonoutput[\"file\"][\"summary\"]={\"allFiles\":str(len(jsonoutput[\"file\"][\"files\"])),\"missingFiles\":str(filemisscount)}\n\
+jsonoutput[\"global\"]={\"allFiles\":str(len(allUniqueFiles)),\"missingFiles\":str(assmisscount+mayamisscount+filemisscount+cachemisscount)}\n\
+");
+
+//print json 
+python("import json\n\
+import codecs\n\
+import sys\n\
+la = open(\""+$prjPath+"/analysis.log\", 'r')\n\
+logdata=json.load(la, encoding=\"GBK\")\n\
+la.close()\n\
+notlegal=0\n\
+for a in allUniqueFiles:\n\
+    if (a[0].lower()=='c') or (a[0].lower()=='a') or (a[0].lower()=='a'):\n\
+        notlegal+=1\n\
+    elif (a[:2]=='//') or (a[:2]=='\\\\\\\\'):\n\
+        notlegal+=1\n\
+logdata[\"settings\"][\"pathNotLegal\"]=str(notlegal)\n\
+logdata[\"analysis_log\"]=jsonoutput\n\
+jf = codecs.open(\""+$prjPath+"/analysis.log\", \"w\",'utf_8')\n\
+jf.write(json.dumps(logdata, ensure_ascii=False))\n\
+jf.close()\n\
+");
+
