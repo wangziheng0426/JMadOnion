@@ -18,6 +18,8 @@ def maya_main_window():
 
 class J_2dPaintTool_UI(object):
     def J_create2dPaintTool_UI(self,J_2dPaintTool):
+        posX=2
+        posY=21
         J_2dPaintTool.setObjectName('J_2dPaintTool')
         J_2dPaintTool.resize(243,300)
         J_2dPaintTool.setMinimumSize(QtCore.QSize(243, 300))
@@ -31,18 +33,28 @@ class J_2dPaintTool_UI(object):
         self.comboBox_cam.setGeometry(QtCore.QRect(0, 1, 240, 20))
         self.comboBox_cam.setObjectName("comboBox_cam")
                 
+        self.pushButton_addPlane = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_addPlane.setGeometry(QtCore.QRect(posX, posY, 120, 20))
+        self.pushButton_addPlane.setObjectName("pushButton_addPlane")
+        self.pushButton_addPlane.setText(u"Ìí¼ÓÍ¶ÉäÆ¬")      
+        
+        self.pushButton_deletePlane = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_deletePlane.setGeometry(QtCore.QRect(posX+120, posY, 120, 20))
+        self.pushButton_deletePlane.setObjectName("pushButton_deletePlane")
+        self.pushButton_deletePlane.setText(u"É¾³ýÍ¶ÉäÆ¬")   
+                
         self.pushButton_addLayer = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_addLayer.setGeometry(QtCore.QRect(2, 21, 120, 20))
+        self.pushButton_addLayer.setGeometry(QtCore.QRect(posX, posY+20, 120, 20))
         self.pushButton_addLayer.setObjectName("pushButton_addLayer")
-        self.pushButton_addLayer.setText(u"Ìí¼Ó")
+        self.pushButton_addLayer.setText(u"Ìí¼Ó·Ö²ã")
         
         self.pushButton_deleteLayer = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_deleteLayer.setGeometry(QtCore.QRect(122, 21, 120, 20))
+        self.pushButton_deleteLayer.setGeometry(QtCore.QRect(posX+120, posY+20, 120, 20))
         self.pushButton_deleteLayer.setObjectName("pushButton_deleteLayer")
-        self.pushButton_deleteLayer.setText(u"É¾³ý")
+        self.pushButton_deleteLayer.setText(u"É¾³ý·Ö²ã")
         
         self.listView = QtWidgets.QListView(self.centralwidget)
-        self.listView.setGeometry(QtCore.QRect(2, 42, 240, 250))
+        self.listView.setGeometry(QtCore.QRect(2, posY+40, 240, 250))
         self.listView.setObjectName(u"Layers")
         self.listView.setEditTriggers(0)
         model = QtGui.QStandardItemModel()
@@ -169,7 +181,6 @@ class J_mainWin(QtWidgets.QMainWindow):
             except:
                 print ('can not delete %s'%objectName)
     ####Òþ²Ø²ã
-    
     def J_hideShowLayer(self):
         model = self.J_mainWindow.listView.model()
         modelIndexs = self.J_mainWindow.listView.selectedIndexes()
@@ -187,8 +198,43 @@ class J_mainWin(QtWidgets.QMainWindow):
                     cmds.setAttr(selectedItem.text()+'.visibility',True)
                 except:
                     pass
+    def J_createImagePlane(self):
+        cameraShape=self.J_mainWindow.comboBox_cam.itemText(self.J_mainWindow.comboBox_cam.currentIndex())
+        cameraTransform=cmds.listRelatives(cameraShape,parent=True)
+        if cmds.attributeQuery('J_ImageFilePath',node=cameraShape,exists=True):
+            cameraConnections=cmds.listConnections(cameraShape,connections=False,source=True,plugs=False,type='imagePlane')
+            if len(cameraConnections):
+                filePath=cmds.getAttr(cameraShape+'.J_ImageFilePath')
+                for temp in  cameraConnections:
+                    if temp.find('->')>-1:
+                        temp=temp.split('->')[1]
+                    cmds.setAttr(temp+'.imageName','',type='string')
+                    cmds.setAttr(temp+'.imageName',filePath,type='string')
+                    
+        else:
+            createImagePlane=cmds.createNode('imagePlane')
+            imagePlaneTransform=cmds.listRelatives(createImagePlane,parent=True)
+            cmds.parent(imagePlaneTransform,cameraShape,relative=True )
+            mel.eval('cameraImagePlaneUpdate("'+cameraShape+'","'+createImagePlane+'")')
+            filePath = cmds.fileDialog2(fileMode=1, caption="Import Image")
+            cmds.addAttr(cameraShape, longName='J_ImageFilePath', dataType='string' )
+            cmds.setAttr(cameraShape+'.J_ImageFilePath',filePath[0],type='string')
+            cmds.setAttr(createImagePlane+'.imageName',filePath[0],type='string')
+            cmds.setAttr(createImagePlane+'.useFrameExtension',1)
+
+    def J_deleteImagePlane(self):
+        cameraShape=self.J_mainWindow.comboBox_cam.itemText(self.J_mainWindow.comboBox_cam.currentIndex())
+        cameraTransform=cmds.listRelatives(cameraShape,parent=True)
+        if cmds.attributeQuery('J_ImageFilePath',node=cameraShape,exists=True):
+            cameraConnections=cmds.listConnections(cameraShape,connections=False,source=True,plugs=False,type='imagePlane')
+            cmds.delete(cameraConnections) 
+            cmds.select(cameraShape)
+            cmds.deleteAttr(name=cameraShape, attribute='J_ImageFilePath')
+    
     ####¹ØÁªÐÅºÅ²Û
     def J_createSlots(self):
+        self.J_mainWindow.pushButton_addPlane.clicked.connect(self.J_createImagePlane)
+        self.J_mainWindow.pushButton_deletePlane.clicked.connect(self.J_deleteImagePlane)
         self.J_mainWindow.pushButton_addLayer.clicked.connect(self.J_createLayer)
         self.J_mainWindow.pushButton_deleteLayer.clicked.connect(self.J_deleteItemFromList)
         self.J_mainWindow.listView.doubleClicked.connect(self.J_hideShowLayer)
