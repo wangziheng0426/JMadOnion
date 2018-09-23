@@ -19,7 +19,7 @@ def maya_main_window():
 class J_2dPaintTool_UI(object):
     def J_create2dPaintTool_UI(self,J_2dPaintTool):
         J_2dPaintTool.setObjectName('J_2dPaintTool')
-        J_2dPaintTool.resize(243,300)
+        J_2dPaintTool.resize(243,320)
         J_2dPaintTool.setMinimumSize(QtCore.QSize(243, 300))
         
         self.centralwidget = QtWidgets.QWidget(J_2dPaintTool)
@@ -45,6 +45,13 @@ class J_2dPaintTool_UI(object):
         self.listView.setGeometry(QtCore.QRect(2, 42, 240, 250))
         self.listView.setObjectName(u"Layers")
         self.listView.setEditTriggers(0)
+        
+        self.pushButton_disPlaySwitch = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_disPlaySwitch.setGeometry(QtCore.QRect(2, 295, 240, 20))
+        self.pushButton_disPlaySwitch.setObjectName("pushButton_deleteLayer")
+        self.pushButton_disPlaySwitch.setText(u"模型显示切换")
+        
+        
         model = QtGui.QStandardItemModel()
         self.listView.setModel(model)
         
@@ -86,6 +93,23 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.select(allTransformNodes)
         
             ####初始化列表
+    ####显示隐藏切换
+    def J_displaySwitch(self):
+        allObj=cmds.ls(sl=True)
+        if len(allObj)<2:
+            print "选择模型太少"
+            return '选择模型太少'
+        currentFrame=cmds.currentTime( query=True )
+        cmds.setAttr(allObj[0]+'.visibility',0)
+        cmds.setAttr(allObj[1]+'.visibility',1)
+        cmds.setKeyframe( allObj[0], allObj[1], attribute='visibility',t=[currentFrame])
+        currentFrame=currentFrame-1
+        cmds.setAttr(allObj[0]+'.visibility',1)
+        cmds.setAttr(allObj[1]+'.visibility',0)
+        cmds.setKeyframe( allObj[0], allObj[1], attribute='visibility',t=[currentFrame])
+
+            
+    
     def J_createLayer(self):
         ####创建平面
         self.layerCount+=1
@@ -192,6 +216,7 @@ class J_mainWin(QtWidgets.QMainWindow):
         self.J_mainWindow.pushButton_addLayer.clicked.connect(self.J_createLayer)
         self.J_mainWindow.pushButton_deleteLayer.clicked.connect(self.J_deleteItemFromList)
         self.J_mainWindow.listView.doubleClicked.connect(self.J_hideShowLayer)
+        self.J_mainWindow.pushButton_disPlaySwitch.clicked.connect(self.J_displaySwitch)
     ####关联信号槽
     ####杀监控脚本
     def closeEvent( self, event ):

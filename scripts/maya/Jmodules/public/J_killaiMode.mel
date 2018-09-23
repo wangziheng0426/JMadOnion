@@ -14,7 +14,7 @@ global proc J_killaiMode()
 {string $sel[]=`ls -sl`;
     for ($i in $sel)
         {
-            if (`attributeExists "aiMode" $i )
-                {deleteAttr -at "aiMode" $i}
+            if (`attributeExists "aiMode" $i `)
+                {deleteAttr -at "aiMode" $i;}
         }
 }
