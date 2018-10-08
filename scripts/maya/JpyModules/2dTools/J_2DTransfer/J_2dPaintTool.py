@@ -53,8 +53,14 @@ class J_2dPaintTool_UI(object):
         self.pushButton_deleteLayer.setObjectName("pushButton_deleteLayer")
         self.pushButton_deleteLayer.setText(u"删除分层")
         
+        self.pushButton_eraseElement = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_eraseElement.setGeometry(QtCore.QRect(posX, posY+40, 240, 20))
+        self.pushButton_eraseElement.setCheckable(True)
+        self.pushButton_eraseElement.setObjectName("pushButton_eraseElement")
+        self.pushButton_eraseElement.setText(u"擦除模型")
+        
         self.listView = QtWidgets.QListView(self.centralwidget)
-        self.listView.setGeometry(QtCore.QRect(2, posY+40, 240, 250))
+        self.listView.setGeometry(QtCore.QRect(2, posY+60, 240, 250))
         self.listView.setObjectName(u"Layers")
         self.listView.setEditTriggers(0)
         model = QtGui.QStandardItemModel()
@@ -72,6 +78,8 @@ class J_mainWin(QtWidgets.QMainWindow):
         #pram
         self.layerCount=0
         self.scriptJobNumber0=0
+        self.scriptJobNumber1=0
+        self.eraseState=0
         #pram
         super(J_mainWin, self).__init__(parent)
         self.setWindowFlags(QtCore.Qt.Window)
@@ -79,7 +87,7 @@ class J_mainWin(QtWidgets.QMainWindow):
         self.J_mainWindow.J_create2dPaintTool_UI(self)
         self.J_createSlots()#关联按钮
         self.J_mainWindow.comboBox_cam.addItems(cmds.ls(type='camera'))#给列表添加摄像机
-        self.scriptJobNumber0=self.scriptJobNum0=cmds.scriptJob( e=['SelectionChanged','J_2DTransferIns.J_changeState()'],parent='J_2dPaintTool')
+        self.scriptJobNumber0=cmds.scriptJob( e=['SelectionChanged','J_2DTransferIns.J_changeState()'],parent='J_2dPaintTool')
         self.J_initListView()
         
     ####初始化列表
@@ -198,6 +206,7 @@ class J_mainWin(QtWidgets.QMainWindow):
                     cmds.setAttr(selectedItem.text()+'.visibility',True)
                 except:
                     pass
+    ####创建平面
     def J_createImagePlane(self):
         cameraShape=self.J_mainWindow.comboBox_cam.itemText(self.J_mainWindow.comboBox_cam.currentIndex())
         cameraTransform=cmds.listRelatives(cameraShape,parent=True)
@@ -221,7 +230,7 @@ class J_mainWin(QtWidgets.QMainWindow):
             cmds.setAttr(cameraShape+'.J_ImageFilePath',filePath[0],type='string')
             cmds.setAttr(createImagePlane+'.imageName',filePath[0],type='string')
             cmds.setAttr(createImagePlane+'.useFrameExtension',1)
-
+    #删除平面
     def J_deleteImagePlane(self):
         cameraShape=self.J_mainWindow.comboBox_cam.itemText(self.J_mainWindow.comboBox_cam.currentIndex())
         cameraTransform=cmds.listRelatives(cameraShape,parent=True)
@@ -230,7 +239,15 @@ class J_mainWin(QtWidgets.QMainWindow):
             cmds.delete(cameraConnections) 
             cmds.select(cameraShape)
             cmds.deleteAttr(name=cameraShape, attribute='J_ImageFilePath')
-    
+    def J_createeraseElementJob(self):
+        if self.eraseState==0:
+            print "create"
+            self.scriptJobNumber1=cmds.scriptJob( e=['SelectionChanged','cmds.delete(cmds.ls(sl=True))'],parent='J_2dPaintTool')
+            self.eraseState=1
+        else:
+            print "deleted"
+            cmds.scriptJob( kill=self.scriptJobNumber1, force=True )
+            self.eraseState=0
     ####关联信号槽
     def J_createSlots(self):
         self.J_mainWindow.pushButton_addPlane.clicked.connect(self.J_createImagePlane)
@@ -238,10 +255,14 @@ class J_mainWin(QtWidgets.QMainWindow):
         self.J_mainWindow.pushButton_addLayer.clicked.connect(self.J_createLayer)
         self.J_mainWindow.pushButton_deleteLayer.clicked.connect(self.J_deleteItemFromList)
         self.J_mainWindow.listView.doubleClicked.connect(self.J_hideShowLayer)
+        #eraseElement
+        self.J_mainWindow.pushButton_eraseElement.pressed.connect(self.J_createeraseElementJob)
+
+        
     ####关联信号槽
     ####杀监控脚本
     def closeEvent( self, event ):
-        cmds.scriptJob( kill=self.scriptJobNum0, force=True )
+        cmds.scriptJob( kill=self.scriptJobNumber0, force=True )
     #cmds.scriptJob( kill=self.scriptJobNum1, force=True )
     #有bug 目前不影响 super( J_mainWin, self).closeEvent( event )
     ####杀监控脚本
