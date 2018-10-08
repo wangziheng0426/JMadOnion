@@ -118,7 +118,7 @@ global proc J_yetiGetPath()//读取路径
    //{
     $temp=`fileDialog2 -fm 3`;
    //}
-	textField -e -tx $temp[0]  pathText;
+	textField -e -tx ($temp[0]+"/")  pathText;
 }
 //初始化工具信息，读取yeti节点，设置输出路径
 global proc J_runYetiCacheInit()
@@ -142,14 +142,12 @@ global proc J_runYetiCacheInit()
 		$numTokens = `tokenize $buffer[size($buffer)-2] "/" $buffer1`;
 		$cachePath+="_yetiCache/";//输出路径
 		textField  -e -text $cachePath pathText;
-
+    }
 		int $startFrame =`playbackOptions -q -min`;
 		textField  -e -tx $startFrame startFrameInputTextField;
 
 		int $endFrame  =`playbackOptions -q -max`;
 		textField  -e -tx $endFrame endFrameInputTextField;
-
-    }
 }
 
 //输出列表中所选yeti节点缓存

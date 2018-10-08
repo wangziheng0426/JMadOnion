@@ -19,4 +19,5 @@ global proc string J_deleteRenderMel()
     setAttr -type "string" defaultRenderGlobals.postRenderLayerMel "";
     setAttr -type "string" defaultRenderGlobals.preRenderMel "";
     setAttr -type "string" defaultRenderGlobals.postRenderMel "";
+    return "success";
 }
