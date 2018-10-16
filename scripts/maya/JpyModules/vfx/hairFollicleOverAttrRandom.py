@@ -8,8 +8,9 @@
 #  History:  
 ##随机修改毛囊动力学参数属性
 import maya.cmds as cmds
-sel=cmds.ls(sl=True)
-attrToEdit={'overrideDynamics':1}
-for i in sel:
-    childOfNode=cmds.listRelatives(i,c=True,type='follicle')
-    cmds.setAttr(i+'.overrideDynamics',1)
+def hairFollicleOverAttrRandom()
+    sel=cmds.ls(sl=True)
+    attrToEdit={'overrideDynamics':1}
+    for i in sel:
+        childOfNode=cmds.listRelatives(i,c=True,type='follicle')
+        cmds.setAttr(i+'.overrideDynamics',1)
