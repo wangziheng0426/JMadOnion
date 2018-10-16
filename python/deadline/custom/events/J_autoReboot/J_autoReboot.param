@@ -1,0 +1,9 @@
+[Enabled]
+Type=boolean
+Label=Enabled
+Default=True
+Description=Enable J_autoReboot Event.
+[TimeInterval]
+Type=Integer
+Default=60
+Description=The time interval can be set in minute

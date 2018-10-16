@@ -66,4 +66,3 @@ global proc J_exportSelectCam(string $camraName)
     string $outPath=$Jpath+"/"+$JfileName+"_"+$camraName+".ma";
     file -force -options "v=0;" -typ "mayaAscii" -pr -es $outPath;
 }
-J_bakeCamera;
