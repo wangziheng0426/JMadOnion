@@ -32,4 +32,4 @@ def convertMM(inPath,fileTypes,startTime='0',reslution='960*540',crf='18',codeMo
     allFile+='shutdown -f -s -t 60'
     writeFileAll.write(allFile)
     writeFileAll.close()
-convertMM(r'D:\临时文件\0729',['.avi','.mp4','.wmv','.mkv'],'00:10:00','1280*720',18,'hevc')
+convertMM(r'E:\zwq\movies',['mov','.avi','.mp4','.wmv','.mkv'],'00:10:00','1280*720',18,'hevc')

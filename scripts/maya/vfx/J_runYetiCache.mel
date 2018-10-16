@@ -192,6 +192,7 @@ global proc runYetiCacheAllBtn()
 //输出yeti缓存方法（节点名，缓存路径，缓存名，起始时间，结束时间，采样率）
 global proc runYetiCache(string $yetiMayaNode,string $yetiCachePath,string $yetiFileName,int $yetiCacheStartTime,int $yetiCacheEndTime,int $yetiSamples)
 {
+        $yetiCachePath=$yetiCachePath+"/"+$yetiMayaNode;
 		if(!`file -q -ex $yetiCachePath`)
 		{sysFile -makeDir $yetiCachePath;}
 		print $yetiCachePath;

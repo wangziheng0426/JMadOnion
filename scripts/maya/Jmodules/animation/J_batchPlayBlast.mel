@@ -60,5 +60,5 @@ global proc J_runPlayBlast(string $camraName)
     system("c:/ffmpeg.exe -i "+$outPath+".mov  -vf \"drawtext=fontfile=simhei.ttf: text='ˮӡ':x=500:y=500:fontsize=48\"   -crf 18 -c:v hevc -y "+$outPath+"S.mov");
 
 }
-J_batchPlayBlast;
+
 
