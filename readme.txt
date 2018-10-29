@@ -10,6 +10,7 @@
 //第二步：将文件中第5行"//192.168.0.2/Projects/JmadOnionGit/scripts/maya"
 //            引号中的部分替换为当前userSetup所在目录，并将所有右斜杠“\”改为“/”
 //第三步：手动将userSetup.mel拷贝到文档/maya/2016/scripts下
+//
 
 //安装完成
 //
