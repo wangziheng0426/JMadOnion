@@ -1,0 +1,25 @@
+/////////////////////////////////////////////////////////////
+///\file  J_switchWrapNodes.mel
+///\brief  切换所有包裹节点运算属性
+///
+///\author 桔
+///\version 1.0
+///\date   16:41 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///切换所有包裹节点运算属性
+global proc J_switchWrapNodes()
+{
+string $mos[]=`ls -type wrap`;
+int $res=getAttr ($mos[0]+".nodeState");
+int $state=0;
+if ($res==0)
+{$state=2;}
+for($item in $mos)
+	{
+		setAttr  ($item+".nodeState") $state;
+	}
+}
+
