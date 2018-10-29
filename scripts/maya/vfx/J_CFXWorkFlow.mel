@@ -1,0 +1,1331 @@
+/////////////////////////////////////////////////////////////
+///\file J_CFXWorkFlow.mel
+///
+///\brief    毛发流程工具  
+///
+///\author 桔
+///\version 1.0
+///\date  15:23 2018/3/6
+///History:  
+///
+///////////////////////////////////////////////////////////////
+global proc J_CFXWorkFlow()//主程序
+{
+/////////////////////////////////////////////////////////////生成窗体
+string $checkBoxs[];
+int $winWidth=300;
+int $count=10;
+if (`window -ex J_CFXWorkFlow`)
+	deleteUI -window J_CFXWorkFlow;
+	window -w 300 -h 600 -title "CFX工具" J_CFXWorkFlow;
+		int $ButtonW=80;
+		int $ButtonH=30;
+		frameLayout -cll 1 -cl 0 -h ($count*20) -l "导出粒子"  myColum;
+		formLayout  -numberOfDivisions 100  checkNodesLayout;
+		//button -bgc 0.7 0.1 0.1 -l "改帧速率为30" -w $ButtonW  -h $ButtonH  -c  "J_changePlayBackSpeedTo30" button00;
+		//separator  -w $winWidth -bgc .5 .5 .5 -st "in"  sepx ;	
+		//textScrollList -h 100 instanceList;
+		//button -l "添加替代模型" -w $ButtonW  -h $ButtonH -c  "J_PaaddModelsFromSelect" checkButton1;
+		button -l "转换粒子替代" -w $ButtonW  -h $ButtonH -c  "J_ParticleToJointModel()" bu_conpa;
+		
+		separator  -w $winWidth -bgc .5 .5 .5 -st "in"  sepx1 ;	
+		textField  -w 260 -h 25 pathText;
+		
+		button -l "选择路径" -w $ButtonW  -h $ButtonH -c  "J_PaGetPath" buPath ;
+		button -l "导出群集文件" -w $ButtonW  -h $ButtonH -c  "J_P2Jrun()" buUp ;
+		button -l "导出fbx文件" -w $ButtonW  -h $ButtonH -c  "J_PaSelectedToFbx" buUpS ;
+		button -l "动画转骨骼" -w $ButtonW  -h $ButtonH  -c  "J_modelAnimToJointAnim" button01;
+		button -l "动画转骨骼(带显示隐藏TP适用)" -w $ButtonW  -h $ButtonH  -c  "J_modelAnimToJointAnim" button02;
+		button -l "布料转morph" -w $ButtonW  -h $ButtonH  -c  "J_clothToMorph(1)" button03;
+		button -l "骨骼模型序列" -w $ButtonW  -h $ButtonH  -c  "J_objSequenceToEngine" button04;
+	/////////////////////////////////////////////////////////编辑窗体	
+	int $apx=5;
+	int $apy=5;
+
+	formLayout -e 
+		-ap bu_conpa left 0 1
+		-af bu_conpa top 0
+		-ap bu_conpa right 0 99
+		
+		-af sepx1 left 0
+		-ac sepx1 top $apy bu_conpa
+		-af sepx1 right 0 
+		
+		-af pathText left $apx  
+		-ac pathText top $apy sepx1
+		-af pathText right $apx  
+		
+		-af buPath left $apx 
+		-ac buPath top $apy pathText
+		-ap buPath right 0 33
+		
+		-ac buUp left $apx buPath
+		-ac buUp top $apy pathText
+		-ap buUp right 0 66
+		
+		-ac buUpS left $apx buUp
+		-ac buUpS top $apy pathText
+		-ap buUpS right 0 99
+		
+		-ap button01 left 0 1
+		-ac button01 top $apy buUpS
+		-ap button01 right 0 99
+		
+		-ap button02 left 0 1
+		-ac button02 top $apy button01
+		-ap button02 right 0 99
+		
+		-ap button03 left 0 1
+		-ac button03 top $apy button02
+		-ap button03 right 0 99
+		
+		-ap button04 left 0 1
+		-ac button04 top $apy button03
+		-ap button04 right 0 99
+		
+		checkNodesLayout;
+		
+showWindow J_CFXWorkFlow;
+
+}
+/*
+if(`menu -ex myNewMainMenu`){
+    deleteUI -menu  myNewMainMenu;
+}
+global string $gMainWindow;
+    setParent $gMainWindow;
+    
+    menu -tearOff true -label "HairTool" myNewMainMenu;
+  
+    menuItem -label "Batch Save Presets " -c saveAttributes; 
+    menuItem -divider true; 
+       
+    menuItem -label "Batch Get Presets And  Abc Cache  "  -c GetArrtibuterAndName; 
+  
+    menuItem -divider true; 
+    
+    menuItem -label "Batch Object Warp "  -c BatchObjectWarp;
+    menuItem -label "Batch Creaat qlCloth "  -c BatchCreaatCloth;  
+    menuItem -label "Batch Parent " -c batchParent;
+    menuItem -label "Batch HairSystem Arrtibute" ;
+    menuItem -optionBox true -c HairSystemWindow;
+    menuItem -divider true; 
+    
+    menuItem -label "Curvers Create Joint "  -c curversCreateJoint;  
+                       
+
+    menuItem -label "Delete half "     -c Follicle;
+    menuItem -label "Collider Sphere " -c "createHairConstraint 5";
+    
+    
+
+    menuItem -label "Refresh HairSystem " -c RefreshHairSystem;
+    menuItem -label "Convert Hair Follicle " -c convertHairFollicles;
+    menuItem -label "Delete Entire Hair System "     -c deleteHair;
+  
+    setParent -menu myNewMainMenu;
+    menuItem  -divider true; 
+    menuItem -subMenu true -tearOff true -label "Hair Transplant Object ";
+        menuItem -l "Delete" -c HairTransplantObjectDelete;
+        menuItem -l "Add" -c HairTransplantObjectAdd;
+         
+*/
+global proc Follicle(){
+    
+    string $sel[] =`ls -sl`;
+    int $i;
+    for($i =0;$i<size($sel);$i++){
+    
+        if($i%2==0){
+          select -r $sel[$i];
+          doDelete ;
+        }
+ 
+    }
+}
+
+//转化到毛囊
+global proc convertHairFollicles(){
+    
+    convertHairSelection "follicles";
+    
+}
+
+
+
+//刷新毛发系统
+global proc RefreshHairSystem(){
+    
+    convertHairSelection "hairSystems";
+    string $selhehe[] = `ls -sl`;
+
+    for($a in $selhehe){
+
+    setAttr ($a+".active") 1;
+    setAttr ($a+".simulationMethod") 3;
+    }
+
+    playButtonStart; 
+    playButtonStepForward;
+    playButtonStart; 
+
+    for($a in $selhehe){
+
+    setAttr ($a+".active") 0;
+    setAttr ($a+".simulationMethod") 3;
+    }
+    
+}
+
+//批量绑定
+global proc batchParent(){
+    
+    string $sel[]= `ls -sl`;
+    string $seltwo = $sel[0];
+    stringArrayRemoveAtIndex(0, $sel);
+
+    string $selone []= $sel;
+    for($a in $selone){
+        select -r $seltwo;  
+        select -tgl $a ;
+        parentConstraint -mo -weight 1;
+    }
+}
+
+//毛发移植
+global proc HairTransplantObjectDelete(){
+    pickWalk -d down;
+    string $sel[]= `ls -sl`;
+    string $seltwo = $sel[0];
+    stringArrayRemoveAtIndex(0, $sel);
+    string $selthree []= $sel;
+ 
+     for($a in $selthree){
+         
+     disconnectAttr ($seltwo+".worldMatrix[0]") ($a+".inputWorldMatrix");
+     disconnectAttr ($seltwo+".outMesh") ($a+".inputMesh");
+     
+    }
+}
+
+global proc HairTransplantObjectAdd(){
+    pickWalk -d down;
+    string $sel[]= `ls -sl`;
+    string $seltwo = $sel[0];
+    stringArrayRemoveAtIndex(0, $sel);
+    string $selthree []= $sel;
+ 
+     for($a in $selthree){
+         
+     connectAttr ($seltwo+".worldMatrix[0]") ($a+".inputWorldMatrix");
+     connectAttr ($seltwo+".outMesh") ($a+".inputMesh");
+     
+    }
+}
+
+global proc deleteHair(){
+    
+    string $sel[]= `ls -sl`;
+    convertHairSelection "hairSystems";
+    DeleteEntireHairSystem;
+}
+
+//////////////////////////////////////显示
+global proc shuaxin(){
+    
+    string $window = `window -title "intSliderGrp Example"`;
+     columnLayout -adjustableColumn true;
+
+    floatSliderGrp -label "Display Quality" -field true -min 1 -max 50 -v 1 fsgrp1;
+    
+    
+    button -l "Apply" -c xianshi; 
+    showWindow $window;  
+    
+}
+
+global proc xianshi(){
+    
+    float $radiusOfSphere=`floatSliderGrp -q -v fsgrp1`;
+    convertHairSelection "hairSystems";
+    string $selhair []=`ls -sl`;
+    
+    for($a in $selhair)
+    setAttr ($a+".displayQuality") $radiusOfSphere;
+    
+}
+
+
+
+
+
+
+
+//////////////////////////////批量创建毛发/////////////////////
+
+
+global proc package(){
+    
+    follicleGroup();
+    BatchCreaatHair();
+    CreaatfollicleGroup();
+    GruopHairSystem();
+    GruopPfxHair();
+    Gruopfater();
+
+    string $MaterialPath =  hairMaterialPath();
+
+    file -import -type "mayaAscii"  -ignoreVersion -mergeNamespacesOnClash false -rpr "hairMaterial" -options "v=0;"  -pr $MaterialPath ;
+}
+
+
+global proc follicleGroup(){
+    
+    string $sel[] = `ls -sl`;
+    
+    int $i=1;
+    for($a in $sel){
+    
+        select -add $a ;
+        
+        rename $a ("follicle_cache_"+($i++));
+    
+    }
+    
+}
+
+
+global proc CreaatfollicleGroup(){
+    select -cl ;
+    string $seltest[] = `ls "follicle_cache*"`;
+    
+    
+     for($a in $seltest){
+    
+        select -add $a ;
+        
+    
+    }
+    
+    doGroup 0 1 1;
+    string $seltwo[] =`ls -sl`;
+    rename ($seltwo[0]) "follicle";
+    
+}
+
+
+global proc Gruopfater(){
+    
+    select -add nucleus1 ;
+    select -add follicle ;
+    select -add HairSystem ;
+    select -add pfxHair ;
+    doGroup 0 1 1;
+    string $sel[] =`ls -sl`;
+    rename ($sel[0]) "Assets_Hair";
+    
+}
+
+global proc GruopHairSystem(){
+     select -cl ;
+    string $sel[] = `ls "hairSystem*" `;
+
+    $intNumOne = (size($sel))-1;
+
+    $intNum = ((size($sel))*0.5-1);
+
+    int $j = ($intNumOne) ;
+
+
+    for($j; $j>$intNum; $j--){
+
+        stringArrayRemoveAtIndex($j, $sel);
+   
+     
+    }
+
+   
+
+    for($a in $sel){
+    
+        select -add $a ;
+    
+    }
+
+    doGroup 0 1 1;
+    string $sel[] =`ls -sl`;
+    rename ($sel[0]) "HairSystem";
+    
+}
+
+
+global proc GruopPfxHair(){
+    select -cl ;
+    string $sel[] = `ls "pfxHair*" `;
+
+    $intNumOne = (size($sel))-1;
+
+    $intNum = ((size($sel))*0.5-1);
+
+    int $j = ($intNumOne) ;
+
+
+    for($j; $j>$intNum; $j--){
+
+        stringArrayRemoveAtIndex($j, $sel);
+   
+     
+    }
+
+    string $seltwo[] = $sel;
+
+    for($a in $seltwo){
+    
+        select -add $a ;
+    
+    }
+
+    doGroup 0 1 1;
+    string $sel[] =`ls -sl`;
+    rename ($sel[0]) "pfxHair";
+    
+}
+
+
+
+global proc BatchCreaatHair(){
+    
+    
+    
+    pickWalk -d up;
+    string $sel[] = `ls -sl`;
+
+
+    for($a in $sel){
+   
+    select -r $a ;
+    makeCurvesDynamic 2 { "0", "0", "0", "0", "1"};
+    }
+    
+    
+}
+//////////////////////////////保存预设/////////////////////////////////////// 
+
+
+
+
+global proc saveAttributes(){
+    
+   AbcCache();
+   string $getName =  saveAttrr();
+   
+   hairSystemNamePath();
+    hairSystemWirte(); 
+   hairMaterial(); 
+   
+   
+   
+   
+}
+
+
+
+global proc string saveAttrr(){
+    
+    convertHairSelection "hairSystems";
+    
+    pickWalk -d up;
+   string $sel[] = `ls -sl`;
+  
+    for($a in $sel){
+        
+      string $nameOne[] = `listRelatives -f $a`;
+      saveAttrPresetWin $nameOne[0];
+      psWinSavePreset;
+               
+    }
+    
+    string $name =    stringArrayToString($sel, " ");
+     return $name;
+}
+
+
+
+global proc string hairSystemNamePath(){
+    
+    string $workname = `workspace -q -rd`;
+    $FileName = $workname+"scripts/hairName.txt";
+    
+    
+    return $FileName ;
+}
+
+
+
+
+
+global proc string hairMaterialPath(){
+    
+     string $workname = `workspace -q -rd`;
+    string $FileNameTwo  = $workname+"scripts/hairMaterial.ma";
+  
+    return $FileNameTwo ;
+}
+
+
+
+global proc string hairMaterialPathText(){
+    
+     string $workname = `workspace -q -rd`;
+    string $FileNameone  = $workname+"scripts/hairMaterial.txt";
+    
+    return $FileNameone ;
+}
+
+
+global proc hairMaterial(){
+       
+        
+    string $path =  hairMaterialPath();
+
+
+    pickWalk -d down;
+    string $sel[] = `ls -sl`;
+    select -cl  ;
+
+
+    string $list[];
+    
+    string $temphair[];
+    
+    
+    int $i;
+    for ($a in $sel){
+    
+       $list =  `listConnections -scn 1 -t "RedshiftHair" $a`;
+       
+        stringArrayInsertAtIndex(($i++), $temphair, $list[0]); 
+   
+        select -add $list[0];
+        
+
+    }
+
+    file -op "v=0;" -typ "mayaAscii" -pr -es $path;
+        
+   string $seltwo[] =$temphair;
+    
+   string $pathText =  hairMaterialPathText();
+    
+
+   $fileld =  `fopen $pathText "w" `;
+
+   for($b in $seltwo){
+    
+        fprint $fileld ($b+"\n");
+    }
+
+    fclose $fileld;
+
+}
+    
+global proc hairSystemWirte(){
+    
+   string $path = hairSystemNamePath();
+   
+   SelectHierarchy;
+  
+   string $sel[] = `ls -sl`;
+
+   $fileld =  `fopen $path "w" `;
+
+   for($a in $sel){
+    
+        fprint $fileld ($a+"\n");
+    }
+
+    fclose $fileld;
+    
+    
+}  
+    
+
+//////////////////////获取预设////////////////////////////////// 
+
+
+
+global proc GetArrtibuterAndName(){
+      
+     package();
+      
+    string $sel[] = `ls "hairSystem*"`;
+
+    $number = size($sel)*0.5;
+
+    int $i;
+
+    string $temp[];
+
+    for($i=0;$i<$number;$i++){
+    
+         stringArrayInsertAtIndex($i, $temp, $sel[$i] );   
+    }
+    
+    
+    for($a in $temp){
+               
+       select -add $a ;
+    }
+    
+
+    objectName();
+    
+
+   getAttrbut();
+   
+    clear $temp;
+    
+    nucleusOn();
+     
+}
+
+
+
+
+
+
+global proc getAttrbut(){
+    
+   
+    select -cl  ;
+    string $sel[] = `ls "hairSystem*"`;
+    
+    for($a in $sel){
+                     
+      select -add $a ;
+    }
+    
+    pickWalk -d down;
+    
+    
+    string $seltwo[] = `ls -sl`;
+    
+    
+    $number = size($sel);
+    
+ 
+
+    int $i = 0;
+    
+    for($i;$i<$number;$i++){
+        
+        
+         string $name[] = `listRelatives -f $sel[($i)]`;
+            
+  
+        applyPresetToNode ($name[0]) "" "" ($seltwo[($i)]) 1;
+      
+    }
+    
+   
+     
+}
+
+
+global proc objectName(){
+    
+    
+    hairSystemName();
+    hairSystemRenameShape();
+    hairMaterialOpen();
+}
+
+  
+global proc hairSystemName(){  
+ 
+    string  $pathName = hairSystemNamePath();
+       
+    $pathlujing = `fopen $pathName "r"`;
+
+    string $s=`fread $pathlujing  $s`;
+
+    string $buffer[];
+ 
+    $numberTokens = `tokenize $s "\n" $buffer`;
+    
+    int $j ;
+   
+    $num = (size($buffer))*0.5;
+       
+    string $temps[];
+   
+    for ($j=0;$j<$num;$j++){
+            
+ 
+     stringArrayInsertAtIndex($j, $temps, $buffer[($j*2)] );     
+         
+   } 
+   
+    string $sel[] =`ls -sl`;  
+
+    int $i=0;
+
+    string $test[];
+    
+     for($a in $sel){
+              
+        rename ($a) ($temps[($i++)]);
+         
+     }
+    
+    clear $buffer;
+    clear $temps;
+ 
+}
+
+
+global proc hairSystemRenameShape(){  
+ 
+    string  $pathName = hairSystemNamePath();
+       
+    $pathlujing = `fopen $pathName "r"`;
+
+    string $s=`fread $pathlujing  $s`;
+
+    string $buffer[];
+ 
+    $numberTokens = `tokenize $s "\n" $buffer`;
+    
+    int $j ;
+   
+    $num = (size($buffer))*0.5;
+       
+    string $temps[];
+    string $tempone[];
+   
+    for ($j=0;$j<$num;$j++){
+            
+     stringArrayInsertAtIndex($j, $tempone, $buffer[($j*2)] );     
+     stringArrayInsertAtIndex($j, $temps, $buffer[($j*2+1)] );     
+         
+   } 
+   
+    clear $buffer;
+     
+    
+    string $sel[] =`ls -sl`;  
+
+    int $i=0;
+     
+    string $test[];
+    
+     for($a in $sel){
+         
+         $test= `listRelatives -s $a`;
+          
+        rename ($test) ($temps[($i++)]);
+         
+     }
+    
+    clear $temps;
+  
+  
+}
+
+
+
+global proc hairMaterialOpen(){
+
+    string $path = hairMaterialPathText();
+
+    $pathlujing = `fopen $path "r"`;
+
+    string $s=`fread $pathlujing  $s`;
+
+   string $buffer[];
+ 
+    $numberTokens = `tokenize $s "\n" $buffer`;
+    
+    
+    int $i =0;
+    
+
+    pickWalk -d down;
+    string $selthere[] = `ls -sl`;
+
+
+    for($c in $selthere){
+    
+    
+    connectAttr -force ($buffer[($i++)]+".outColor") ($c+".rsHairShader");
+    
+    
+    }
+   
+}
+
+
+
+global proc nucleusOn(){
+     
+    select -cl;
+       
+    string $sel[] = `ls -s "hairSystem*"`;
+
+    for($s in $sel){
+        
+    setAttr ($s+".active") 0;      
+    setAttr ($s+".simulationMethod") 1;
+        
+    }
+         
+    string $selnucleus[] = `ls "nucleus*"`;
+    
+    for($a in $selnucleus){
+    
+        setAttr ($a+".enable") 0;
+        setAttr ($a+".visibility") 0;
+        setAttr ($a+".startFrame") 0;
+    
+    }
+        
+}
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+
+global proc curversCreateJoint(){
+    
+    
+    string $sel[] = `ls -sl`;
+
+    for ($a in $sel){
+
+    flowcurvejoint($a);
+
+}
+    
+}
+
+
+/////////////////////根据创建的曲线进行创建骨骼///////////
+global proc int judgecurvecvnum(string $judgecurve)
+{
+    select $judgecurve;
+    selectCurveCV("all");
+    string $selectCV[]=`ls -sl -fl`;
+    int $num=`size $selectCV`;
+    return $num; 
+}
+
+global proc string flowcurvejoint(string $curve)
+{
+    int $cvcount=`judgecurvecvnum $curve`-1;
+    int $i=0;
+    for ($i=0;$i<=$cvcount;$i++)
+        {
+            float $jointpos[]=`xform -q -t -ws ($curve+".cv["+$i+"]")`;
+            joint -p $jointpos[0] $jointpos[1] $jointpos[2];
+        }
+    for ($j=0;$j<$i-1;$j++)
+        {
+            //rename ("ikhairjoint"+$j);
+            pickWalk -d up;
+        }
+    
+    string $sel[]=`ls -sl`;
+    string $temp=$sel[0];
+    parent -w;
+    return $temp;
+}
+
+
+global proc BatchCreaatCloth(){
+    
+    string $sel[] = `ls -sl`;
+
+
+    for($a in $sel){
+    
+    select -r $a ;
+    qlCreateCloth;
+    
+    } 
+}
+
+
+
+
+
+
+
+
+/////////////获取预设///////////
+
+
+
+///////批量绑定//////////////
+
+
+
+        
+global proc BatchObjectWarp(){
+string $sel[] = `ls -sl`;
+
+int $number = size($sel)*0.5;
+
+int $b=  size($sel);
+
+if($b%2 ==0){
+    int $i;
+    for($i=0;$i<$number;$i++){
+       
+   select -r $sel[($number+($i))];
+   select -add $sel[$i];
+   CreateWrap;
+    }
+     
+}else{
+       print("warp需要选择2个物体");
+}
+
+}
+
+
+
+
+
+
+
+/////////HairSystemWindow////////////////
+
+
+
+global proc HairSystemWindow(){
+
+
+if(`window -ex HairSystemWindow`){
+    
+    deleteUI  HairSystemWindow;
+}
+
+window -title "HairSystem" -h 600 -w 450 HairSystemWindow; 
+
+columnLayout -adj true ;
+
+checkBox -label "Simulation Method"  -ofc hairSystemStatic -onc hairSystemStaticAllFollicles;
+
+floatSliderGrp -label "Display Quality" -field true -min 1 -max 100 -v 1 -cc xianshi fsgrp1;
+
+checkBox -label "User Nucleus Slover"  -ofc sloverOff -onc sloverOn;
+
+floatSliderGrp -label "Stiffness" -field true -min 0 -max 1 -v 0.5 -fmx 1000 -step 0.001  -cc stiffness hairStiffness;
+
+checkBox -label "No Stretch(clip post solver length)"  -ofc NoStretchOff -onc NoStretchOn;
+
+floatSliderGrp -label "Start Curve Attract" -field true -min 0 -max 1 -v 0.5  -fmx 1000 -step 0.001  -cc StartCurveAttract hairStartCurveAttract;
+
+floatSliderGrp -label "Mass" -field true -min 0 -max 1 -v 0.5 -fmx 1000 -step 0.001  -cc Mass hairMass;
+
+floatSliderGrp -label "Drag" -field true -min 0 -max 1 -v 0.5 -fmx 1000 -step 0.001  -cc Drag hairDrag;
+
+floatSliderGrp -label "TangentialDrag" -field true -min 0 -max 1 -v 0.5 -fmx 1000 -step 0.001 -cc TangentialDrag hairTangentialDrag;
+
+floatSliderGrp -label "Damp" -field true -min 0 -max 1 -v 0.5  -fmx 1000 -step 0.001 -cc Damp hairDamp;
+
+floatSliderGrp -label "Gravity" -field true -min 0 -max 1 -v 0.5 -fmx 100000 -step 0.001 -cc Gravity hairGravity;
+
+floatSliderGrp -label "Turbulence Intensity" -field true -min 0 -max 1 -v 0.5 -fmx 100000 -step 0.001 -cc TurbulenceIntensity TurbulenceStrength;
+
+
+floatSliderGrp -label "Turbulence Frequency" -field true -min 0 -max 1 -v 0.5 -fmx 100000 -step 0.001 -cc TurbulenceFrequency turbulenceFrequency;
+
+
+floatSliderGrp -label "Turbulence Speed" -field true -min 0 -max 1 -v 0.5 -fmx 100000 -step 0.001 -cc TurbulenceSpeed turbulenceSpeed;
+
+
+
+showWindow HairSystemWindow; 
+
+window -e -wh 500 300 HairSystemWindow;
+
+
+}
+
+
+global proc sloverOn(){
+    
+    string $sel[] = `ls -sl`;
+    pickWalk -d down;
+
+    for($a in $sel){
+    setAttr ($a+".active") 1;
+    }
+}
+
+//解算器关闭
+global proc sloverOff(){
+    
+    string $sel[] = `ls -sl`;
+    pickWalk -d down;
+
+    for($a in $sel){
+    setAttr ($a+".active") 0;
+    }
+}
+
+
+
+
+global proc xianshi(){
+   
+    float $radiusOfSphere=`floatSliderGrp -q -v fsgrp1`;
+    
+    convertHairSelection "hairSystems";
+    
+    string $selhair []=`ls -sl`;
+    
+    for($a in $selhair)
+    
+    setAttr ($a+".displayQuality") $radiusOfSphere;
+    
+}
+
+
+global proc hairSystemStatic(){
+    
+    convertHairSelection "hairSystems";
+    
+    string $sel[] = `ls -sl`;
+  
+    for($a in $sel){
+        
+    setAttr ($a+".simulationMethod") 1;
+    
+    }
+}
+
+
+global proc hairSystemStaticAllFollicles(){
+    
+    convertHairSelection "hairSystems";
+    string $sel[] = `ls -sl`;
+  
+    for($a in $sel){
+        
+    setAttr ($a+".simulationMethod") 3;
+    
+    }
+}
+
+
+
+////////
+global proc stiffness(){
+    
+    float $price =`floatSliderGrp -q -v hairStiffness`;
+    
+    convertHairSelection "hairSystems";
+    
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+        
+    setAttr ($a+".stiffness") $price ;
+    
+    }
+}
+
+
+
+//////
+
+
+global proc StartCurveAttract(){
+    
+    float $price =`floatSliderGrp -q -v hairStartCurveAttract`;
+    
+    convertHairSelection "hairSystems";
+    
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+        
+    setAttr ($a+".startCurveAttract") $price ;
+    
+    }
+}
+
+
+
+global proc NoStretchOff(){
+    
+    
+    convertHairSelection "hairSystems";
+    
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+        
+    setAttr ($a+".noStretch") 0 ;
+    
+    }
+}
+
+
+global proc NoStretchOn(){
+    
+    
+    convertHairSelection "hairSystems";
+    
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+        
+    setAttr ($a+".noStretch") 1 ;
+    
+    }
+}
+///////////////////////////////
+
+
+////////////Mass//////////////
+global proc Mass(){
+    
+     float $price =`floatSliderGrp -q -v hairMass`;
+     
+    convertHairSelection "hairSystems";
+    
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+        
+    setAttr ($a+".mass") $price ;
+    
+    }
+}
+
+
+//////////////Drag////////
+global proc Drag(){
+    
+     float $price =`floatSliderGrp -q -v hairDrag`;
+     
+    convertHairSelection "hairSystems";
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+    setAttr ($a+".drag") $price ;
+    }
+}
+
+
+//////tangentialDrag/////
+
+
+global proc TangentialDrag(){
+    
+     float $price =`floatSliderGrp -q -v hairTangentialDrag`;
+     
+    convertHairSelection "hairSystems";
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+    setAttr ($a+".tangentialDrag") $price ;
+    }
+}
+
+
+
+////////damp///////////
+global proc Damp(){
+    
+     float $price =`floatSliderGrp -q -v hairDamp`;
+     
+    convertHairSelection "hairSystems";
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+    setAttr ($a+".damp") $price ;
+    }
+}
+
+
+/////gravity///////////
+
+
+global proc Gravity(){
+    
+     float $price =`floatSliderGrp -q -v hairGravity`;
+     
+    convertHairSelection "hairSystems";
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+    setAttr ($a+".gravity") $price ;
+    }
+}
+
+
+
+
+////////////////////////////////////////
+
+
+
+global proc TurbulenceIntensity(){
+    
+     float $price =`floatSliderGrp -q -v TurbulenceStrength`;
+     
+    convertHairSelection "hairSystems";
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+    setAttr ($a+".turbulenceStrength") $price ;
+    }
+}
+
+
+
+
+
+global proc TurbulenceFrequency(){
+    
+     float $price =`floatSliderGrp -q -v turbulenceFrequency`;
+     
+    convertHairSelection "hairSystems";
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+    setAttr ($a+".turbulenceFrequency") $price ;
+    }
+}
+
+
+
+global proc TurbulenceSpeed(){
+    
+     float $price =`floatSliderGrp -q -v turbulenceSpeed`;
+     
+    convertHairSelection "hairSystems";
+    string $sel[] = `ls -sl`;
+    
+
+    for($a in $sel){
+    setAttr ($a+".turbulenceSpeed") $price ;
+    }
+};
+
+
+
+
+
+
+
+global proc AbcCache(){
+       
+    playButtonStart;
+   $CurrentStartFrame  = `currentTime -q`;
+    playButtonEnd;
+    $CurrentEndFrame  = `currentTime -q`;
+    playButtonStart;
+    
+    string $path = `workspace -q -rd`;
+
+
+    string $sel[] = `ls -sl`;    
+    
+    string $temps[];
+    
+    string $temptwo[];
+    
+    int $i = 0;
+    
+    for($a in $sel){
+        
+         
+      $temps=  `listRelatives -ap -f $a`;
+     
+     
+      stringArrayInsertAtIndex(($i++), $temptwo, $temps[0] );     
+    
+    }
+    
+    
+    
+    
+    
+   
+   $num = size($temptwo);
+   
+    string $tempthere[];
+  
+   for($i=0;$i<$num;$i++){
+ 
+     string  $name = "-root"+" "+($temptwo[($i)]) +"|"+ ($sel[($i)]);
+ 
+     $tempthere[($i)] = $name;
+     
+   }
+   
+   
+   
+   
+  string $namepath = stringArrayToString($tempthere, " ");
+   
+  string $shapes[] = `listRelatives -f  $sel[0]`;
+
+  string $buffer[];
+  
+  $numTokens = `tokenize $shapes[0] "|" $buffer`;
+  
+  
+  string $bufferone[];
+  
+  $numTokens = `tokenize $buffer[0] ":" $bufferone`;
+  
+  
+  
+   int $number = size($bufferone)-1;
+  
+  
+  string $namefour = $bufferone[($number)];
+  
+ 
+  
+  //for($x in $bufferone ){
+      
+   //   print($x+"\n"); 
+//  }
+  
+  
+
+  
+  string $namePath = ($path+"cache/alembic/"+($namefour)+".abc");
+  
+  
+  
+  
+    
+  AbcExport -j ("-frameRange"+" "+($CurrentStartFrame)+" "+($CurrentEndFrame)+" -uvWrite -dataFormat ogawa "+($namepath)+" -file "+$namePath);
+  clear $buffer;
+  clear $temptwo;
+  clear $tempthere;
+
+ 
+}
+

@@ -1,0 +1,29 @@
+/////////////////////////////////////////////////////////////
+///\file J_deleteAllMat.mel
+///\brief  删除无连接材质
+///
+///\author 桔
+///\version 1.0
+///\date   15:10 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///删除无连接材质
+///\return "success";
+global proc string J_deleteAllMat()
+{
+    delete `ls -mat`;
+    select `ls -type mesh`;
+    hyperShade -assign lambert1;
+    string $emptyFileNode[]=`ls -type file`;
+    for ($ii in $emptyFileNode)
+    {
+        string $filePath=`getAttr ($ii+".fileTextureName")`;
+        if (!`file -q -exists  $filePath`)
+        {
+            delete $ii;
+        }
+    }
+    return "success";
+} 
