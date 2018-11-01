@@ -1,49 +1,48 @@
 /////////////////////////////////////////////////////////////
 ///\file J_attrTransfor.mel
-///\brief ´«µİ½ÚµãÊôĞÔ¹¤¾ß  ÓÃÓÚ¶à¸öÏàÍ¬½Úµã¼ä»¥Ïà´«µİ²ÎÊı.
+///\brief ä¼ é€’èŠ‚ç‚¹å±æ€§å·¥å…·  ç”¨äºå¤šä¸ªç›¸åŒèŠ‚ç‚¹é—´äº’ç›¸ä¼ é€’å‚æ•°.
 ///
-///\author ½Û
+///\author æ¡”
 ///\version 1.0
 ///\date  15:44 2018/1/9
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
 
-///ÅĞ¶Ï´°¿ÚÊÇ·ñÓĞÎïÌå±»Ñ¡Ôñ
+///åˆ¤æ–­çª—å£æ˜¯å¦æœ‰ç‰©ä½“è¢«é€‰æ‹©
 ///\return success
-global proc  string J_attrTransfor()
+global proc string J_attrTransfor()
 {
-	string $sel[]=`ls -sl -ap`;
+	string $sel[]=`ls -sl`;
 	if(size($sel))
 	{
 		J_runAttr($sel);
 	}
 	else
 	{
-	confirmDialog -title "´íÎó" -message "É¶Ò²²»Ñ¡£¿ÄãtmÔÚ¶ºÎÒ£¿" -button  "Å¶";
+	confirmDialog -title "é”™è¯¯" -message "å•¥ä¹Ÿä¸é€‰ï¼Ÿä½ tmåœ¨é€—æˆ‘ï¼Ÿ" -button  "å“¦";
 	}
 	return "success";
 }
-
-///´ò¿ªÖ÷½çÃæ´°¿Ú
-///\param string $sel Ñ¡ÔñµÄ½Úµã
+///æ‰“å¼€ä¸»ç•Œé¢çª—å£
+///\param string $sel é€‰æ‹©çš„èŠ‚ç‚¹
 ///\return success
-global proc  string J_runAttr(string $sel[])
+global proc string J_runAttr(string $sel[])
 {
 if (`window -ex J_attr`)
 	deleteUI -window J_attr;
-	window -w 300 -h 650 -title "Ô¤ÉèÅúÁ¿´«µİ" J_attr;
+	window -w 300 -h 650 -title "é¢„è®¾æ‰¹é‡ä¼ é€’" J_attr;
 	formLayout  -nd 100  -h 295 J_attr_mainFormLayout;
-	textScrollList -fn "boldLabelFont" -sc "J_selectitem()" -allowMultiSelection true J_sourcesNodes;
+	textScrollList -fn "boldLabelFont" -sc "J_selectitem" -allowMultiSelection true J_sourcesNodes;
 	
 	textScrollList -fn "boldLabelFont" -allowMultiSelection 0 J_sourcesPresets;
 
 
-	string $button01=`button -l "±£´æÔ¤Éè" -c "J_savePresets()"`;
-	string $button02=`button -l "¶ÁÈ¡Ô¤Éè" -c "J_readPresets()"`;
-	string $button03=`button -l "É¾³ıÔ¤Éè" -c "J_delPresets()"`;
-	string $button04=`button -l "Ë¢ĞÂ´°¿Ú" -c "J_reFrashAttrTransformWin()"`;
-	checkBox -label "ºöÂÔ±ä»»½Úµã" -v 1 J_ignoreTransform;
+	string $button01=`button -l "ä¿å­˜é¢„è®¾" -c "J_savePresets"`;
+	string $button02=`button -l "è¯»å–é¢„è®¾" -c "J_readPresets"`;
+	string $button03=`button -l "åˆ é™¤é¢„è®¾" -c "J_delPresets"`;
+	string $button04=`button -l "åˆ·æ–°çª—å£" -c "J_reFrashAttrTransformWin"`;
+	checkBox -label "å¿½ç•¥å˜æ¢èŠ‚ç‚¹" -v 1 J_ignoreTransform;
 	
 
 	formLayout  -e
@@ -89,12 +88,11 @@ if (`window -ex J_attr`)
 	return "success";
 }
 
-
-///¶ÁÈ¡±¾µØÔ¤Éè,²¢Ë¢ĞÂÔ¤ÉèÁĞ±í
-///\param string $selectedType ËùÑ¡½ÚµãÀàĞÍ
+///è¯»å–æœ¬åœ°é¢„è®¾,å¹¶åˆ·æ–°é¢„è®¾åˆ—è¡¨
+///\param string $selectedType æ‰€é€‰èŠ‚ç‚¹ç±»å‹
 ///\param string $uiTextScrollList 
 ///\return success
-global proc   string J_getPresets(string $selectedType,string $uiTextScrollList)
+proc string J_getPresets(string $selectedType,string $uiTextScrollList)
 	{
 	string $J_ppath = `internalVar -userPrefDir`;
 	$J_ppath = substitute( "/prefs", $J_ppath, "");
@@ -108,9 +106,9 @@ global proc   string J_getPresets(string $selectedType,string $uiTextScrollList)
 	}
 	return "success";
 	}
-///±£´æÔ¤Éèµ½±¾µØ,²¢Ë¢ĞÂÔ¤ÉèÁĞ±í
+///ä¿å­˜é¢„è®¾åˆ°æœ¬åœ°,å¹¶åˆ·æ–°é¢„è®¾åˆ—è¡¨
 ///\return success
-global proc   string J_savePresets()
+proc string J_savePresets()
 {
 	string $selTextScrollList[]=`textScrollList -q -si J_sourcesNodes`;
 	string $preName = substituteAllString($selTextScrollList[0],":", "_");
@@ -123,9 +121,9 @@ global proc   string J_savePresets()
 	}
 	return "success";
 }
-///¶ÁÈ¡Ñ¡ÔñµÄÔ¤Éè,²¢½«²ÎÊı¸³ÓèÑ¡ÔñµÄ½Úµã
+///è¯»å–é€‰æ‹©çš„é¢„è®¾,å¹¶å°†å‚æ•°èµ‹äºˆé€‰æ‹©çš„èŠ‚ç‚¹
 ///\return success
-global proc    string  J_readPresets()
+proc string  J_readPresets()
 {
 	string $J_selNode[]=`textScrollList -q -si J_sourcesNodes`;
 	string $J_selPresets[]=`textScrollList -q -si J_sourcesPresets`;
@@ -135,36 +133,36 @@ global proc    string  J_readPresets()
 		string $J_ppath = `internalVar -userPrefDir`;
 		$J_ppath = substitute( "/prefs", $J_ppath, "");
 		$J_ppath+="presets/attrPresets/"+$selectedType+"/" + $J_selPresets[0];
-			applyAttrPreset $i $J_ppath 1;//¶ÁÈ¡Ô¤Éè
+			applyAttrPreset $i $J_ppath 1;//è¯»å–é¢„è®¾
 	}
 	return "success";
 }
 
-///É¾³ıÑ¡ÔñµÄÔ¤Éè
+///åˆ é™¤é€‰æ‹©çš„é¢„è®¾
 ///\return success
-global proc   string J_delPresets()
+proc string J_delPresets()
 {	string $J_selNode[]=`textScrollList -q -ai J_sourcesNodes`;
 	string $J_selPresets[]=`textScrollList -q -si J_sourcesPresets`;
 		string $selectedType=`objectType $J_selNode[0]`;
 		string $J_ppath = `internalVar -userPrefDir`;
 		$J_ppath = substitute( "/prefs", $J_ppath, "");
 		$J_ppath+="presets/attrPresets/"+$selectedType+"/" + $J_selPresets[0];
-		sysFile -del  $J_ppath;//É¾³ıÀ¬»ø
+		sysFile -del  $J_ppath;//åˆ é™¤åƒåœ¾
 		textScrollList -e -ri $J_selPresets[0] J_sourcesPresets;
 		return "success";
 }
-///²éÑ¯Ñ¡ÔñµÄ½Úµã,¸ù¾İµÚÒ»¸öÑ¡ÔñµÄ½ÚµãÀàĞÍ,ÁĞ³öÍ¬ÀàĞÍ½Úµã.²¢ÁĞ³ö´ËÀàĞÍ±¾µØÔ¤Éè
-///¸ù¾İµ¥Ñ¡¿ò¾ö¶¨ÊÇ·ñÑ¡Ôñ±ä»»½Úµã
-///\param string $sel Ñ¡ÔñµÄ½Úµã
+///æŸ¥è¯¢é€‰æ‹©çš„èŠ‚ç‚¹,æ ¹æ®ç¬¬ä¸€ä¸ªé€‰æ‹©çš„èŠ‚ç‚¹ç±»å‹,åˆ—å‡ºåŒç±»å‹èŠ‚ç‚¹.å¹¶åˆ—å‡ºæ­¤ç±»å‹æœ¬åœ°é¢„è®¾
+///æ ¹æ®å•é€‰æ¡†å†³å®šæ˜¯å¦é€‰æ‹©å˜æ¢èŠ‚ç‚¹
+///\param string $sel é€‰æ‹©çš„èŠ‚ç‚¹
 ///\return success
-global proc    string  J_readSelectedNode(string $sel[])
+proc string  J_readSelectedNode(string $sel[])
 {
 	textScrollList -e -ra J_sourcesNodes;
 	int $J_ignoreTransform_state =`checkBox -q -v J_ignoreTransform`;
 	string $selectedType=`objectType $sel[0]`;
 	if($J_ignoreTransform_state==1&&$selectedType=="transform")
 	{
-		string $tempNodeType[]=`listRelatives -c -f $sel[0]`;
+		string $tempNodeType[]=`listRelatives -c $sel[0]`;
 		$selectedType=`objectType $tempNodeType[0]`;
 	}
 	
@@ -176,17 +174,17 @@ global proc    string  J_readSelectedNode(string $sel[])
 	J_getPresets($selectedType,"J_sourcesPresets");
 	return "success";
 }
-///Ñ¡ÔñÁĞ±íÖĞµÄ½Úµã
+///é€‰æ‹©åˆ—è¡¨ä¸­çš„èŠ‚ç‚¹
 ///\return success
-global proc    string J_selectitem()
+proc string J_selectitem()
 {
 	string $nn[]=`textScrollList -q -si J_sourcesNodes`;
 	select $nn;
 	return "success";
 }
-///¸ù¾İ³¡¾°ÖĞµÄÑ¡Ôñ,Ñ¡ÔñÁĞ±íÖĞµÄ½Úµã
+///æ ¹æ®åœºæ™¯ä¸­çš„é€‰æ‹©,é€‰æ‹©åˆ—è¡¨ä¸­çš„èŠ‚ç‚¹
 ///\return success
-global proc    string J_selectNode()
+proc string J_selectNode()
 {
     textScrollList -e -da  J_sourcesNodes;
 	string $sel[]=`ls -sl`;
@@ -198,21 +196,20 @@ global proc    string J_selectNode()
 	}
 	return "success";
 }
-///Æô¶¯ºóÌ¨¸ú×Ù³ÌĞò,Í¬²½²å¼şÖĞºÍ³¡¾°ÖĞµÄÑ¡Ôñ¶ÔÏó
+///å¯åŠ¨åå°è·Ÿè¸ªç¨‹åº,åŒæ­¥æ’ä»¶ä¸­å’Œåœºæ™¯ä¸­çš„é€‰æ‹©å¯¹è±¡
 ///\return success
-global proc    string  J_runScriptJob()
+proc string  J_runScriptJob()
 {
 	int $ff = `scriptJob -e "SelectionChanged" J_selectNode `;
 	string $ss = ("scriptJob -k "+ $ff);
 	scriptJob -uid "J_attr" $ss;
 	return "success";
 }
-///Ë¢ĞÂ´°Ìå
+///åˆ·æ–°çª—ä½“
 ///\return success
-global proc    string J_reFrashAttrTransformWin()
+proc string J_reFrashAttrTransformWin()
 {
 	string $sel[]=`ls -sl`;
 	J_readSelectedNode($sel);
 	return "success";
 }
-
