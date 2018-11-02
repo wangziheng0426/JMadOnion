@@ -1,19 +1,20 @@
 /////////////////////////////////////////////////////////////
-///\file J_deleteJunkWin.mel
-///\brief 选点工具
+///\file  J_deleteJunkWin.mel
+///\brief  按类型清理场景
 ///
 ///\author 桔
 ///\version 1.0
-///\date  16:59 2018/3/6
+///\date   
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
 
-global proc J_deleteJunkWin()//清理无用节点
+///打开主界面窗口
+///\return "success";
+global proc string J_deleteJunkWin()//清理无用节点
 {
-
 string $lists[]={	"polySoftEdge","polyTweak","polyUnite",
-					"polyTweak","polySplitRing","polySplit","polySoftEdge",
+					"polySplitRing","polySplit",
 					"polySeparate","polyNormalPerVertex","polyNormal",
 					"polyMergeVert","polyExtrudeEdge","polyDelEdge",
 					"polyCollapseEdge","polyCloseBorder","polyChipOff",
@@ -25,54 +26,65 @@ string $J_checkBoxs[];
 if (`window -ex J_deleteJunksWin`)
 	deleteUI -window J_deleteJunksWin;
 	window -w 300 -h (size($lists)*2+200) -title "删除垃圾" J_deleteJunksWin;
-		frameLayout -cll 1 -cl 0  -h (size($lists)*20) -l "选择要删除的项目"  J_deleteJunkWinLayOut;
-		formLayout  -nd 100  -h (size($lists)*20) J_deleteJunkWinFormLayOut;
+		frameLayout -cll 1 -cl 0  -h (size($lists)*20) -l "选择要删除的项目"  J_getJunkLayOut;
+		formLayout  -nd 100  -h (size($lists)*20) J_getJunkFormLayOut;
 		
-		$J_checkBoxs[0]=`checkBox -v 1 -onCommand "J_deleteJunksCheckBoxAllOn"
+		$J_checkBoxs[0]=`checkBox -v 0 -onCommand "J_deleteJunksCheckBoxAllOn"
 										-offCommand "J_deleteJunksCheckBoxAllOff" -label "all"`;
-		formLayout -e -af $J_checkBoxs[0] top 5 -af $J_checkBoxs[0] left 5 J_deleteJunkWinFormLayOut;
+		formLayout -e -af $J_checkBoxs[0] top 5 -af $J_checkBoxs[0] left 5 J_getJunkFormLayOut;
 		
 		for($i=0;$i<size($lists);$i++)
 		{
 			int $leftPos=5+($i)%2*140;
-			$J_checkBoxs[$i+1]=`checkBox -v 1 -label $lists[$i]`;
+			$J_checkBoxs[$i+1]=`checkBox -v 0 -label $lists[$i]`;
 			formLayout -e 
 				-af $J_checkBoxs[$i+1] left $leftPos
 				-ac $J_checkBoxs[$i+1] top 5 $J_checkBoxs[$i-$i%2]
-			J_deleteJunkWinFormLayOut;
+			J_getJunkFormLayOut;
 		}
+		textField J_deleteJunksText;
 		button -l "走你" -c  "J_deleteJunks" J_deleteJunksButton;
-		formLayout -e -ac J_deleteJunksButton top 5 $J_checkBoxs[size($J_checkBoxs)-1]
-					  -af J_deleteJunksButton left 5
-					  -af J_deleteJunksButton right 5
-					  J_deleteJunkWinFormLayOut;
+		formLayout -e 
+					-ac J_deleteJunksText top 5 $J_checkBoxs[size($J_checkBoxs)-1]
+					-af J_deleteJunksText left 5
+					-af J_deleteJunksText right 5
+		
+					-ac J_deleteJunksButton top 5 J_deleteJunksText
+					-af J_deleteJunksButton left 5
+					-af J_deleteJunksButton right 5
+		 J_getJunkFormLayOut;
 showWindow J_deleteJunksWin;
+return "success";
 }
 
+///删除指定节点并反馈
 global proc J_deleteJunks()
 {
-	string $formCh[]=`formLayout -q -childArray J_deleteJunkWinFormLayOut`;
+	string $formCh[]=`formLayout -q -childArray J_getJunkFormLayOut`;
 	
 	for($j=1;$j< size($formCh);$j++)
 	{
 	if(`checkBox -q -ex $formCh[$j]`&&`checkBox -q -v $formCh[$j]`)
 		{
 			string $nodeType=`checkBox -q -l $formCh[$j]`;
-			string $all[]=`ls -l -type $nodeType`;
-			for($i in $all)
-			{
-				lockNode -l 0 $i;
-				delete $i ;
-			}
-			print ("--------------------场景中的"+$nodeType+"节点被清除-------------------------"+"\n");
+			J_deleteJunk($nodeType);
 		}
+	}
+	string $mytype=`textField -q -text J_deleteJunksText`;
+	if($mytype!="")
+	{
+	string $bufferInput[];
+	$numTokens = `tokenize $mytype "," $bufferInput`;
+	for ($inputTypes in $bufferInput)
+		J_deleteJunk($inputTypes);
 	}
 
 }
 
+///切换选项开关
 global proc J_deleteJunksCheckBoxAllOn()
 {
-	string $formCh[]=`formLayout -q -childArray J_deleteJunkWinFormLayOut`;
+	string $formCh[]=`formLayout -q -childArray J_getJunkFormLayOut`;
 	for($i=1;$i<size($formCh);$i++)
 	{
 		if(`checkBox -q -ex $formCh[$i]`)
@@ -81,8 +93,9 @@ global proc J_deleteJunksCheckBoxAllOn()
 
 }
 
+///切换选项开关
 global proc J_deleteJunksCheckBoxAllOff()
-{	string $formCh[]=`formLayout -q -childArray J_deleteJunkWinFormLayOut`;
+{	string $formCh[]=`formLayout -q -childArray J_getJunkFormLayOut`;
 	for($i=1;$i<size($formCh);$i++)
 	{
 		if(`checkBox -q -ex $formCh[$i]`)

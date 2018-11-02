@@ -28,19 +28,19 @@ global proc J_eyeBall()
 		-button $ss[0] -button $ss[1] -button $ss[2] -defaultButton $ss[0]
 		-cancelButton $ss[2] -dismissString $ss[2]`;
 		if($res==$ss[0])
-			{print "删除历史";deleteHNew;}
+			{print "删除历史";J_eyeBall_deleteHNew;}
 		else if($res==$ss[1])
-			{print "从新导入";reimEye;imEye($path);loadPresets;}
+			{print "从新导入";J_eyeBall_reimEye;J_eyeBall_imEye($path);J_eyeBall_loadPresets;}
     }
     else
     {
-        imEye($path);loadPresets;setAttr lambert1.eyeBallExist 1;savePresetsNew;
+        J_eyeBall_imEye($path);J_eyeBall_loadPresets;setAttr lambert1.eyeBallExist 1;J_eyeBall_savePresetsNew;
 		
 	}
 
 		
 }				
-global proc imEye(string $path)
+global proc J_eyeBall_imEye(string $path)
 {	
 	string $EyeBallFile[]=`getFileList -folder ($path+"eyeball/")  -filespec "*.mb"`;
     string $sysPath=($path+"eyeball/") +$EyeBallFile[0];
@@ -48,11 +48,19 @@ global proc imEye(string $path)
 		eval $fileToSource ;
 }
 
-global proc deleteHNew()
+global proc J_eyeBall_deleteHNew()
 {
-    savePresetsNew();J_duplicateMorphTarget();J_breakSelectObjectConnections();J_getKeys;DeleteAllExpressions;DeleteAllHistory;catch(`select "*eye_grp*"`);makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;   FreezeTransformations ;
+    J_eyeBall_savePresetsNew();
+    J_eyeBall_duplicateMorphTarget();
+    J_eyeBall_breakSelectObjectConnections();
+    J_deleteJunk("animCurve");
+    DeleteAllExpressions;
+    DeleteAllHistory;
+    catch(`select "*eye_grp*"`);
+    makeIdentity -apply true -t 1 -r 1 -s 1 -n 0; 
+    FreezeTransformations ;
 }
-global proc reimEye()
+global proc J_eyeBall_reimEye()
 {
 	catch(`select "*eye_grp*"`);
 	string $sel[]=`ls -sl`;
@@ -63,7 +71,7 @@ global proc reimEye()
 	}
 }
 
-global proc savePresetsNew()
+global proc J_eyeBall_savePresetsNew()
 {
 	string $attrs[]={"scaleX","scaleY","scaleZ","translateX","translateY","translateZ","rotateX",
 	"rotateY","PupilOuter","PupilInner","HighlightBg","HighlightInOt","HighlightCenterRx",
@@ -88,7 +96,7 @@ global proc savePresetsNew()
 		
 	}
 }
-global proc loadPresets()
+global proc J_eyeBall_loadPresets()
 {
 	string $attrs[]={"scaleX","scaleY","scaleZ","translateX","translateY","translateZ","rotateX",
 	"rotateY","rotateZ","PupilOuter","PupilInner","HighlightBg","HighlightInOt","HighlightCenterRx",
@@ -109,7 +117,7 @@ global proc loadPresets()
 	}
 }
 
-global proc string[] J_eyeBallDiGui(string $a,string $allNodes[])//$a检查对象  $allNodes[]反馈数组
+global proc string[] J_eyeBall_recursion(string $a,string $allNodes[])//$a检查对象  $allNodes[]反馈数组
     {
 			
     	 	string $chs[]=`listRelatives -f -c -type transform $a`;
@@ -121,7 +129,7 @@ global proc string[] J_eyeBallDiGui(string $a,string $allNodes[])//$a检查对象  $
 						{
 							int $count=size($allNodes);
 							$allNodes[$count]= $k;
-							J_eyeBallDiGui($k,$allNodes);
+							J_eyeBall_recursion($k,$allNodes);
 						}
     			}
     		}
@@ -130,7 +138,7 @@ global proc string[] J_eyeBallDiGui(string $a,string $allNodes[])//$a检查对象  $
     		return $allNodes;
     	
     }
-global proc J_breakSelectObjectConnections()//打断所选物体的链接
+global proc J_eyeBall_breakSelectObjectConnections()//打断所选物体的链接
 {
 	select "*_eye_grp*";
     string $allTransform[]=`ls -l -sl -type transform`;
@@ -140,7 +148,7 @@ global proc J_breakSelectObjectConnections()//打断所选物体的链接
 	for($item in $allTransform)
         {		
 			string $temp[];
-			string $tempA[]=J_eyeBallDiGui($item,$temp);
+			string $tempA[]=J_eyeBall_recursion($item,$temp);
 			appendStringArray($eyeGrpChTemp,$tempA,size($tempA));
 		}
 	$eyeGrpChTemp=stringArrayRemoveDuplicates($eyeGrpChTemp);
@@ -159,7 +167,7 @@ global proc J_breakSelectObjectConnections()//打断所选物体的链接
 
 
 
-global proc J_duplicateMorphTarget()
+global proc J_eyeBall_duplicateMorphTarget()
 {
     
     string $path=`J_getFilePath`;

@@ -21,35 +21,35 @@ columnLayout -adjustableColumn true;
         string $zuheanniu = `radioButtonGrp   -cw 1 10  -numberOfRadioButtons 2
                 -label "    " -labelArray2 "uv模式" "wrap模式" radioBB`;
        string $textField01=`textField  textN1`;
-       string $button01=`button -label "读取原始模型" -c ("getGemo1")`;
+       string $button01=`button -label "读取原始模型" -c ("J_blendTools_getGemo1")`;
        string $textField02=`textField  textN2`;
-       string $button02=`button -label "读取目标模型" -c ("getGemo2")`;
+       string $button02=`button -label "读取目标模型" -c ("J_blendTools_getGemo2")`;
        string $textField03=`textScrollList -h 100 textN3`;
-       string $button03=`button -label "读取目标体" -c ("getGemo3")`;
-       string $button04=`button -label "根据uv包裹转换" -c ("gogogo(0)")`;
-       string $button05=`button -label "blend变型转换" -c ("gogogo(1)")`;
-	   string $slider01=`floatSliderGrp -label "融合度" -cc ("chGemo") -field true sliderX`;
-	   string $button06=`button -label "帮助" -c ("helpMe")`;
+       string $button03=`button -label "读取目标体" -c ("J_blendTools_getGemo3")`;
+       string $button04=`button -label "根据uv包裹转换" -c ("J_blendTools_gogogo(0)")`;
+       string $button05=`button -label "blend变型转换" -c ("J_blendTools_gogogo(1)")`;
+	   string $slider01=`floatSliderGrp -label "融合度" -cc ("J_blendTools_chGemo") -field true sliderX`;
+	   string $button06=`button -label "帮助" -c ("J_blendTools_helpMe")`;
        //string $button06=`button -label "帮助" -command ("deleteUI -window " + $window)`;
 setParent ..;
 showWindow $window;
 
 };
 
-global proc getGemo1()
+global proc J_blendTools_getGemo1()
 {
     string $sss[]=`ls -sl`;
     textField -e -tx $sss[0] textN1;
     print  $sss;
 }
-global proc getGemo2()
+global proc J_blendTools_getGemo2()
 {
     string $sss[]=`ls -sl`;
     textField -e -tx $sss[0] textN2;
     print  $sss;
 }
 
-global proc getGemo3()
+global proc J_blendTools_getGemo3()
 {
     string $sss[]=`ls -sl`;
     textScrollList -e -ra textN3;
@@ -60,15 +60,15 @@ global proc getGemo3()
     print  $sss;
 }
 
-global proc gogogo(int $ab)
+global proc J_blendTools_gogogo(int $ab)
 {
 	if($ab==0)
-	convertBlendA();
+	J_blendTools_convertBlendA();
 	else
-	convertBlendB();
+	J_blendTools_convertBlendB();
 }
 
-global proc convertBlendA()
+global proc J_blendTools_convertBlendA()
 {
     string $blendGemoOrg=`textField -q  -text textN1`;
     string $blendGemoDes=`textField -q  -text textN2`;
@@ -76,13 +76,13 @@ global proc convertBlendA()
     int $stateX=`radioButtonGrp -q -sl radioBB`;
     if($blendGemoOrg!=""&&$blendGemoDes!=""&&$blendGemos[0]!="")
     {
-    convertRun($blendGemoOrg,$blendGemoDes,$blendGemos,$stateX);
+    J_blendTools_convertRun($blendGemoOrg,$blendGemoDes,$blendGemos,$stateX);
     }
     else
     {confirmDialog -title "waring" -button "ok" -message "请选择模型！";}
 }
 
-global proc convertRun(string $blendGemoOrg,string $blendGemoDes,string $blendGemos[],int $stateX)
+global proc J_blendTools_convertRun(string $blendGemoOrg,string $blendGemoDes,string $blendGemos[],int $stateX)
 {
        if($stateX==2)
         {
@@ -119,7 +119,7 @@ global proc convertRun(string $blendGemoOrg,string $blendGemoDes,string $blendGe
         else
         {confirmDialog -title "waring" -button "ok" -message "请选择转换模式！";}
 }
-global proc convertBlendB()
+global proc J_blendTools_convertBlendB()
 {
 
     string $blendGemoOrg=`textField -q  -text textN1`;
@@ -143,7 +143,7 @@ global proc convertBlendB()
      }
 }
 
-global proc chGemo()
+global proc J_blendTools_chGemo()
 {
 	string $sel[]=`ls -sl`;
 	float $vel=`floatSliderGrp -q -v sliderX`;
@@ -162,7 +162,7 @@ global proc chGemo()
 	
 	
 }
-global proc helpMe()
+global proc J_blendTools_helpMe()
 {
 confirmDialog -title "哦" -message "选择对应的模型，然后点击相应按钮。选好后选择转换模式，uv或者包裹。选择生成融合变型的模型，拖动滑杆可以修改所生成模型的融合比例（仅限blend方式）"
     -cancelButton "知道了" -dismissString "知道了";

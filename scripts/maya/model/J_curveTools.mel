@@ -22,7 +22,7 @@ if (`window -ex conCurceWin`)
      radioButtonGrp -numberOfRadioButtons 3  -shareCollection radioButton1
                   -label "" -labelArray3 "-X" "-Y" "-Z" radioButton2;
 
-    string $bu01=`button -l "改方向"    -c J_convertDir `;
+    string $bu01=`button -l "改方向"    -c J_curveTools_convertDir `;
     string $bu02=`button -l "反转曲线方向"  -c  "reverseCurve -ch 1 -rpo 1;"  `;
 	string $bu03=`button -l "poly切曲线"  -c  "J_cutCurByPoly"  `;
 	string $bu04=`button -l "修改曲线轴心"  -c  "J_curPivot"  `;
@@ -60,74 +60,74 @@ return "success";
 }
 
 ///转换曲线方向
-global proc J_convertDir()
+global proc J_curveTools_convertDir()
 {
-int $na=`radioButtonGrp -q -sl radioButton1`;
-int $nb=`radioButtonGrp -q -sl radioButton2`;
-int $nn;
-if(!$na==0)
- $nn=$na;
-else 
- $nn=$nb+3;
-string $sel[]=`filterExpand -sm 9`;
-for ($n in $sel)
-{
-select $n;
-selectCurveCV("first");
-string $p[]=`ls -sl`;
-float $a[]=`xform -q -ws -t $p[0]`;
-select $n;
-selectCurveCV("last");
-string $p[]=`ls -sl`;
-float $b[]=`xform -q -ws -t $p[0]`;
-switch ($nn){ 
-	case 1:
-if($a[0]<$b[0])
- {
-  select $n;
-  reverseCurve ;
-  }
-break;
-	  
-	case 2: 
-if($a[1]<$b[1])
- {
-  select $n;
-  reverseCurve ;
-  }
-break;
-	  
-	case 3: 
-if($a[2]<$b[2])
- {
-  select $n;
-  reverseCurve ;
-  }
-break;
-	case 4: 
-if($a[0]>$b[0])
- {
-  select $n;
-  reverseCurve ;
-  }
-break;
-	case 5: 
-if($a[1]>$b[1])
- {
-  select $n;
-  reverseCurve ;
-  }
-break;
-	case 6: 
-if($a[2]>$b[2])
- {
-  select $n;
-  reverseCurve ;
-  }
-break;
-	   
-}
+    int $na=`radioButtonGrp -q -sl radioButton1`;
+    int $nb=`radioButtonGrp -q -sl radioButton2`;
+    int $nn;
+    if(!$na==0)
+     $nn=$na;
+    else 
+     $nn=$nb+3;
+    string $sel[]=`filterExpand -sm 9`;
+    for ($n in $sel)
+    {
+    select $n;
+    selectCurveCV("first");
+    string $p[]=`ls -sl`;
+    float $a[]=`xform -q -ws -t $p[0]`;
+    select $n;
+    selectCurveCV("last");
+    string $p[]=`ls -sl`;
+    float $b[]=`xform -q -ws -t $p[0]`;
+    switch ($nn){ 
+        case 1:
+    if($a[0]<$b[0])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+          
+        case 2: 
+    if($a[1]<$b[1])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+          
+        case 3: 
+    if($a[2]<$b[2])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+        case 4: 
+    if($a[0]>$b[0])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+        case 5: 
+    if($a[1]>$b[1])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+        case 6: 
+    if($a[2]>$b[2])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+           
+    }
 
-}
-select -cl;
+    }
+    select -cl;
 }
