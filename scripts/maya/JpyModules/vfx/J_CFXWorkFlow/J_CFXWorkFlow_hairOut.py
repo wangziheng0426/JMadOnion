@@ -11,6 +11,7 @@ import sys
 import os
 import shutil
 import json
+import maya.mel as mel
 import maya.cmds as cmds
 def J_CFXWorkFlow_hairOut():
     #创建缓存路径
@@ -30,11 +31,11 @@ def J_CFXWorkFlow_hairOut():
     for item in allHairNodes:
         cmds.select(item)
         try:
-            maya.mel.eval('AddCurvesToHairSystem')
+            mel.eval('AddCurvesToHairSystem')
         except:
             pass
         follicleNodes= cmds.listConnections(item,type='follicle',destination=False,shapes=True)
-        presetsPath=maya.mel.eval('saveAttrPreset("'+item+'","'+item+'",0)')
+        presetsPath=mel.eval('saveAttrPreset("'+item+'","'+item+'",0)')
         shutil.move(presetsPath,(filePath+cachePath))
         if follicleNodes.count>0:
             outCurveNode= cmds.listConnections(follicleNodes[0],type='nurbsCurve',source=False)
