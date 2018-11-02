@@ -42,7 +42,7 @@ global proc J_outFileMb(string $paths)
 
     string $fileMb=$filePath+$fileName+".mb";   
     //string $fileFbx=$filePath+$fileName+".fbx";   
-    J_addMark($fileMb);
+    J_geoAddMark($fileMb);
     ///////////////////////////////////////////////导图
     
     string $temp[]=`ls -type file`;
@@ -120,7 +120,7 @@ global proc J_outFileSelectToFbx(string $paths)//另存选中物体
     sysFile -copy $fileFbxMo $fileFbxAn;
     
 }
-global proc J_addMark(string $path)
+global proc J_geoAddMark(string $path)
 {
     string $bufferT[];
     $numTokens = `tokenize $path "_" $bufferT`;

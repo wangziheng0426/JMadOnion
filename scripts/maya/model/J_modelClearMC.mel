@@ -19,9 +19,9 @@ int $count=10;
 string $J_modelClearMCcommandName[]={"整理模型","单面显示","错误检查","选择边缘","对称检查","删所有组",
                                     "解锁所有属性","删除多余shape","清理无用节点","删除无连接材质",
                                     "单双面显示切换","删除无用uvset","整理法线"};
-string $J_modelClearMCcommand[]={"runModelClearMC","J_doubleFaceLight","GetInfoA","J_hardEdgeIm","J_symTool","J_deleteAllGroup",
-                                    "J_unLockAttrs","J_removeShape","J_getJunk","J_deleteMat",
-                                    "J_doubleFaceLight","J_removeUV","runRNor"};
+string $J_modelClearMCcommand[]={"runModelClearMC","J_doubleFaceLight","J_modelClear_getInfoA","J_hardEdgeIm","J_symTool","J_deleteAllGroup",
+                                    "J_unLockAttrs(`ls -sl`)","J_removeShape","J_deleteJunkWin","J_deleteMat",
+                                    "J_doubleFaceLight","J_removeUV","J_modelClear_runRNor"};
 string $J_modelClearMC_btn[];
 if (`window -ex checkNodesWin`)
     deleteUI -window checkNodesWin;
@@ -36,8 +36,8 @@ if (`window -ex checkNodesWin`)
         }
         separator  -w $winWidth -bgc .5 .5 .5 -st "in"  sepx1 ; 
         textField  -w 260 -h 25 pathText;
-        button -l "选择路径" -c  "GetPath" buPath ;
-        button -l "导出文件" -c  "UpLoad" buUp ;
+        button -l "选择路径" -c  "J_modelClear_getPath" buPath ;
+        button -l "导出文件" -c  "J_modelClear_upLoad" buUp ;
     /////////////////////////////////////////////////////////编辑窗体   
     int $apx=1;
     int $apy=2;
@@ -90,14 +90,14 @@ global proc runModelClearMC()
     J_doubleFaceLight;
     select `ls`;
     ToggleBackfaceGeometry;
-    //danmian;
+    //J_modelClear_danmian;
     setWireframeOnShadedOption true modelPanel4;
     modelEditor -e -udm true modelPanel4;
     setRendererInModelPanel base_OpenGL_Renderer modelPanel4;
     select -cl;
 }
 
-global proc ShowInfos()
+global proc J_modelClear_ShowInfos()
 {
 string $n="法线  轴心  垃圾历史  无用关键帧  材质球  空组  灯光连接  多余uv";
 $n+="已被清除";
@@ -106,39 +106,39 @@ confirmDialog -title "提示" -message $n;
 }
 
 
-global proc GetPath()//设置路径
+global proc J_modelClear_getPath()//设置路径
 {
-    string $temp =`J_getPath`;
+    string $temp =`J_modelClear_getPath`;
     textField -e -tx $temp -w 260 -h 25 pathText;
 }
 
-global proc UpLoad()//上传
+global proc J_modelClear_upLoad()//上传
 {
     string $paths=`textField -q -tx  pathText`;
     J_outFile($paths,1);
 }
 
 
-global proc GetInfoA()
+global proc J_modelClear_getInfoA()
 {
     if (`window -ex lookWin`)
         deleteUI -window lookWin;
     window -title "节点信息" -wh 370 700 lookWin;
     columnLayout -w 240 -h 400 -adj true  lookLayout;
-    J_getFace();
-    J_getFaceC();
-    J_getTexture();
+    J_modelClear_getFace();
+    J_modelClear_getFaceC();
+    J_modelClear_getTexture();
     showWindow lookWin;
 }
 
 //////////////////////////////////////////////////////////////////////////检查相关
 
 
-global proc selObj(string $text)
+global proc J_modelClear_selObj(string $text)
 {
     select `textScrollList -q -si $text`;
 }
-global proc danmian()
+global proc J_modelClear_danmian()
 {
 string $currentPanel = `getPanel -withFocus`;   
 string $panelType = `getPanel -to $currentPanel`;
@@ -150,15 +150,15 @@ else if ($panelType ==  "scriptedPanel")
    }
 }
 
-global proc runRNor()
+global proc J_modelClear_runRNor()
 {
 J_rebuildNormal;J_softEdges();
 }
 
-global proc J_getFace()//不规则的边
+global proc J_modelClear_getFace()//不规则的边
 {
     string $fr=`frameLayout -l "不规则的边"  -w 340 -cll 1 -cl 1 -bs "etchedIn" -p lookLayout `;
-    string $ts=`textScrollList -nr 10 -ams 1 -sc "selObj tsDm" tsDm`;
+    string $ts=`textScrollList -nr 10 -ams 1 -sc "J_modelClear_selObj tsDm" tsDm`;
     string $allMesh[]=`ls -ni -v -type mesh`;
     string $all[]=`polyInfo -nme $allMesh`;
     for($i in $all)
@@ -168,33 +168,33 @@ global proc J_getFace()//不规则的边
     string $title ="不规则的边"+size($all);
     frameLayout -e -l $title $fr;
 }
-global proc J_getFaceC()//查多边面
+global proc J_modelClear_getFaceC()//查多边面
 {       
-string $fr=`frameLayout -l "多边面"  -w 340 -cll 1 -cl 1 -bs "etchedIn" -p lookLayout `;
-string $ts=`textScrollList -nr 10 -ams 1 -sc "selObj tsDms" tsDms`;
-string $selectedItems[]=`ls -typ mesh`;
-string $all[];
-if(size($selectedItems))
-{
-select -r $selectedItems;
-string $returnSelected[];
-        polySelectConstraint -m 3 -t 8 -sz 2;
-        string $selected[] = `ls -sl`;
-        polySelectConstraint -m 0 -t 8 -sz 0;
-        InvertSelection;
-        $all=`ls -sl`;
+    string $fr=`frameLayout -l "多边面"  -w 340 -cll 1 -cl 1 -bs "etchedIn" -p lookLayout `;
+    string $ts=`textScrollList -nr 10 -ams 1 -sc "J_modelClear_selObj tsDms" tsDms`;
+    string $selectedItems[]=`ls -typ mesh`;
+    string $all[];
+    if(size($selectedItems))
+    {
+    select -r $selectedItems;
+    string $returnSelected[];
+            polySelectConstraint -m 3 -t 8 -sz 2;
+            string $selected[] = `ls -sl`;
+            polySelectConstraint -m 0 -t 8 -sz 0;
+            InvertSelection;
+            $all=`ls -sl`;
+    }
+        for($i in $all)
+            {
+                textScrollList -e -append $i $ts;
+            }
+        string $title ="多边面"+size($all);
+        frameLayout -e -l $title $fr;
 }
-    for($i in $all)
-        {
-            textScrollList -e -append $i $ts;
-        }
-    string $title ="多边面"+size($all);
-    frameLayout -e -l $title $fr;
-}
-global proc J_getTexture()//查贴图
+global proc J_modelClear_getTexture()//查贴图
     {
         string $fr=`frameLayout -l "无效贴图" -w 340  -cll 1 -cl 1 -bs "etchedIn" -p lookLayout `;
-        string $ts=`textScrollList -nr 10 -ams 1 -sc "selObj tsTt" tsTt`;
+        string $ts=`textScrollList -nr 10 -ams 1 -sc "J_modelClear_selObj tsTt" tsTt`;
         string $temp[]=`ls -type file`;
         int $x;
         for($i in $temp)
@@ -208,7 +208,7 @@ global proc J_getTexture()//查贴图
             string $title ="无效贴图"+$x;
             frameLayout -e -l $title $fr;
     }
-global proc string J_getPath()//设置路径
+global proc string J_modelClear_getPath()//设置路径
 {
     string $path=`textField -q -text pathText`;
     string $temp[]=`fileDialog2 -dir $path -fm 0 `;

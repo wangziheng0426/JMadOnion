@@ -8,6 +8,7 @@
   
   <MainMenu> 模型工具 model </MainMenu>  
   <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
+  <SubMenu> 删除辣鸡 J_deleteJunkWin model/J_deleteJunkWin.mel </SubMenu>  
   <SubMenu> 添加眼球 J_eyeBall model/J_eyeBall.mel </SubMenu>  
   <SubMenu> 融合变形转换 J_blendTools model/J_blendTools.mel </SubMenu>  
   <SubMenu> 模型替换 J_modelConvert model/J_modelConvert.mel </SubMenu>  
@@ -22,6 +23,7 @@
   <SubMenu> 布料工具 J_nClothOutPutPro vfx/J_nClothOutPutPro.mel </SubMenu>  
   <SubMenu> yeti替换贴图 J_replactYetiTextureWin vfx/J_replactYetiTextureWin.mel </SubMenu>
   <SubMenu> yeti极速缓存 J_runYetiCache vfx/J_runYetiCache.mel </SubMenu>  
+  <SubMenu> cfx流程工具 J_CFXWorkFlow vfx/J_CFXWorkFlow.mel </SubMenu>  
   
   
   <MainMenu> 场景模型工具 prop </MainMenu>  
