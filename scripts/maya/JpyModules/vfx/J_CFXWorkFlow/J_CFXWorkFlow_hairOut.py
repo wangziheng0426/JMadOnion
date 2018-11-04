@@ -16,14 +16,17 @@ import maya.cmds as cmds
 def J_CFXWorkFlow_hairOut():
     #创建缓存路径
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
-    cachePath=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]+'_cache'
-    if os.path.exists(filePath+cachePath):
-        shutil.rmtree(filePath+cachePath)
-        os.makedirs(filePath+cachePath)
+    cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]+'_cache'
+    if os.path.exists(filePath+cacheFileName):
+        shutil.rmtree(filePath+cacheFileName)
+    os.makedirs(filePath+cacheFileName)
     #创建缓存路径
     #创建json文件记录节点信息
-    outFile=open(filePath+cachePath+'/hairCache.txt','w')
+    print (filePath+cacheFileName+'/hairCache.txt')
+    outFile=open(filePath+cacheFileName+'/hairCache.txt','w')
     hairData={}
+    curveGroups=[]
+    runAbcString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf ' 
     #整理缓存节点
     allHairNodes=cmds.ls(sl=True,type='hairSystem')
     if allHairNodes.count<1:
@@ -35,12 +38,17 @@ def J_CFXWorkFlow_hairOut():
         except:
             pass
         follicleNodes= cmds.listConnections(item,type='follicle',destination=False,shapes=True)
-        presetsPath=mel.eval('saveAttrPreset("'+item+'","'+item+'",0)')
-        shutil.move(presetsPath,(filePath+cachePath))
-        if follicleNodes.count>0:
-            outCurveNode= cmds.listConnections(follicleNodes[0],type='nurbsCurve',source=False)
-            curveGroup=cmds.listRelatives(outCurveNode[0],parent=True)
-            hairData[item]=curveGroup
+        if follicleNodes is not None:
+            presetsPath=mel.eval('saveAttrPreset("'+item+'","'+item+'",0)')
+            shutil.move(presetsPath,(filePath+cacheFileName))
+            if follicleNodes.count>0:
+                outCurveNode= cmds.listConnections(follicleNodes[0],type='nurbsCurve',source=False)
+                curveGroup=cmds.listRelatives(outCurveNode[0],parent=True,fullPath=True)
+                hairData[item]=curveGroup[0]
+                curveGroups.append(curveGroup[0])
+                runAbcString+=' -root '+curveGroup[0]
+        else :print ('warning:%s has 0 follicle'%(item))
     outFile.write(json.dumps(hairData,encoding='utf-8',ensure_ascii=False)) 
     outFile.close()
-            
+    runAbcString+=' -file '+filePath+cacheFileName+'/'+cacheFileName+'.abc"'
+    mel.eval(runAbcString)
