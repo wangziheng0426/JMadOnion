@@ -22,8 +22,7 @@ def J_CFXWorkFlow_hairOut():
     os.makedirs(filePath+cacheFileName)
     #创建缓存路径
     #创建json文件记录节点信息
-    print (filePath+cacheFileName+'/hairCache.txt')
-    outFile=open(filePath+cacheFileName+'/hairCache.txt','w')
+    outFile=open((filePath+cacheFileName+'/'+cacheFileName+'.jfur'),'w')
     hairData={}
     curveGroups=[]
     runAbcString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf ' 
