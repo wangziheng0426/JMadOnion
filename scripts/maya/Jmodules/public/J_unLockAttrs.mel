@@ -10,8 +10,9 @@
 ///////////////////////////////////////////////////////////////
 
 ///所有属性解锁
-global proc J_unLockAttrs(string $mos[])
+global proc J_unLockAttrs()
 {
+string $mos[]=`ls -sl`;
 for($item in $mos)
 	{
 		string $lockedAttrs[]=`listAttr -l $item`;

@@ -6,6 +6,20 @@
 ##  @version 1.0
 ##  @date  16:46 2018/11/2
 #  History:  
-##导入毛发
+##导出abc
+import sys
+import os
+import shutil
+import json
+import maya.mel as mel
+import maya.cmds as cmds
 def J_CFXWorkFlow_outAbcGeo():
-    print 'J_CFXWorkFlow_outAbcGeo'
+    filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
+    cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
+    selectNodes=cmds.ls(sl=True,long=True)
+    exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
+    for item in selectNodes:
+        exportString+=' -root '+item
+    exportString+=' -file '+filePath+cacheFileName+'_cache/'+cacheFileName+'_Cloth.abc"'
+    mel.eval(exportString)
+    
