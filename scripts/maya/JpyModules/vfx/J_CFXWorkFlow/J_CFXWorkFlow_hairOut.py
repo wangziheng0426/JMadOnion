@@ -16,20 +16,23 @@ import maya.cmds as cmds
 def J_CFXWorkFlow_hairOut():
     #创建缓存路径
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
-    cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]+'_cache'
-    if os.path.exists(filePath+cacheFileName):
-        shutil.rmtree(filePath+cacheFileName)
-    os.makedirs(filePath+cacheFileName)
+    cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
+    if not os.path.exists(filePath+cacheFileName+'_cache'):
+        os.makedirs(filePath+cacheFileName+'_cache')
     #创建缓存路径
     #创建json文件记录节点信息
-    outFile=open((filePath+cacheFileName+'/'+cacheFileName+'.jfur'),'w')
-    hairData={}
+    outFile=open((filePath+cacheFileName+'_cache/'+cacheFileName+'.jfur'),'w')
+    hairData={'hairNode':{}}
     curveGroups=[]
+    #abc输出
     runAbcString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf ' 
     #整理缓存节点
+    mel.eval('convertHairSelection "hairSystems";')
     allHairNodes=cmds.ls(sl=True,type='hairSystem')
     if allHairNodes.count<1:
         return 'noHair';
+    #场控帧速率
+    hairData['currentUnit']=cmds.currentUnit(query=True,time=True)
     for item in allHairNodes:
         cmds.select(item)
         try:
@@ -38,16 +41,19 @@ def J_CFXWorkFlow_hairOut():
             pass
         follicleNodes= cmds.listConnections(item,type='follicle',destination=False,shapes=True)
         if follicleNodes is not None:
-            presetsPath=mel.eval('saveAttrPreset("'+item+'","'+item+'",0)')
-            shutil.move(presetsPath,(filePath+cacheFileName))
+            #保存预设
+            presetsPath=mel.eval('saveAttrPreset("'+item+'","'+item.replace(':','_')+'",0)')
+            if os.path.exists(filePath+cacheFileName+'_cache/'+item.replace(':','_')+'.mel'):
+                os.remove(filePath+cacheFileName+'_cache/'+item.replace(':','_')+'.mel')
+            shutil.move(presetsPath,(filePath+cacheFileName+'_cache'))
             if follicleNodes.count>0:
                 outCurveNode= cmds.listConnections(follicleNodes[0],type='nurbsCurve',source=False)
                 curveGroup=cmds.listRelatives(outCurveNode[0],parent=True,fullPath=True)
-                hairData[item]=curveGroup[0]
+                hairData['hairNode'][item.replace(':','@')]=curveGroup[0].replace(':','@')
                 curveGroups.append(curveGroup[0])
                 runAbcString+=' -root '+curveGroup[0]
         else :print ('warning:%s has 0 follicle'%(item))
     outFile.write(json.dumps(hairData,encoding='utf-8',ensure_ascii=False)) 
     outFile.close()
-    runAbcString+=' -file '+filePath+cacheFileName+'/'+cacheFileName+'.abc"'
+    runAbcString+=' -file '+filePath+cacheFileName+'_cache/'+cacheFileName+'_Hair.abc"'
     mel.eval(runAbcString)
