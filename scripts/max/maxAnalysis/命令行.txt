@@ -1,0 +1,3 @@
+"C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe" -q -mi -mxs "loadMaxFile @\"d:\downloads\通辽444\现代一张.max\" quiet:true;global inputdir=@\"e:\work\test\";global inputType=@\"Client\";filein @\"e:\work\test\analize.ms\""
+
+"C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe" filein @\"c:\afaf.ms\""
