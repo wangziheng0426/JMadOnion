@@ -35,4 +35,6 @@
   
   <MainMenu> 渲染工具 render </MainMenu>  
   #<SubMenu> 前台渲染 J_perFrameRender render/J_perFrameRender.mel </SubMenu> 
+  <MainMenu> fffffdfasdf render </MainMenu>  
+  #<SubMenu> fffffdfasdf J_perFrameRender render/J_perFrameRender.mel </SubMenu> 
 </root>
