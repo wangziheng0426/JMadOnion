@@ -10,6 +10,7 @@
 import json
 import os
 import sys
+import shutil
 import maya.cmds as cmds
 import maya.mel as mel
 def J_CFXWorkFlow_hairIn():
@@ -44,7 +45,10 @@ def J_CFXWorkFlow_hairIn():
         hairNode=cmds.createNode('hairSystem',name=hairNodeItem.replace('@','_'),parent=trNode)
         cmds.select(hairData['hairNode'][hairNodeItem].split('@')[-1])
         mel.eval('assignHairSystem '+hairNode+';')
-        cmds.setAttr((hairNode+'.simulationMethod'),1)
         cmds.connectAttr('time1.outTime',hairNode+'.currentTime')
         mel.eval('addPfxToHairSystem;')
-    
+        presetsPath=cmds.internalVar(userPresetsDir=True)
+        shutil.copy(os.path.dirname(cacheFileName[0])+'/'+hairNodeItem.replace('@','_')+'.mel',presetsPath+'/attrPresets/hairSystem')
+        mel.eval('applyAttrPreset '+hairNode+' '+hairNodeItem.replace('@','_')+' 1')
+        cmds.setAttr((hairNode+'.simulationMethod'),1)
+        os.remove(presetsPath+'/attrPresets/hairSystem/'+hairNodeItem.replace('@','_')+'.mel')

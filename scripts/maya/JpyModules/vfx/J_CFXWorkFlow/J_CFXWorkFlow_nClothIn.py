@@ -6,6 +6,10 @@
 ##  @version 1.0
 ##  @date  16:46 2018/11/2
 #  History:  
-##导入毛发
+##导入布料
+import maya.cmds as cmds 
+import maya.mel as mel 
 def J_CFXWorkFlow_nClothIn():
-    print 'J_CFXWorkFlow_nClothIn'
+    cacheFileName = cmds.fileDialog2(fileMode=1, caption="Import hair")
+    #导入abc
+    abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0] +'";')

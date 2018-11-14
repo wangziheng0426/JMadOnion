@@ -20,6 +20,8 @@ def J_CFXWorkFlow_outAbcGeo():
     exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
     for item in selectNodes:
         exportString+=' -root '+item
+    if not os.path.exists(filePath+cacheFileName+'_cache/'):
+        os.makedirs(filePath+cacheFileName+'_cache/')
     exportString+=' -file '+filePath+cacheFileName+'_cache/'+cacheFileName+'_Cloth.abc"'
     mel.eval(exportString)
-    
+    os.startfile(filePath+cacheFileName+'_cache/')
