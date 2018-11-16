@@ -110,7 +110,12 @@
     </property>
     <column>
      <property name="text">
-      <string notr="true">1</string>
+      <string>name</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>status</string>
      </property>
     </column>
    </widget>
@@ -118,26 +123,26 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>590</y>
-      <width>101</width>
+      <y>620</y>
+      <width>131</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>导出max到fbx</string>
+     <string>导出max绑定到fbx</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_4">
     <property name="geometry">
      <rect>
       <x>150</x>
-      <y>590</y>
-      <width>101</width>
+      <y>620</y>
+      <width>141</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>导出max动画到fbx</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="textInPath">
@@ -149,6 +154,21 @@
       <height>31</height>
      </rect>
     </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>580</y>
+      <width>491</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>max版本选择</string>
+     </property>
+    </item>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
