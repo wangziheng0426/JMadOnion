@@ -1,3 +1,19 @@
 "C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe" -q -mi -mxs "loadMaxFile @\"d:\downloads\通辽444\现代一张.max\" quiet:true;global inputdir=@\"e:\work\test\";global inputType=@\"Client\";filein @\"e:\work\test\analize.ms\""
 
+"D:\SoftWare\Autodesk\3ds Max 2014\3dsmax.exe" /Language=ENU -q -vd -mi -mxs "loadMaxFile @\"C:/8.max\" quiet:true;global inputdir=@\"C:/yumefx\";global inputType=@\"Client\";filein @\"C:/yumefx/analize.ms\""
+
 "C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe" filein @\"c:\afaf.ms\""
+
+"C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe" -q -silent -mi  -U MAXScript  d:/J_convertMaxToFbx.ms d:/cc.max
+
+"C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe"  -mxs "loadMaxFile @\"d:\cc.max\""
+
+"C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe"  -mxs "loadMaxFile @\"d:/cc.max\"       quiet:true;global inputPath=@\"d:/abc.fbx\"; filein @\"d:/J_convertMaxToFbx.ms \"" 
+
+
+"C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe"  -mxs loadMaxFile @\"d:/cc.max\"       quiet:true;global inputPath=@\"d:/abc.fbx\"; filein @\"d:/J_convertMaxToFbx.ms \""  d:/cc.max
+
+
+"C:\Program Files\Autodesk\3ds Max 2016\3dsmax.exe"  -mxs "loadMaxFile @\"d:/cc.max\"       quiet:true;global inputPath=@\"d:/abc.fbx\"; filein @\"d:/J_convertMaxToFbx.ms \"" 
+"C:/Program Files/Autodesk/3ds Max 2016/3dsmax.exe"  -mxs "loadMaxFile @\"D:/a/cc.max\"     quiet:true;global inputPath=@\"D:/a/cc.fbx\"; filein @\"d:/J_convertMaxToFbx.ms\""
+"C:/Program Files/Autodesk/3ds Max 2016/3dsmax.exe"  -mxs "loadMaxFile "D:/a/cc.max"   quiet:true;global inputPath="D:/a/cc.fbx"; filein "d:/J_convertMaxToFbx.ms""

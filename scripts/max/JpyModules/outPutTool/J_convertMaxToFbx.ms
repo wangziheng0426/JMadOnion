@@ -1,5 +1,7 @@
-fn J_outPutGeoAndBone outFileName=
+fn J_outPutGeoAndBone =
 (
+    outFileName=inputPath
+    --outFileName="d:/aa.fbx"
 	select_bone=#()
 	select_geo=#()
 	for item in geometry do
@@ -11,18 +13,19 @@ fn J_outPutGeoAndBone outFileName=
 		if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do
 			(	
 				append select_geo item
+                select item
+                $.material= none
 			)
-		
-		
 	)
-	select select_bone 
-	selectMore select_geo
-	selectMore $head_front
+	try select select_bone catch()
+	try selectMore select_geo catch()
+	try selectMore $head_front catch()
 
-	FbxExporterSetParam "Animation" false
+	FbxExporterSetParam "Animation" False
 	FbxExporterSetParam "UpAxis" "Y"
-
+    FbxExporterSetParam "EmbedTextures" False
 	exportFile outFileName #noPrompt selectedOnly:true
 
 )
-J_outPutGeoAndBone "c:/pb.fbx"
+J_outPutGeoAndBone()
+--quitMax #noPrompt
