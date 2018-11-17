@@ -13,7 +13,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 'max2017':'C:\\Program Files\\Autodesk\\3ds Max 2017\\3dsmax.exe',\
                 'max2018':'C:\\Program Files\\Autodesk\\3ds Max 2018\\3dsmax.exe'}
     maxList=['max2015','max2016','max2017','max2018']
-    fileTypeToCopy={'.fbx':'/Action','.png':'/Texture'}
+    fileTypeToCopy={'.fbx':'/Animation','.png':'/Texture'}
     def __init__(self):
         super(J_outPutTool,self).__init__()
         self.setupUi(self)
@@ -63,8 +63,11 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             #拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
             sourceFilePath=str(item.text(2)).decode('utf-8')
             destinationFilePath=sourceFilePath.replace(inTextField,outTextField).replace('.max','.fbx')
-            if not os.path.exists(os.path.dirname(destinationFilePath)) :
-                os.makedirs(os.path.dirname(destinationFilePath))
+            destinationPath='_'.join(os.path.dirname(destinationFilePath).split('_')[0:-1])
+            destinationFile=os.path.basename(destinationFilePath)
+            destinationFilePath=destinationPath+'/'+destinationFile
+            if not os.path.exists(destinationPath) :
+                os.makedirs(destinationPath)
             #转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
             res=self.J_exportFbx(sourceFilePath,destinationFilePath,'d:/J_convertMaxToFbx.ms')
             item.setText(1,res)
