@@ -1,0 +1,93 @@
+/////////////////////////////////////////////////////////////
+///\file  J_playBlastToolWin.mel
+///\brief  拍屏工具
+///
+///\author 桔
+///\version 1.0
+///\date   
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///打开主界面窗口
+///\return "success";
+global proc string J_playBlastToolWin()//拍屏工具
+{
+string $lists[]={"当前帧","帧速率","摄像机","制作人","时间","场景名"};
+int $options[]={0,0,0,0,0,0};
+string $J_checkBoxs[];
+if (`window -ex J_playBlastWin`)
+	deleteUI -window J_playBlastWin;
+	window -w 300 -h (size($lists)*2+200) -title "删除垃圾" J_playBlastWin;
+		frameLayout -cll 1 -cl 0  -h (size($lists)*20) -l "选择要删除的项目"  J_getJunkLayOut;
+		formLayout  -nd 100  -h (size($lists)*20) J_getJunkFormLayOut;
+		
+		$J_checkBoxs[0]=`checkBox -v 0 -onCommand "J_playBlastCheckBoxAllOn"
+										-offCommand "J_playBlastCheckBoxAllOff" -label "all"`;
+		formLayout -e -af $J_checkBoxs[0] top 5 -af $J_checkBoxs[0] left 5 J_getJunkFormLayOut;
+		
+		for($i=0;$i<size($lists);$i++)
+		{
+			int $leftPos=5+($i)%2*140;
+			$J_checkBoxs[$i+1]=`checkBox -v 0 -label $lists[$i]`;
+			formLayout -e 
+				-af $J_checkBoxs[$i+1] left $leftPos
+				-ac $J_checkBoxs[$i+1] top 5 $J_checkBoxs[$i-$i%2]
+			J_getJunkFormLayOut;
+		}
+		textField J_playBlastText;
+		button -l "走你" -c  "J_playBlast" J_playBlastButton;
+		formLayout -e 
+					-ac J_playBlastText top 5 $J_checkBoxs[size($J_checkBoxs)-1]
+					-af J_playBlastText left 5
+					-af J_playBlastText right 5
+		
+					-ac J_playBlastButton top 5 J_playBlastText
+					-af J_playBlastButton left 5
+					-af J_playBlastButton right 5
+		 J_getJunkFormLayOut;
+showWindow J_playBlastWin;
+return "success";
+}
+
+///删除指定节点并反馈
+global proc J_playBlast()
+{
+
+
+}
+global proc J_turnOnAllHUBs()
+{
+    setCameraNamesVisibility(1);
+    setCurrentFrameVisibility(1);
+    setSceneTimecodeVisibility(1);
+}
+global proc string J_getWinUserName()
+{
+   string $kk=`internalVar -userTmpDir`;
+   string $buffer[];
+    $numTokens = `tokenize $kk "//" $buffer`;
+    return $buffer[2];
+}
+///切换选项开关
+global proc J_playBlastCheckBoxAllOn()
+{
+	string $formCh[]=`formLayout -q -childArray J_getJunkFormLayOut`;
+	for($i=1;$i<size($formCh);$i++)
+	{
+		if(`checkBox -q -ex $formCh[$i]`)
+		checkBox -e -v 1 $formCh[$i];
+	}
+
+}
+
+///切换选项开关
+global proc J_playBlastCheckBoxAllOff()
+{	string $formCh[]=`formLayout -q -childArray J_getJunkFormLayOut`;
+	for($i=1;$i<size($formCh);$i++)
+	{
+		if(`checkBox -q -ex $formCh[$i]`)
+		checkBox -e -v 0 $formCh[$i];
+	}
+
+}

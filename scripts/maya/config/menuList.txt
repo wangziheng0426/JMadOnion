@@ -8,6 +8,7 @@
   
   <MainMenu> 模型组 model </MainMenu>  
   <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
+  <SubMenu> 删除辣鸡 J_deleteJunkWin model/J_deleteJunkWin.mel </SubMenu>
   <SubMenu> 添加眼球 J_eyeBall model/J_eyeBall.mel </SubMenu>  
   <SubMenu> 融合变形转换 J_blendTools model/J_blendTools.mel </SubMenu>  
   <SubMenu> 模型替换 J_modelConvert model/J_modelConvert.mel </SubMenu>  
@@ -30,7 +31,8 @@
   <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
   <SubMenu> 炒鸡不二 tjh_cut_tool_Main J_file/tjh_cut_tool_Main/tjh_cut_tool_Main.mel </SubMenu>  
   
-  
+  <MainMenu> 动画工具 prop </MainMenu>  
+  <SubMenu> 拍平工具 J_sourceManger prop/J_sourceManger.mel </SubMenu>
   <MainMenu> 渲染工具 render </MainMenu>  
   #<SubMenu> 前台渲染 J_perFrameRender render/J_perFrameRender.mel </SubMenu> 
 </root>
