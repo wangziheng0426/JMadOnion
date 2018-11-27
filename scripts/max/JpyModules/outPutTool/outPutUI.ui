@@ -122,9 +122,9 @@
    <widget class="QPushButton" name="pushButton_MaxToFbx">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>620</y>
-      <width>131</width>
+      <x>500</x>
+      <y>610</y>
+      <width>110</width>
       <height>41</height>
      </rect>
     </property>
@@ -132,17 +132,17 @@
      <string>导出max绑定到fbx</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_4">
+   <widget class="QPushButton" name="pushButton_MaxToBip">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>620</y>
-      <width>141</width>
+      <x>620</x>
+      <y>610</y>
+      <width>110</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>导出max动画到fbx</string>
+     <string>导出max动画到bip</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="textInPath">
@@ -169,6 +169,58 @@
       <string>max版本选择</string>
      </property>
     </item>
+   </widget>
+   <widget class="QPushButton" name="pushButton_SelectAll">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>全选</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_AutoSelect">
+    <property name="geometry">
+     <rect>
+      <x>135</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>智能选择</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_ExportTexture">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>导出贴图</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_ExportAnimation">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>导出动画</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
