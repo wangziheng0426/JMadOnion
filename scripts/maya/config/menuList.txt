@@ -31,7 +31,7 @@
   <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
   <SubMenu> 炒鸡不二 tjh_cut_tool_Main J_file/tjh_cut_tool_Main/tjh_cut_tool_Main.mel </SubMenu>  
   
-  <MainMenu> 动画工具 prop </MainMenu>  
+  <MainMenu> 动画工具 anim </MainMenu>  
   <SubMenu> 拍平工具 J_sourceManger prop/J_sourceManger.mel </SubMenu>
   <MainMenu> 渲染工具 render </MainMenu>  
   #<SubMenu> 前台渲染 J_perFrameRender render/J_perFrameRender.mel </SubMenu> 
