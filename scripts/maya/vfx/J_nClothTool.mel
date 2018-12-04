@@ -36,8 +36,8 @@ if (`window -ex J_nClothTool`)
             formLayout  -numberOfDivisions 100  J_clothInOutFormLayout;
                 textField -tx "D:/SM/ncloth_rig" -width 300 outPutTextField;
                 symbolButton -width 20 -image "navButtonBrowse.xpm"   -command J_inOutClothInfoPath browsBtn;
-                string $cbu09 =`button -al "center"  -w $ButtonW -h $ButtonH -l "导出布料设置"  -c J_createNCloth`;
-                string $cbu10 =`button -al "center"  -w $ButtonW -h $ButtonH -l "导入布料设置"  -c J_createPassive`;
+                string $cbu09 =`button -al "center"  -w $ButtonW -h $ButtonH -l "导出布料设置"  -c J_exportNcloth`;
+                string $cbu10 =`button -al "center"  -w $ButtonW -h $ButtonH -l "导入布料设置"  -c J_importNcloth`;
             setParent ..;
         setParent ..;
         ///////////////////////////布料
@@ -97,6 +97,10 @@ global proc J_nClothToolInit()
 global proc J_createNCloth()
 {
     string $rn_obj[]= `ls -sl`;
+    if (size($rn_obj)<1)
+        return;
+    if (`objectType $rn_obj[0]`!="transform"&&`objectType $rn_obj[0]`!="mesh")
+        {print "选择至少一个模型";return;}
     string $his_list[];
     string $get_res[];
     for($obj_nc in $rn_obj)
@@ -214,6 +218,9 @@ global proc J_nClothTool_selectNode()
 {
     textScrollList -e -da  nclothNodeslist;
 	string $sel[]=`ls -sl`;
+    if (size($sel)<1)
+        return;
+    J_nClothToolInit();
     string $selNc[];
     int $count=0;
     for ($kk in $sel)
@@ -249,5 +256,13 @@ global proc J_nClothTool_downLoadPresets()
     string $souFile=$nClothPresetsPath+$item;
     sysFile -copy $desFile $souFile;
     }J_nClothTool_getPresets("ncloth","nclothPresetslist");
+}
+global proc J_importNcloth()
+{
+    python("JpyModules.vfx.J_nClothTool.J_importNcloth()");
+}
+global proc J_exportNcloth()
+{
+    python("JpyModules.vfx.J_nClothTool.J_exportNcloth()");
 }
     J_nClothTool
