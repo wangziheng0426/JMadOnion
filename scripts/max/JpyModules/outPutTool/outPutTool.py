@@ -147,9 +147,9 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             # 拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
             sourceFilePath = str(item.text(2)).decode('utf-8')
             destinationFilePath = sourceFilePath.replace(inTextField, outTextField).replace('.max', '.bip')
-            destinationPath = '_'.join(os.path.dirname(destinationFilePath).split('_')[0:-1])
+            destinationPath = '_'.join(os.path.dirname(destinationFilePath).split('_')[0:-1])+ '/bip/'
             destinationFile = os.path.basename(destinationFilePath)
-            destinationFilePath = destinationPath + '/' + destinationFile
+            destinationFilePath = destinationPath  + destinationFile
             if not os.path.exists(destinationPath):
                 os.makedirs(destinationPath)
             # 转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
