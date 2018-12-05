@@ -30,11 +30,11 @@ def J_exportNcloth():
     nClothData={'nucleus':[],'nCloth':[],'nRigid':[],'dynamicConstraint':[],'nComponent':[]}
     nodeType=['nucleus','nCloth','nRigid','dynamicConstraint','nComponent']
     ##################################导出
-    nClothData['nucleus']=J_exportNclothNculeusNode(finalExportPath)
-    nClothData['nCloth']=J_exportNclothNClothNode(finalExportPath)
-    nClothData['nRigid']=J_exportnRigidNClothNode(finalExportPath)
-    nClothData['dynamicConstraint']=J_exportnDynamicConstraintNode(finalExportPath)
-    nClothData['nComponent']=J_exportnComponentNode(finalExportPath)
+    nClothData['nucleus']=J_exportNcloth_NculeusNode(finalExportPath)
+    nClothData['nCloth']=J_exportNcloth_NClothNode(finalExportPath)
+    nClothData['nRigid']=J_exportNCloth_nRigidNode(finalExportPath)
+    nClothData['dynamicConstraint']=J_exportNcloth_nDynamicConstraintNode(finalExportPath)
+    nClothData['nComponent']=J_exportNcloth_nComponentNode(finalExportPath)
     
     ##################################保存
     outFile.write(json.dumps(nClothData,encoding='utf-8',ensure_ascii=False)) 
@@ -53,7 +53,7 @@ def J_exportNclothSavePresetsToDestnation(nodeToSave,destnationPath):
     shutil.move(presetsPath,destnationPath)
     return (nodeToSave.replace(':','_')+'_JClothPre')
 #########解算器
-def J_exportNclothNculeusNode(exportPath):
+def J_exportNcloth_NculeusNode(exportPath):
     nucleusData=[]
     exportPath+='nucleus/'
     allNucleus=cmds.ls(type='nucleus')
@@ -65,56 +65,68 @@ def J_exportNclothNculeusNode(exportPath):
             nucleusData.append(nucleusTempData)
     return nucleusData
 #########布料
-def J_exportNclothNClothNode(exportPath):
+def J_exportNcloth_NClothNode(exportPath):
     nClothData=[]
     exportPath+='nCloth/'
     allnCloth=cmds.ls(type='nCloth')
     if len(allnCloth)>0:
         for item in allnCloth:
-            nClothTempData={'nodeName':'','attrPresets':'','nculeus':'','inMesh':''}
+            nClothTempData={'nodeName':'','nodeNameParent':'','attrPresets':'','nculeus':'','inMesh':'','inMeshTr':'','inputAttract':[],'collide':[]}
             nClothTempData['nodeName']=item
+            nClothTempData['nodeNameParent']=cmds.listRelatives(item,parent=True,fullPath=True)[0]
             nClothTempData['attrPresets']=J_exportNclothSavePresetsToDestnation(item,exportPath)
             nClothTempData['nculeus']=cmds.listConnections(item,type='nucleus')[0]
-            nClothTempData['inMesh']=cmds.listConnections(item,type='mesh',shapes=True,destination=False)[0]
+            tempMesh=cmds.listConnections(item,type='mesh',shapes=True,destination=False)[0]
+            nClothTempData['inMesh']=cmds.listRelatives(tempMesh,parent=True,fullPath=True)[0]+'|'+tempMesh.split('|')[-1]
+            nClothTempData['inMeshTr']=cmds.listRelatives(tempMesh,parent=True,fullPath=True)[0]
+            if cmds.getAttr(item+'.inputAttractPerVertex') != None:
+                nClothTempData['inputAttract']=cmds.getAttr(item+'.inputAttractPerVertex')
+            if cmds.getAttr(item+'.cspv') != None:
+                nClothTempData['collide']=cmds.getAttr(item+'.cspv')
             nClothData.append(nClothTempData)
     return nClothData
 ###########导出碰撞体
-def J_exportnRigidNClothNode(exportPath):
+def J_exportNCloth_nRigidNode(exportPath):
     nRigidData=[]
     exportPath+='nRigid/'
     allnRigid=cmds.ls(type='nRigid')
     if len(allnRigid)>0:
         for item in allnRigid:
-            nRigidTempData={'nodeName':'','attrPresets':'','nculeus':'','inMesh':''}
+            nRigidTempData={'nodeName':'','attrPresets':'','nculeus':'','inMesh':'','inMeshTr':''}
             nRigidTempData['nodeName']=item
             nRigidTempData['attrPresets']=J_exportNclothSavePresetsToDestnation(item,exportPath)
             nRigidTempData['nculeus']=cmds.listConnections(item,type='nucleus')[0]
-            nRigidTempData['inMesh']=cmds.listConnections(item,type='mesh',shapes=True,destination=False)[0]
+            tempMesh=cmds.listConnections(item,type='mesh',shapes=True,destination=False)[0]
+            nRigidTempData['inMesh']=cmds.listRelatives(tempMesh,parent=True,fullPath=True)[0]+'|'+tempMesh.split('|')[-1]
+            nRigidTempData['inMeshTr']=cmds.listRelatives(tempMesh,parent=True,fullPath=True)[0]
             nRigidData.append(nRigidTempData)
     return nRigidData
 ##########导出约束
-def J_exportnDynamicConstraintNode(exportPath):
+def J_exportNcloth_nDynamicConstraintNode(exportPath):
     dynamicConstraintData=[]
     exportPath+='dynamicConstraint/'
     alldynamicConstraint=cmds.ls(type='dynamicConstraint')
     if len(alldynamicConstraint)>0:
         for item in alldynamicConstraint:
-            dynamicConstraintTempData={'nodeName':'','attrPresets':'','nculeus':''}
+            dynamicConstraintTempData={'nodeName':'','attrPresets':'','nculeus':'','connections':[]}
             dynamicConstraintTempData['nodeName']=item
             dynamicConstraintTempData['attrPresets']=J_exportNclothSavePresetsToDestnation(item,exportPath)
             dynamicConstraintTempData['nculeus']=cmds.listConnections(item,type='nucleus')[0]
+            dynamicConstraintTempData['connections']=cmds.listConnections(item,type='nucleus',connections=True,plugs=True)
             dynamicConstraintData.append(dynamicConstraintTempData)
     return dynamicConstraintData
 ##########约束元素
-def J_exportnComponentNode(exportPath):
+def J_exportNcloth_nComponentNode(exportPath):
     nComponentData=[]
     exportPath+='nComponent/'
     allnComponent=cmds.ls(type='nComponent')
     if len(allnComponent)>0:
         for item in allnComponent:
-            nComponentTempData={'nodeName':'','attrPresets':'','nculeus':''}
+            nComponentTempData={'nodeName':'','attrPresets':'','nculeus':'','sourceConn':[],'destinationConn':[]}
             nComponentTempData['nodeName']=item
             nComponentTempData['attrPresets']=J_exportNclothSavePresetsToDestnation(item,exportPath)
+            nComponentTempData['sourceConn']=cmds.listConnections(item,connections=True,plugs=True,source=True,destination=False)
+            nComponentTempData['destinationConn']=cmds.listConnections(item,connections=True,plugs=True,source=False,destination=True)
             nComponentData.append(nComponentTempData)
     return nComponentData
  
