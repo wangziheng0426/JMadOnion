@@ -79,7 +79,8 @@ if (`window -ex J_nClothTool`)
         
         J_clothPresetsFormLayout;
 showWindow J_nClothTool;
-J_nClothToolInit();
+    J_nClothToolInit();
+    J_nClothTool_runScriptJob();
 }
   
 //初始化界面
@@ -90,7 +91,11 @@ global proc J_nClothToolInit()
 	for($i in $J_nclothNodes)
 	{textScrollList -e -a $i nclothNodeslist;}
     J_nClothTool_getPresets("ncloth","nclothPresetslist");
-    J_nClothTool_runScriptJob();
+
+    //加载笔刷
+    string $temp0="source \"C:/Program Files/Autodesk/Maya2016/scripts/others/setNClothMapType.mel\"";
+    string $temp1="source \"C:/Program Files/Autodesk/Maya2016/scripts/others/artAttrNClothToolScript.mel\"";
+    eval($temp0);eval($temp1);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  创建布料 
@@ -182,7 +187,7 @@ global proc J_createPassive()
             {
                 setAttr ($nr_list[$i]+".pushOutRadius") 0.002;
                 setAttr ($nr_list[$i]+".thickness") 0.002;
-                string $par[]=`listRelatives -q -p $nr_list[$i]`;
+                string $par[]=`listRelatives  -p $nr_list[$i]`;
                 rename  $par[0] ($pa_obj[$i]+"_nRig");
             }
     }
@@ -199,7 +204,9 @@ global proc J_pointToSuf()
 global proc J_pointTopoint()
     {createNConstraint pointToPoint 0;} 
 global proc J_paintInputAttract()
-{setNClothMapType("inputAttract","",1); artAttrNClothToolScript 3 inputAttract;}
+{
+setNClothMapType("inputAttract","",1); artAttrNClothToolScript 3 inputAttract;
+}
 global proc J_paintCollideStrength()
 {setNClothMapType("collideStrength","",1); artAttrNClothToolScript 3 collideStrength;}
 global proc J_inOutClothInfoPath()////////////////////////////////////////设定路径
