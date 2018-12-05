@@ -36,7 +36,7 @@ def J_CFXWorkFlow_hairOut():
     for item in allHairNodes:
         cmds.select(item)
         try:
-            mel.eval('AddCurvesToHairSystem')
+            mel.eval('AddCurvesToHairSystem')#如果没有输出曲线，添加输出曲线
         except:
             pass
         follicleNodes= cmds.listConnections(item,type='follicle',destination=False,shapes=True)
