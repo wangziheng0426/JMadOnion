@@ -104,14 +104,6 @@ $n+="已被清除";
 confirmDialog -title "提示" -message $n;
 
 }
-
-
-global proc J_modelClear_getPath()//设置路径
-{
-    string $temp =`J_modelClear_getPath`;
-    textField -e -tx $temp -w 260 -h 25 pathText;
-}
-
 global proc J_modelClear_upLoad()//上传
 {
     string $paths=`textField -q -tx  pathText`;
@@ -208,9 +200,9 @@ global proc J_modelClear_getTexture()//查贴图
             string $title ="无效贴图"+$x;
             frameLayout -e -l $title $fr;
     }
-global proc string J_modelClear_getPath()//设置路径
+global proc J_modelClear_getPath()//设置路径
 {
     string $path=`textField -q -text pathText`;
     string $temp[]=`fileDialog2 -dir $path -fm 0 `;
-    return $temp[0];
+    textField -e -tx $temp[0] -w 260 -h 25 pathText;
 }

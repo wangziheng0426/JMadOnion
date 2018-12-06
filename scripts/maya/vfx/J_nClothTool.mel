@@ -193,16 +193,31 @@ global proc J_createPassive()
     }
 /////////////////////////////////////////   取消碰撞
 global proc J_diableCollider()
-    {createNConstraint disableCollision 0;} 
+    {
+    string $temp0[]=`createNConstraint disableCollision 0`;
+    string $temp1[]=`listRelatives -p $temp0[0]`;
+    string $newName="disColl_"+$temp1[0];
+    rename $temp1[0] $newName;
+    } 
 /////////////////////////////////////////   选择元素
 global proc J_selectMember()
     {dynamicConstraintMembership "select";}
 /////////////////////////////////////////   点面约束
 global proc J_pointToSuf()
-    {createNConstraint pointToSurface 0;}
+    {
+    string $temp0[]=`createNConstraint pointToSurface 0`;
+    string $temp1[]=`listRelatives -p $temp0[0]`;
+    string $newName="pointToS_"+$temp1[0];
+    rename $temp1[0] $newName;
+    } 
 /////////////////////////////////////////   元素约束
 global proc J_pointTopoint()
-    {createNConstraint pointToPoint 0;} 
+    {
+    string $temp0[]=`createNConstraint pointToPoint 0`;
+    string $temp1[]=`listRelatives -p $temp0[0]`;
+    string $newName="pointTop_"+$temp1[0];
+    rename $temp1[0] $newName;
+    } 
 global proc J_paintInputAttract()
 {
 setNClothMapType("inputAttract","",1); artAttrNClothToolScript 3 inputAttract;
@@ -262,7 +277,8 @@ global proc J_nClothTool_downLoadPresets()
     string $desFile=$destnationPath+$item;
     string $souFile=$nClothPresetsPath+$item;
     sysFile -copy $desFile $souFile;
-    }J_nClothTool_getPresets("ncloth","nclothPresetslist");
+    }
+    J_nClothTool_getPresets("ncloth","nclothPresetslist");
 }
 global proc J_importNcloth()
 {
@@ -272,4 +288,3 @@ global proc J_exportNcloth()
 {
     python("JpyModules.vfx.J_nClothTool.J_exportNcloth()");
 }
-    J_nClothTool

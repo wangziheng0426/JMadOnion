@@ -17,6 +17,9 @@ def J_CFXWorkFlow_outAbcGeo():
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
     selectNodes=cmds.ls(sl=True,long=True)
+    if len(selectNodes)<1:
+        cmds.confirmDialog(title=u'错误',message=u'   未选中任何节点   ',button='666')
+        return
     exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
     for item in selectNodes:
         exportString+=' -root '+item
