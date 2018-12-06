@@ -71,7 +71,7 @@ def J_exportNcloth_NClothNode(exportPath):
     allnCloth=cmds.ls(type='nCloth')
     if len(allnCloth)>0:
         for item in allnCloth:
-            nClothTempData={'nodeName':'','nodeNameParent':'','attrPresets':'','nculeus':'','inMesh':'','inMeshTr':'','inputAttract':[],'collide':[]}
+            nClothTempData={'nodeName':'','nodeNameParent':'','attrPresets':'','nculeus':'','inMesh':'','inMeshTr':'','inputAttract':[],'collide':[],'sourceConn':[],'destinationConn':[]}
             nClothTempData['nodeName']=item
             nClothTempData['nodeNameParent']=cmds.listRelatives(item,parent=True,fullPath=True)[0]
             nClothTempData['attrPresets']=J_exportNclothSavePresetsToDestnation(item,exportPath)
@@ -79,6 +79,8 @@ def J_exportNcloth_NClothNode(exportPath):
             tempMesh=cmds.listConnections(item,type='mesh',shapes=True,destination=False)[0]
             nClothTempData['inMesh']=cmds.listRelatives(tempMesh,parent=True,fullPath=True)[0]+'|'+tempMesh.split('|')[-1]
             nClothTempData['inMeshTr']=cmds.listRelatives(tempMesh,parent=True,fullPath=True)[0]
+            nClothTempData['sourceConn']=cmds.listConnections(item,connections=True,plugs=True,source=True,destination=False,type='nucleus')
+            nClothTempData['destinationConn']=cmds.listConnections(item,connections=True,plugs=True,source=False,destination=True,type='nucleus')
             if cmds.getAttr(item+'.inputAttractPerVertex') != None:
                 nClothTempData['inputAttract']=cmds.getAttr(item+'.inputAttractPerVertex')
             if cmds.getAttr(item+'.cspv') != None:
@@ -92,13 +94,15 @@ def J_exportNCloth_nRigidNode(exportPath):
     allnRigid=cmds.ls(type='nRigid')
     if len(allnRigid)>0:
         for item in allnRigid:
-            nRigidTempData={'nodeName':'','attrPresets':'','nculeus':'','inMesh':'','inMeshTr':''}
+            nRigidTempData={'nodeName':'','attrPresets':'','nculeus':'','inMesh':'','inMeshTr':'','sourceConn':[],'destinationConn':[]}
             nRigidTempData['nodeName']=item
             nRigidTempData['attrPresets']=J_exportNclothSavePresetsToDestnation(item,exportPath)
             nRigidTempData['nculeus']=cmds.listConnections(item,type='nucleus')[0]
             tempMesh=cmds.listConnections(item,type='mesh',shapes=True,destination=False)[0]
             nRigidTempData['inMesh']=cmds.listRelatives(tempMesh,parent=True,fullPath=True)[0]+'|'+tempMesh.split('|')[-1]
             nRigidTempData['inMeshTr']=cmds.listRelatives(tempMesh,parent=True,fullPath=True)[0]
+            nRigidTempData['sourceConn']=cmds.listConnections(item,connections=True,plugs=True,source=True,destination=False,type='nucleus')
+            nRigidTempData['destinationConn']=cmds.listConnections(item,connections=True,plugs=True,source=False,destination=True,type='nucleus')
             nRigidData.append(nRigidTempData)
     return nRigidData
 ##########导出约束
@@ -108,11 +112,11 @@ def J_exportNcloth_nDynamicConstraintNode(exportPath):
     alldynamicConstraint=cmds.ls(type='dynamicConstraint')
     if len(alldynamicConstraint)>0:
         for item in alldynamicConstraint:
-            dynamicConstraintTempData={'nodeName':'','attrPresets':'','nculeus':'','connections':[]}
+            dynamicConstraintTempData={'nodeName':'','attrPresets':'','nculeus':'','destinationConn':[]}
             dynamicConstraintTempData['nodeName']=item
             dynamicConstraintTempData['attrPresets']=J_exportNclothSavePresetsToDestnation(item,exportPath)
             dynamicConstraintTempData['nculeus']=cmds.listConnections(item,type='nucleus')[0]
-            dynamicConstraintTempData['connections']=cmds.listConnections(item,type='nucleus',connections=True,plugs=True)
+            dynamicConstraintTempData['destinationConn']=cmds.listConnections(item,type='nucleus',connections=True,plugs=True)
             dynamicConstraintData.append(dynamicConstraintTempData)
     return dynamicConstraintData
 ##########约束元素
