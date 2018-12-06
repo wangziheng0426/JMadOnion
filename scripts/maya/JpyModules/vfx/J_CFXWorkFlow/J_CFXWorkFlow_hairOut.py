@@ -29,7 +29,8 @@ def J_CFXWorkFlow_hairOut():
     #整理缓存节点
     mel.eval('convertHairSelection "hairSystems";')
     allHairNodes=cmds.ls(sl=True,type='hairSystem')
-    if allHairNodes.count<1:
+    if len(allHairNodes)<1:
+        cmds.confirmDialog(title=u'错误',message=u'   未选中毛发节点        ',button='666')
         return 'noHair';
     #场控帧速率
     hairData['currentUnit']=cmds.currentUnit(query=True,time=True)

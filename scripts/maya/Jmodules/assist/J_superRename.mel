@@ -41,6 +41,10 @@ string $allNodes[] = `ls`;
     J_runRename($resNames,$baseName,$objNum);
     print ($resNames);
 }
+///重命名操作实体
+///\param string $resNames 源节点名
+///\param string $baseName 基础名称
+///\param string $objNum 序号
 ////////////////////////////////////    
 global proc J_runRename(string $resNames[],string $baseName,int $objNum[])
 {
@@ -76,11 +80,16 @@ global proc J_quickSortSR(string $vIn[])
         $a[$k]=(size($buffer));
     }
     int $count=size($vIn)-1;
-    RunQuickSort($vIn,$a,$indexIn,0,$count);
+    J_runQuickSort($vIn,$a,$indexIn,0,$count);
 }
 
-
-global proc RunQuickSort(string $v[],int $a[],int $b[] ,int $start, int $end)
+///根据层级排序
+///\param string $v 源节点数组 
+///\param string $a 源节点层级数
+///\param string $b 源节点层级数
+///\param string $start 源节点层级数
+///\param string $end 源节点层级数
+global proc J_runQuickSort(string $v[],int $a[],int $b[] ,int $start, int $end)
         {
 
             int $left = $start;
@@ -125,11 +134,10 @@ global proc RunQuickSort(string $v[],int $a[],int $b[] ,int $start, int $end)
 
             if ($start < $left - 1)
             {
-                RunQuickSort($v,$a, $b,$start, $left - 1);
+                J_runQuickSort($v,$a, $b,$start, $left - 1);
             }
             if($left< $end)
             {
-                RunQuickSort($v,$a,$b, $left+1, $end);
+                J_runQuickSort($v,$a,$b, $left+1, $end);
             }
         }
-//J_superRaname("aaa");

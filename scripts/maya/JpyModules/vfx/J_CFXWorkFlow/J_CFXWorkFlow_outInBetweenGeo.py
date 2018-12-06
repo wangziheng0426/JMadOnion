@@ -13,7 +13,7 @@ def J_CFXWorkFlow_outInBetweenGeo(sample=1,sourceGeo=[],startTime=-1,endTime=0):
     if len(sourceGeo)<1:
         sourceGeo=cmds.ls(sl=True)
     if len(sourceGeo)<1:
-        print "warring:nothing selected"
+        cmds.confirmDialog(title=u'错误',message=u'   未选中任何节点       ',button='666')
         return;
     gemoDupList=[]
     for item in sourceGeo:

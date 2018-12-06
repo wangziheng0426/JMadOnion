@@ -20,14 +20,18 @@ def J_CFXWorkFlow_hairIn():
     abcNode=''
     if cacheFileName[0][-4:]=='jfur':
         hairData=json.load(readCacheFile)
-    else:print '请选择jfur文件' 
+    else: 
+        cmds.confirmDialog(title=u'错误',message=u'   请选择jfur文件    ',button='666')  
+        return
     readCacheFile.close()
     #导入abc
     if os.path.exists(cacheFileName[0][0:-5]+'_Hair.abc') :
         abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0][0:-5]+'_Hair.abc'+'";')
     elif os.path.exists(cacheFileName[0][0:-5]+'_Hair.ABC'):
         abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0][0:-5]+'_Hair.ABC'+'";')
-    else :print 'abc文件丢失'
+    else :
+        cmds.confirmDialog(title=u'错误',message=u'    abc文件丢失    ',button='666')  
+        return
     #去除重名曲线
     allAbcCurve=cmds.listConnections(abcNode,type='nurbsCurve',source=False)
     count=0

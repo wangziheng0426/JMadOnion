@@ -11,7 +11,7 @@
 
 ///打开主界面窗口
 ///\return "success";
-global proc string J_deleteJunk()//清理无用节点
+global proc string J_deleteJunkWin()//清理无用节点
 {
 string $lists[]={	"polySoftEdge","polyTweak","polyUnite",
 					"polySplitRing","polySplit",

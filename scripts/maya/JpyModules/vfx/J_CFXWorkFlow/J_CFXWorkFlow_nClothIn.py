@@ -12,4 +12,5 @@ import maya.mel as mel
 def J_CFXWorkFlow_nClothIn():
     cacheFileName = cmds.fileDialog2(fileMode=1, caption="Import hair")
     #导入abc
-    abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0] +'";')
+    if  cacheFileName  is not None:
+        abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0] +'";')
