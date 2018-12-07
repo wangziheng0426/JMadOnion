@@ -45,20 +45,26 @@ def J_importNcloth():
     missedMesh=[]#需要加布料，但是丢失的节点
     #开始导入
     allDynNode=[]
-    for meshItem0 in allMeshNode:
-        state=0
-        for clothItem in clothData['nCloth']:#导入布料###
+    state =0
+    for clothItem in clothData['nCloth']:#导入布料###
+        for meshItem0 in allMeshNode:
             if J_importNcloth_matchObj(meshItem0,clothItem['inMesh']):
                 getPar=cmds.listRelatives(meshItem0,parent=True)[0]
                 allDynNode.append(J_importNcloth_CreateCloth('nCloth',getPar,clothItem,settingFileName[0]))
                 state=1
-        for clothItem in clothData['nRigid']:#导入碰撞###
+        if state==0:
+            missedMesh.append(clothItem['inMesh'])
+    state =0
+    for clothItem in clothData['nRigid']:#导入碰撞###
+        for meshItem0 in allMeshNode:
             if J_importNcloth_matchObj(meshItem0,clothItem['inMesh']):
                 getPar=cmds.listRelatives(meshItem0,parent=True)[0]
                 allDynNode.append(J_importNcloth_CreateCloth('nRigid',getPar,clothItem,settingFileName[0]))
                 state=1
         if state==0:
             missedMesh.append(clothItem['inMesh'])
+
+        
     for clothItem in clothData['dynamicConstraint']:#导入约束###
         allDynNode.append(J_importNcloth_CreateCloth('dynamicConstraint','',clothItem,settingFileName[0]))
     for clothItem in clothData['nComponent']:#导入约束###
