@@ -165,6 +165,8 @@ def J_importNcloth_CreateCloth(nodeType,meshToCreateCloth,clothItemData_cloth,se
 def J_importNcloth_getAllMeshNode(inPath):
     allMeshNode=[]
     temp=cmds.listRelatives(inPath,children=True,fullPath=True)
+    if temp is None:
+        return allMeshNode
     for item in temp:
         if cmds.objectType(item)=='transform':
             for item in J_importNcloth_getAllMeshNode(item):
