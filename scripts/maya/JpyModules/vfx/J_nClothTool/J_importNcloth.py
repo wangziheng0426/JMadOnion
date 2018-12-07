@@ -34,7 +34,7 @@ def J_importNcloth():
             return
     #导入解算器######################################################################################################
     for itemNucleus in clothData['nucleus']:
-        J_importNcloth_CreateNucleus(itemNucleus,settingFileName[0])
+        nucleusName=J_importNcloth_CreateNucleus(itemNucleus,settingFileName[0])
     #导入布料######################################################################################################
     #查找选择物体下层所有mesh
     allMeshNode=[]#要比对的模型shape节点
@@ -44,22 +44,36 @@ def J_importNcloth():
             allMeshNode.append(item1)
     missedMesh=[]#需要加布料，但是丢失的节点
     #开始导入
-    for item0 in clothData['nCloth']:
+    allDynNode=[]
+    for meshItem0 in allMeshNode:
         state=0
-        for item1 in allMeshNode:
-            if J_importNcloth_matchObj(item1,item0['inMesh']):
-                getPar=cmds.listRelatives(item1,parent=True)[0]
-                J_importNcloth_CreateCloth(getPar,item0,settingFileName[0])###################################主体
+        for clothItem in clothData['nCloth']:#导入布料###
+            if J_importNcloth_matchObj(meshItem0,clothItem['inMesh']):
+                getPar=cmds.listRelatives(meshItem0,parent=True)[0]
+                allDynNode.append(J_importNcloth_CreateCloth('nCloth',getPar,clothItem,settingFileName[0]))
+                state=1
+        for clothItem in clothData['nRigid']:#导入碰撞###
+            if J_importNcloth_matchObj(meshItem0,clothItem['inMesh']):
+                getPar=cmds.listRelatives(meshItem0,parent=True)[0]
+                allDynNode.append(J_importNcloth_CreateCloth('nRigid',getPar,clothItem,settingFileName[0]))
                 state=1
         if state==0:
-            missedMesh.append(item0['inMesh'])
-    #导入布料######################################################################################################
-    #导入碰撞######################################################################################################
-    
-    #导入碰撞######################################################################################################
+            missedMesh.append(clothItem['inMesh'])
+    for clothItem in clothData['dynamicConstraint']:#导入约束###
+        allDynNode.append(J_importNcloth_CreateCloth('dynamicConstraint','',clothItem,settingFileName[0]))
+    for clothItem in clothData['nComponent']:#导入约束###
+        allDynNode.append(J_importNcloth_CreateCloth('nComponent','',clothItem,settingFileName[0]))
     #完成提示######################################################################################################
     markOrg=cmds.getAttr('lambert1.jClothMark')
     cmds.setAttr('lambert1.jClothMark',(markOrg+1))
+    newNucleusName=nucleusName+'_v'+str(cmds.getAttr('lambert1.jClothMark'))
+    cmds.rename(nucleusName,newNucleusName)
+    if len(allDynNode)>0:
+        for renameNode in allDynNode:
+            if renameNode is None:
+                return
+            newName=renameNode+'_v'+str(cmds.getAttr('lambert1.jClothMark'))
+            cmds.rename(renameNode,newName)
     if len(missedMesh)>0:
         massageTemp='' 
         for itemx in missedMesh:
@@ -82,45 +96,64 @@ def J_importNcloth_CreateNucleus(clothItemData_nucleus,settingFileName):
         nucleusNode=cmds.createNode('nucleus',name=clothItemData_nucleus['nodeName'])
         cmds.connectAttr('time1.outTime', (nucleusNode+'.currentTime') )
     J_importNcloth_LoadPresets(clothItemData_nucleus['nodeName'],clothItemData_nucleus,settingFileName)
+    return nucleusNode
 #导入布料设置
-def J_importNcloth_CreateCloth(meshToCreateCloth,clothItemData_cloth,settingFileName):
+def J_importNcloth_CreateCloth(nodeType,meshToCreateCloth,clothItemData_cloth,settingFileName):
     clothTrNodeName=clothItemData_cloth['nodeNameParent'].split('|')[-1]
     clothNodeName=clothItemData_cloth['nodeName']
     #如果有重名物体，检查是否为布料，如果是就删除，不是就改名字
     if cmds.objExists(clothTrNodeName):
-        if len(cmds.listRelatives(clothTrNodeName,children=True,type='nCloth'))>0:
+        if len(cmds.listRelatives(clothTrNodeName,children=True,type=nodeType))>0:
             cmds.delete(clothTrNodeName)
         else:
             cmds.rename(clothTrNodeName,(clothTrNodeName+'backup'))
-    cmds.select(meshToCreateCloth)
-    res=mel.eval('createNCloth 0;')
-    if len(res)==0:
+    if meshToCreateCloth!='':
+        cmds.select(meshToCreateCloth)
+    res=[]
+    if nodeType=='nCloth':
+        res=mel.eval('createNCloth 0;')
+    elif nodeType=='nRigid' :
+        res=mel.eval('makeCollideNCloth;')
+    elif nodeType=='dynamicConstraint' :
+        res.append(cmds.createNode('dynamicConstraint',name=clothItemData_cloth['nodeName']))
+    elif nodeType=='nComponent' :
+        res.append(cmds.createNode('nComponent',name=clothItemData_cloth['nodeName']))
+    if len(res)==0 and meshToCreateCloth!='':
         cmds.warning ('###!!!'+meshToCreateCloth+u'已有布料节点')
         return
-    parNode=cmds.listRelatives( res[0],parent=True)[0]
-    cmds.rename(parNode,clothTrNodeName)
-    cmds.rename(cmds.listRelatives(clothTrNodeName,children=True,type='nCloth')[0],clothNodeName)
+    if cmds.listRelatives( res[0],parent=True) is not None:
+        parNode=cmds.listRelatives( res[0],parent=True)[0]
+        cmds.rename(parNode,clothTrNodeName)
+        cmds.rename(cmds.listRelatives(clothTrNodeName,children=True,type=nodeType)[0],clothNodeName)
     #读预设############################################
     J_importNcloth_LoadPresets(clothNodeName,clothItemData_cloth,settingFileName)
     #######################################################
     #导入权重
-    cmds.setAttr(clothNodeName+'.inputAttractPerVertex',clothItemData_cloth['inputAttract'],type='doubleArray')
-    cmds.setAttr(clothNodeName+'.cspv',clothItemData_cloth['collide'],type='doubleArray')
+    if cmds.attributeQuery('inputAttractPerVertex',node=clothNodeName,exists=True):
+        cmds.setAttr(clothNodeName+'.inputAttractPerVertex',clothItemData_cloth['inputAttract'],type='doubleArray')
+    if cmds.attributeQuery('cspv',node=clothNodeName,exists=True):
+        cmds.setAttr(clothNodeName+'.cspv',clothItemData_cloth['collide'],type='doubleArray')
     #断开ncloth节点的链接
     tempLinks=cmds.listConnections(clothNodeName,connections=True,plugs=True,source=False,destination=True,type='nucleus')
-    for countItemx in range(0,len(tempLinks),2):
-        cmds.disconnectAttr(tempLinks[countItemx],tempLinks[countItemx+1])
+    if tempLinks is not None:
+        for countItemx in range(0,len(tempLinks),2):
+            cmds.disconnectAttr(tempLinks[countItemx],tempLinks[countItemx+1])
     #导入解算器链接
     for countItem0 in range(0,len(clothItemData_cloth['destinationConn']),2):
         if cmds.objExists(clothItemData_cloth['destinationConn'][countItem0].split('.')[0]) and cmds.objExists(clothItemData_cloth['destinationConn'][countItem0+1].split('.')[0]):
-            if not cmds.isConnected (clothItemData_cloth['destinationConn'][countItem0+1],clothItemData_cloth['destinationConn'][countItem0]):
-                cmds.connectAttr(clothItemData_cloth['destinationConn'][countItem0+1],clothItemData_cloth['destinationConn'][countItem0],force=True)
+            if cmds.objectType(clothItemData_cloth['destinationConn'][countItem0+1].split('.')[0]) != 'mesh':
+                if not cmds.isConnected (clothItemData_cloth['destinationConn'][countItem0+1],clothItemData_cloth['destinationConn'][countItem0]):
+                    cmds.connectAttr(clothItemData_cloth['destinationConn'][countItem0+1],clothItemData_cloth['destinationConn'][countItem0],force=True)
     for countItem1 in range(0,len(clothItemData_cloth['sourceConn']),2):
-        if cmds.objExists(clothItemData_cloth['sourceConn'][countItem0].split('.')[0]) and cmds.objExists(clothItemData_cloth['sourceConn'][countItem0+1].split('.')[0]):
-            if not cmds.isConnected(clothItemData_cloth['sourceConn'][countItem1+1],clothItemData_cloth['sourceConn'][countItem1]):
-                cmds.connectAttr(clothItemData_cloth['sourceConn'][countItem1],clothItemData_cloth['sourceConn'][countItem1+1],force=True)
-    newName=clothTrNodeName+'_v'+str(cmds.getAttr('lambert1.jClothMark'))
-    cmds.rename(clothTrNodeName,newName)
+        if cmds.objExists(clothItemData_cloth['sourceConn'][countItem1].split('.')[0]) and cmds.objExists(clothItemData_cloth['sourceConn'][countItem1+1].split('.')[0]):
+            if cmds.objectType(clothItemData_cloth['sourceConn'][countItem1+1].split('.')[0])!= 'mesh':
+                if not cmds.isConnected(clothItemData_cloth['sourceConn'][countItem1+1],clothItemData_cloth['sourceConn'][countItem1]):
+                    cmds.connectAttr(clothItemData_cloth['sourceConn'][countItem1],clothItemData_cloth['sourceConn'][countItem1+1],force=True)
+
+    if nodeType=='nComponent':
+        return clothNodeName
+    else:
+        return clothTrNodeName
 
     
 def J_importNcloth_getAllMeshNode(inPath):

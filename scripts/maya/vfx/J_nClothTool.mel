@@ -34,8 +34,8 @@ if (`window -ex J_nClothTool`)
         ///////////////////////////布料
         frameLayout -cll 1 -cl 0 -l "导入导出"  J_clothInOutFrameLayout;
             formLayout  -numberOfDivisions 100  J_clothInOutFormLayout;
-                textField -tx "D:/SM/ncloth_rig" -width 300 outPutTextField;
-                symbolButton -width 20 -image "navButtonBrowse.xpm"   -command J_inOutClothInfoPath browsBtn;
+                //textField -tx "D:/SM/ncloth_rig" -width 300 outPutTextField;
+                //symbolButton -width 20 -image "navButtonBrowse.xpm"   -command J_inOutClothInfoPath browsBtn;
                 string $cbu09 =`button -al "center"  -w $ButtonW -h $ButtonH -l "导出布料设置"  -c J_exportNcloth`;
                 string $cbu10 =`button -al "center"  -w $ButtonW -h $ButtonH -l "导入布料设置"  -c J_importNcloth`;
             setParent ..;
@@ -63,10 +63,10 @@ if (`window -ex J_nClothTool`)
         
         J_clothFormLayout;
     formLayout -e 
-        -af outPutTextField "top" 1 -ap outPutTextField "left" 0 1 -ap outPutTextField "right" 0 85 
-        -af browsBtn "top" 1  -ac browsBtn "left" 5 outPutTextField   -ap browsBtn "right" 0 98 
-        -ac $cbu09 "top" 1 outPutTextField -ap $cbu09 "left" 0 1    -ap $cbu09 "right" 0 49
-        -ac $cbu10 "top" 1 outPutTextField -ap $cbu10 "left" 0 50    -ap $cbu10 "right" 0 99
+        //-af outPutTextField "top" 1 -ap outPutTextField "left" 0 1 -ap outPutTextField "right" 0 85 
+        //-af browsBtn "top" 1  -ac browsBtn "left" 5 outPutTextField   -ap browsBtn "right" 0 98 
+        -af $cbu09 "top" 1  -ap $cbu09 "left" 0 1    -ap $cbu09 "right" 0 49
+        -af $cbu10 "top" 1  -ap $cbu10 "left" 0 50    -ap $cbu10 "right" 0 99
 
         J_clothInOutFormLayout;
     formLayout -e 
