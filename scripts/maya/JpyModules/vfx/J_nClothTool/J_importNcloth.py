@@ -184,3 +184,5 @@ def J_importNcloth_LoadPresets(nodeName,ItemData,settingFileName):
         os.makedirs(os.path.dirname(userPreFile))
     shutil.copy(presetsPath,userPreFile)
     mel.eval('applyAttrPreset '+nodeName+' '+ItemData['attrPresets']+' 1')
+
+    
