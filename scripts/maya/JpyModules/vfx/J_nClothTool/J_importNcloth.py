@@ -72,8 +72,6 @@ def J_importNcloth():
     #完成提示######################################################################################################
     markOrg=cmds.getAttr('lambert1.jClothMark')
     cmds.setAttr('lambert1.jClothMark',(markOrg+1))
-    newNucleusName=nucleusName+'_v'+str(cmds.getAttr('lambert1.jClothMark'))
-    cmds.rename(nucleusName,newNucleusName)
     if len(allDynNode)>0:
         for renameNode in allDynNode:
             if renameNode is None:
@@ -101,8 +99,9 @@ def J_importNcloth_CreateNucleus(clothItemData_nucleus,settingFileName):
     if not cmds.objExists(clothItemData_nucleus['nodeName']):
         nucleusNode=cmds.createNode('nucleus',name=clothItemData_nucleus['nodeName'])
         cmds.connectAttr('time1.outTime', (nucleusNode+'.currentTime') )
-    J_importNcloth_LoadPresets(clothItemData_nucleus['nodeName'],clothItemData_nucleus,settingFileName)
-    return nucleusNode
+        return nucleusNode
+        J_importNcloth_LoadPresets(clothItemData_nucleus['nodeName'],clothItemData_nucleus,settingFileName)
+    
 #导入布料设置
 def J_importNcloth_CreateCloth(nodeType,meshToCreateCloth,clothItemData_cloth,settingFileName):
     clothTrNodeName=clothItemData_cloth['nodeNameParent'].split('|')[-1]
@@ -135,9 +134,9 @@ def J_importNcloth_CreateCloth(nodeType,meshToCreateCloth,clothItemData_cloth,se
     J_importNcloth_LoadPresets(clothNodeName,clothItemData_cloth,settingFileName)
     #######################################################
     #导入权重
-    if cmds.attributeQuery('inputAttractPerVertex',node=clothNodeName,exists=True):
+    if cmds.attributeQuery('inputAttractPerVertex',node=clothNodeName,exists=True) and len(clothItemData_cloth['inputAttract'])>0:
         cmds.setAttr(clothNodeName+'.inputAttractPerVertex',clothItemData_cloth['inputAttract'],type='doubleArray')
-    if cmds.attributeQuery('cspv',node=clothNodeName,exists=True):
+    if cmds.attributeQuery('cspv',node=clothNodeName,exists=True) and len(clothItemData_cloth['collide'])>0:
         cmds.setAttr(clothNodeName+'.cspv',clothItemData_cloth['collide'],type='doubleArray')
     #断开ncloth节点的链接
     tempLinks=cmds.listConnections(clothNodeName,connections=True,plugs=True,source=False,destination=True,type='nucleus')
