@@ -183,8 +183,7 @@ global proc J_createPassive()
         string $nr_list[]= `makeCollideNCloth`;
         for ($i=0;$i<size($nr_list);$i++)
             {
-                setAttr ($nr_list[$i]+".pushOutRadius") 0.002;
-                setAttr ($nr_list[$i]+".thickness") 0.002;
+                setAttr ($nr_list[$i]+".thickness") 0.006;
                 string $par[]=`listRelatives  -p $nr_list[$i]`;
                 rename  $par[0] ($pa_obj[$i]+"_nRig");
             }
