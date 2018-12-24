@@ -69,9 +69,12 @@ def J_importNcloth():
         allDynNode.append(J_importNcloth_CreateCloth('dynamicConstraint','',clothItem,settingFileName[0]))
     for clothItem in clothData['nComponent']:#导入约束###
         allDynNode.append(J_importNcloth_CreateCloth('nComponent','',clothItem,settingFileName[0]))
+    newNucleusName=nucleusName+'_v'+str(cmds.getAttr('lambert1.jClothMark'))
+    cmds.rename(nucleusName,newNucleusName)
     #完成提示######################################################################################################
     markOrg=cmds.getAttr('lambert1.jClothMark')
     cmds.setAttr('lambert1.jClothMark',(markOrg+1))
+    
     if len(allDynNode)>0:
         for renameNode in allDynNode:
             if renameNode is None:
@@ -99,8 +102,8 @@ def J_importNcloth_CreateNucleus(clothItemData_nucleus,settingFileName):
     if not cmds.objExists(clothItemData_nucleus['nodeName']):
         nucleusNode=cmds.createNode('nucleus',name=clothItemData_nucleus['nodeName'])
         cmds.connectAttr('time1.outTime', (nucleusNode+'.currentTime') )
-        return nucleusNode
         J_importNcloth_LoadPresets(clothItemData_nucleus['nodeName'],clothItemData_nucleus,settingFileName)
+        return nucleusNode
     
 #导入布料设置
 def J_importNcloth_CreateCloth(nodeType,meshToCreateCloth,clothItemData_cloth,settingFileName):
