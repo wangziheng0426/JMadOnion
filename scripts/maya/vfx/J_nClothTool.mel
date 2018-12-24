@@ -160,10 +160,8 @@ global proc J_nClothTool_readPresets()
     for($i in $J_selNode)
     {
         string $selectedType=`objectType $i`;
-        string $J_ppath = `internalVar -userPrefDir`;
-        $J_ppath = substitute( "/prefs", $J_ppath, "");
-        $J_ppath+="presets/attrPresets/"+$selectedType+"/" + $J_selPresets[0];
-            applyAttrPreset $i $J_ppath 1;//读取预设
+        string $J_ppath = `internalVar -userPresetsDir`+"attrPresets/nCloth/"+$J_selPresets[0];
+        applyAttrPreset $i $J_ppath 1;//读取预设
     }
 }
 ///删除选择的预设
