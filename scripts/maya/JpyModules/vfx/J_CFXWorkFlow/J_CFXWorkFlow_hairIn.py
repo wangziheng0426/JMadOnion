@@ -45,11 +45,17 @@ def J_CFXWorkFlow_hairIn():
     groupNode=cmds.createNode('transform',name='J_importHair_grp')
     #链接毛发曲线
     for hairNodeItem in hairData['hairNode']:
-        trNode=cmds.createNode('transform',name=hairNodeItem.replace('@','_').replace('Shape',''),parent=groupNode)
-        hairNode=cmds.createNode('hairSystem',name=hairNodeItem.replace('@','_'),parent=trNode)
+        hairTranformName=hairNodeItem.replace('@','_').replace('Shape','')
+        hairSysNodeName=hairNodeItem.replace('@','_')
+        if cmds.objExists(hairSysNodeName):
+            if not cmds.objectType(hairSysNodeName)=='hairSystem':
+                pass
+        trNode=cmds.createNode('transform',name=hairTranformName,parent=groupNode)
+        hairNode=cmds.createNode('hairSystem',name=hairSysNodeName,parent=trNode)
         cmds.select(hairData['hairNode'][hairNodeItem].split('@')[-1])
         mel.eval('assignHairSystem '+hairNode+';')
         cmds.connectAttr('time1.outTime',hairNode+'.currentTime')
+        cmds.select(hairSysNodeName)
         mel.eval('addPfxToHairSystem;')
         presetsPath=cmds.internalVar(userPresetsDir=True)
         shutil.copy(os.path.dirname(cacheFileName[0])+'/'+hairNodeItem.replace('@','_')+'.mel',presetsPath+'/attrPresets/hairSystem')
