@@ -49,7 +49,7 @@ def J_CFXWorkFlow_hairOut():
                 newOutCurveGroup=newOutCurveGroup+'0'
         cmds.createNode('transform',name=newOutCurveGroup)
         follicleNodes= cmds.listConnections(item,type='follicle',destination=False,shapes=True)
-        currentHairMessage={}
+        currentHairMessage={'hairNode':'','curveGroup':'','shader':{}}
         if follicleNodes is not None:
             #生成输出曲线
             for follicleItem in follicleNodes:
@@ -67,25 +67,34 @@ def J_CFXWorkFlow_hairOut():
                 currentHairMessage['hairNode']=item
                 currentHairMessage['curveGroup']=newOutCurveGroup
                 curveGroups.append(newOutCurveGroup)
+                #导出材质
+                currentHairMessage['shader']=J_exportHairShader(filePath+cacheFileName+'_cache/shaders/',item)
+                #导出材质
                 hairData['hairInfo'].append(currentHairMessage)
                 runAbcString+=' -root '+newOutCurveGroup
         else :print ('warning:%s has 0 follicle'%(item))
-        #导出材质
-        currentHairMessage['shader']=[]
-        rendererAttrs={'mtoa':'aiHairShader','redShift':'rsHairShader','vray':'vrayHairShader'}
-        shaderMessage={'mtoa':[],'redShift':[],'vray':[]}
-        
-        #导出材质
+
     outFile.write(json.dumps(hairData,encoding='utf-8',ensure_ascii=False)) 
     outFile.close()
     runAbcString+=' -file '+filePath+cacheFileName+'_cache/'+cacheFileName+'_Hair.abc"'
     mel.eval(runAbcString)
     
-def J_exportHairShader(currentHairNode):
-    shaderMessage={}
-    duplicateHairNodeName=''
-    
-    return duplicateHairNodeName
+def J_exportHairShader(shaderFilePath,currentHairNode):
+    rendererAttrs={'mtoa':'.aiHairShader','redShift':'.rsHairShader','vray':'.vrayHairShader'}
+    shaderMessage={'mtoa':[],'redShift':[],'vray':[]}
+    allConnections=cmds.listConnections(currentHairNode,connections=True,destination=False)
+    for key in rendererAttrs:
+        for iInt in range(0,len(allConnections),1):
+            if allConnections[iInt].find(currentHairNode+rendererAttrs[key])>-1:
+                shaderNode=allConnections[iInt+1]
+                shaderMessage[key].append(shaderNode)
+                fileName=shaderFilePath+shaderNode.replace(':','_')+'.ma'
+                cmds.select(shaderNode)
+                if os.path.exists(fileName):
+                    os.remove(fileName)
+                cmds.file(fileName,op='v=0;',typ="mayaAscii", es=True)
+                shaderMessage[key].append(fileName)
+    return shaderMessage
     
 def createOutCurveNode(inputHairSys,inputFollicle,outCurveGroup):
     index=0
@@ -96,6 +105,11 @@ def createOutCurveNode(inputHairSys,inputFollicle,outCurveGroup):
     cmds.rename(curveName,curveTranNodeName+str(index))
     curveShape=cmds.listRelatives(curveTranNodeName+str(index),children=True);
     cmds.connectAttr(inputFollicle+'.outCurve',curveShape[0]+'.create')
+    connectionId=cmds.listConnections(inputFollicle+'.outHair',plugs=True)[0].split('[')[-1].split(']')[0]
+    try:
+        cmds.connectAttr(inputHairSys+'.outputHair['+connectionId+']',inputFollicle+'.currentPosition',force=True)
+    except:
+        pass
     cmds.parent(curveTranNodeName+str(index),outCurveGroup)
     
     
