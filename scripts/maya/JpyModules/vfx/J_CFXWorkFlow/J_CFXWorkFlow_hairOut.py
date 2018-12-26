@@ -40,6 +40,7 @@ def J_CFXWorkFlow_hairOut():
         return 'noHair';
     #场控帧速率
     hairData['currentUnit']=cmds.currentUnit(query=True,time=True)
+
     for item in allHairNodes:
         newOutCurveGroup=item.replace(':','_')+'_outCurve'
         while cmds.objExists(newOutCurveGroup):
@@ -98,7 +99,7 @@ def J_exportHairShader(shaderFilePath,currentHairNode):
     
 def createOutCurveNode(inputHairSys,inputFollicle,outCurveGroup):
     index=0
-    curveTranNodeName=inputHairSys+'_outCurve'
+    curveTranNodeName=inputHairSys.replace(':','_')+'_outCurve'
     while cmds.objExists(curveTranNodeName+str(index)):
         index=index+1
     curveName=cmds.curve( p=[(0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0)],degree=2 )
@@ -113,18 +114,3 @@ def createOutCurveNode(inputHairSys,inputFollicle,outCurveGroup):
     cmds.parent(curveTranNodeName+str(index),outCurveGroup)
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-J_CFXWorkFlow_hairOut()
