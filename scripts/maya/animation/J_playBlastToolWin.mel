@@ -18,7 +18,7 @@ int $options[]={0,0,0,0,0,0};
 string $J_checkBoxs[];
 if (`window -ex J_playBlastWin`)
 	deleteUI -window J_playBlastWin;
-	window -w 300 -h (size($lists)*2+200) -title "删除垃圾" J_playBlastWin;
+	window -w 300 -h (size($lists)*2+200) -title "拍平工具" J_playBlastWin;
 		frameLayout -cll 1 -cl 0  -h (size($lists)*20) -l "选择要删除的项目"  J_getJunkLayOut;
 		formLayout  -nd 100  -h (size($lists)*20) J_getJunkFormLayOut;
 		

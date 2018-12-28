@@ -119,21 +119,27 @@ def J_CFXWorkFlow_parentGrp(nodeTypt):
 def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPlug):
     allShader=cmds.ls(materials=True)
     shaderFilePath=os.path.dirname(jHairFile)+'/shaders/'
-    if currentRenderer=='vray':
-        if not cmds.attributeQuery(rendererPlug,node=hairNodeItem['hairNode'],exists=True):
-            mel.eval('vray addAttributesFromGroup '+hairNodeItem['hairNode']+' vray_hair_shader 1;vrayAddAttr '+hairNodeItem['hairNode']+' vraySeparator_vray_hair_shader; vrayAddAttr '+hairNodeItem['hairNode']+' vrayHairShader;')
+
     if len(hairNodeItem['shader'][currentRenderer])>0:
-        redShiftShaderNameExists=0
-        redShiftShaderNodeExists=0
-        redShiftShaderNode=hairNodeItem['shader'][currentRenderer][0]
-        if cmds.objExists(redShiftShaderNode):
-            redShiftShaderNameExists=1
-            if cmds.objectType(redShiftShaderNode) in allShader:
-                redShiftShaderNodeExists=1
-        if redShiftShaderNodeExists==1:
+        shaderNameExists=0
+        shaderNodeExists=0
+        shaderNode=hairNodeItem['shader'][currentRenderer][0]
+        if currentRenderer=='vray':
+            if not cmds.attributeQuery(rendererPlug,node=hairNodeItem['hairNode'],exists=True):
+                try:
+                    mel.eval('vray addAttributesFromGroup '+hairNodeItem['hairNode']+' vray_hair_shader 1;vrayAddAttr '\
+                    +hairNodeItem['hairNode']+' vraySeparator_vray_hair_shader; vrayAddAttr '\
+                    +hairNodeItem['hairNode']+' vrayHairShader;')
+                except:
+                    print 'vra 渲染器出错'
+        if cmds.objExists(shaderNode):
+            shaderNameExists=1
+            if cmds.objectType(shaderNode) in allShader:
+                shaderNodeExists=1
+        if shaderNodeExists==1:
             if cmds.attributeQuery(rendererPlug,node=hairNodeItem['hairNode'],exists=True):
-                cmds.connectAttr( (redShiftShaderNode+'.outColor'),(hairNodeItem['hairNode']+'.'+rendererPlug))
-        if redShiftShaderNodeExists==0:
+                cmds.connectAttr( (shaderNode+'.outColor'),(hairNodeItem['hairNode']+'.'+rendererPlug))
+        if shaderNodeExists==0:
             #导入材质文件
             shaderFile=shaderFilePath+hairNodeItem['shader'][currentRenderer][1].split('/')[-1]
             shaderFileStr=open(shaderFile,'r')
@@ -154,7 +160,7 @@ def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPl
             #导入材质文件
             if cmds.attributeQuery(rendererPlug,node=hairNodeItem['hairNode'],exists=True):
                 try:
-                    cmds.connectAttr( (redShiftShaderNode+'.outColor'),(hairNodeItem['hairNode']+'.'+rendererPlug))
+                    cmds.connectAttr( (shaderNode+'.outColor'),(hairNodeItem['hairNode']+'.'+rendererPlug))
                 except:
                     pass
 
