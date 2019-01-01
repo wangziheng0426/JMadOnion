@@ -17,8 +17,11 @@ def J_renameFileWithStr(jKey, jNewKey, jpPath):
 
     for item in allch:
         if (os.path.isfile(jpPath + "/" + item)):
-            if item.find(jKey) > -1 and not item == jKey:
-                newName = item.replace(jKey, jNewKey)
+            newName=item
+            for itemKey in jKey:
+                if item.find(itemKey) > -1 and not item == itemKey:
+                    newName = newName.replace(itemKey, jNewKey)
+            if item !=newName: 
                 try:
                     os.rename(jpPath + '/' + item, jpPath + '/' + newName)
                     print  (item+"-->"+ newName)
@@ -27,8 +30,11 @@ def J_renameFileWithStr(jKey, jNewKey, jpPath):
         elif (os.path.isdir(jpPath + '/' + item)):
             if (len(os.listdir(jpPath + '/' + item)) > 0):
                 J_renameFileWithStr(jKey, jNewKey, jpPath + '/' + item)
-            if item.find(jKey) > -1 and not item == jKey:
-                newName = item.replace(jKey, jNewKey)
+            newName=item
+            for itemKey in jKey:
+                if item.find(itemKey) > -1 and not item == itemKey:
+                    newName = newName.replace(itemKey, jNewKey)
+            if item !=newName:
                 try:
                     os.rename(jpPath + '/' + item, jpPath + '/' + newName)
                     print  (item+"-->"+ newName)
@@ -54,14 +60,3 @@ def J_renameFileWithParFolder(jpPath):
                 J_renameFileWithParFolder(jpPath + '/' + item)
 
 ###################################################################################
-j1='-fhd'.decode('utf-8')
-j2=''.decode('utf-8')
-j3=r'F:/J2'.decode('utf-8')
-J_renameFileWithStr(j1, j2,j3)
-#J_renameFileWithStr('[thz.la]', '',j3)
-#J_renameFileWithStr('[Thz.la]', '',j3)
-#J_renameFileWithStr('[168x.me]', '',j3)
-#J_renameFileWithStr('hjd2048.com_', '',j3)
-#J_renameFileWithStr('[ThZu.Cc]', '',j3)
-#J_renameFileWithStr('[rarbg]', '',j3)
-#J_renameFileWithParFolder(j3)
