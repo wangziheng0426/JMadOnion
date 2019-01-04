@@ -28,10 +28,6 @@ def J_CFXWorkFlow_hairIn():
         cmds.confirmDialog(title=u'错误',message=u'   请选择jhair文件    ',button='666')  
         return
     readCacheFile.close()
-    #关闭所有毛囊
-    allFollicles=cmds.ls(type ='follicle')
-    for itemx in allFollicles:
-        cmds.setAttr( itemx+'.nodeState', 2)
     #导入abc
     if os.path.exists(cacheFileName[0][0:-6]+'_Hair.abc') :
         abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0][0:-6]+'_Hair.abc'+'";')
@@ -51,7 +47,7 @@ def J_CFXWorkFlow_hairIn():
     cmds.currentUnit(time=hairData['currentUnit'])
 
     #建立毛发
-    J_CFXWorkFlow_createHairNode(hairData,cacheFileName[0],groupNode)
+    #J_CFXWorkFlow_createHairNode(hairData,cacheFileName[0],groupNode)
 
     
 def J_CFXWorkFlow_createHairNode(hairData,JhairFile,groupNode):
@@ -84,16 +80,11 @@ def J_CFXWorkFlow_createHairNode(hairData,JhairFile,groupNode):
         if hairState==1:
             findFollicles=cmds.listConnections(hairSysNode,type='follicle',shapes=True)
             for item2 in findFollicles :
-                print item2
                 findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,destination=False)
-                print findConnections
-                print '-------'
                 if findConnections is not None:
                     if cmds.isConnected(findConnections[0],findConnections[1]):
                         cmds.disconnectAttr(findConnections[0],findConnections[1])
                 findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,source=False)
-                print '+++++++++++'
-                print findConnections
                 if findConnections is not None:
                     if cmds.isConnected(findConnections[0],findConnections[1]):
                         cmds.disconnectAttr(findConnections[0],findConnections[1])
