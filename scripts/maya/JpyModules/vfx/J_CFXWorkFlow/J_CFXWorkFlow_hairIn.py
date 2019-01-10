@@ -28,6 +28,9 @@ def J_CFXWorkFlow_hairIn():
         cmds.confirmDialog(title=u'错误',message=u'   请选择jhair文件    ',button='666')  
         return
     readCacheFile.close()
+    #设置帧速率
+    if len(cmds.ls(type='mesh'))==0:
+        cmds.currentUnit(time=hairData['currentUnit'])
     #导入abc
     if os.path.exists(cacheFileName[0][0:-6]+'_Hair.abc') :
         abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0][0:-6]+'_Hair.abc'+'";')
@@ -43,11 +46,10 @@ def J_CFXWorkFlow_hairIn():
     #for curveItem in allAbcCurve:
     #    cmds.rename(curveItem,(allAbcCurve[0]+'_'+str(count)))
     #    count+=1
-    #设置帧速率
-    cmds.currentUnit(time=hairData['currentUnit'])
+    
 
     #建立毛发
-    #J_CFXWorkFlow_createHairNode(hairData,cacheFileName[0],groupNode)
+    J_CFXWorkFlow_createHairNode(hairData,cacheFileName[0],groupNode)
 
     
 def J_CFXWorkFlow_createHairNode(hairData,JhairFile,groupNode):

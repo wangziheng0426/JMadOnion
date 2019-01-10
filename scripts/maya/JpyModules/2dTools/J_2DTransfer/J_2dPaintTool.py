@@ -141,7 +141,7 @@ class J_mainWin(QtWidgets.QMainWindow):
         while  (('J_layer%s' % self.layerCount)  in J_itemListExistsText):
             self.layerCount+=1
         self.J_addMatItemToList('J_layer%s' % self.layerCount)
-        polyPlaneNode=cmds.polyPlane(sx=1,sy=1,w=12,h=8,name=('J_layer%s' % self.layerCount))
+        polyPlaneNode=cmds.polyPlane(sx=10,sy=10,w=12,h=8,name=('J_layer%s' % self.layerCount))
         cmds.setAttr((polyPlaneNode[0]+'.rotateX'),90)
         cmds.setAttr((polyPlaneNode[0]+'.translateZ'),-10)
         cmds.makeIdentity( polyPlaneNode[0],apply=True, t=1, r=1, s=1, n=2 )
