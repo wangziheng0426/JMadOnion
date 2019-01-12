@@ -17,6 +17,40 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     maxList=['max2015','max2016','max2017','max2018','3ds Max Design']
     fileTypeToCopy={'.fbx':'/Animation','.png':'/Texture'}
     selectState=0
+    maxToFbxScript='fn J_outPutGeoAndBone = \n'+\
+                    '(\n'+\
+                    '    outFileName=inputPath\n'+\
+                    '    select_bone=#()\n'+\
+                    '    select_geo=#()\n'+\
+                    '    for item in geometry do\n'+\
+                    '    (\n'+\
+                    '        if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
+                    '            (   \n'+\
+                    '                append select_bone item\n'+\
+                    '            )\n'+\
+                    '        if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
+                    '            (   \n'+\
+                    '                append select_geo item\n'+\
+                    '                select item\n'+\
+                    '                $.material= none\n'+\
+                    '            )\n'+\
+                    '    )\n'+\
+                    '    try select select_bone catch()\n'+\
+                    '    try selectMore select_geo catch()\n'+\
+                    '    try selectMore $head_front catch()\n'+\
+                    '    FbxExporterSetParam \"Animation\" False\n'+\
+                    '    FbxExporterSetParam \"UpAxis\" \"Y\"\n'+\
+                    '    FbxExporterSetParam \"EmbedTextures\" False\n'+\
+                    '    exportFile outFileName #noPrompt selectedOnly:true\n'+\
+                    ')\n'+\
+                    'J_outPutGeoAndBone()\n'
+    outPutBip='fn export_bip_fn =\n'+\
+                '  (\n'+\
+                '    path_S=inputPath\n'+\
+                '    select $Bip001\n'+\
+                '    biped.saveBipFile $.controller path_S\n'+\
+                '  )\n'+\
+                'export_bip_fn()\n'
     def __init__(self):
         super(J_outPutTool,self).__init__()
         self.setupUi(self)
@@ -49,12 +83,12 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         return settingFilePath
 
     def J_getPath(self):
+        self.treeWidget_In.clear()
         filePath0=QtGui.QFileDialog.getExistingDirectory(self)
         filePath=str(filePath0.replace('\\','/')).decode('utf-8')
 
         self.J_addItem(filePath,self.treeWidget_In)
         self.textInPath.setPlainText(filePath0)
-        #self.textOutPath.setPlainText(filePath0)
 
     def J_addItem(self,j_path,j_rootParent):
         allch = os.listdir(j_path)
@@ -120,21 +154,21 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         itemsSelected = self.treeWidget_In.selectedItems()
         inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
         outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
-
+        scriptPath = self.J_writeMaxScript(self.maxToFbxScript, 'J_convertMaxToFbx')
         for item in itemsSelected:
             #拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
             sourceFilePath=str(item.text(2)).decode('utf-8')
             destinationFilePath=self.J_reMatchFilePath(sourceFilePath,inTextField,outTextField)
-            print destinationFilePath
             if not os.path.exists(os.path.dirname(destinationFilePath)) :
                 os.makedirs(os.path.dirname(destinationFilePath))
             #转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
-            res=self.J_exportFbx(sourceFilePath,destinationFilePath,'d:/J_convertMaxToFbx.ms')
+            res=self.J_exportFbx(sourceFilePath,destinationFilePath,scriptPath)
             item.setText(1,res)
             tempItem=QtGui.QTreeWidgetItem( self.treeWidget_Out)
             tempItem.setText(0,item.text(0))
             tempItem.setText(1,res)
             tempItem.setText(2, destinationFilePath)
+            os.remove(scriptPath)
             # 转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
 
     #导出bip文件
@@ -143,17 +177,18 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
         outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
         pathsTocCollect = []
+        scriptPath = self.J_writeMaxScript(self.outPutBip, 'J_outPutBip')
         for item in itemsSelected:
             # 拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
             sourceFilePath = str(item.text(2)).decode('utf-8')
             destinationFilePath = sourceFilePath.replace(inTextField, outTextField).replace('.max', '.bip')
-            destinationPath = '_'.join(os.path.dirname(destinationFilePath).split('_')[0:-1])+ '/bip/'
+            destinationPath = os.path.dirname(destinationFilePath).replace('\\','/')+ '/bip/'
             destinationFile = os.path.basename(destinationFilePath)
             destinationFilePath = destinationPath  + destinationFile
             if not os.path.exists(destinationPath):
                 os.makedirs(destinationPath)
             # 转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
-            res = self.J_exportFbx(sourceFilePath, destinationFilePath, 'd:/J_outPutBip.ms')
+            res = self.J_exportFbx(sourceFilePath, destinationFilePath, scriptPath)
             item.setText(1, res)
             tempItem = QtGui.QTreeWidgetItem(self.treeWidget_Out)
             tempItem.setText(0, item.text(0))
@@ -163,7 +198,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             # 收集需要复制制定类型文件到指定位置的文件夹
             if os.path.dirname(sourceFilePath) not in pathsTocCollect:
                 pathsTocCollect.append(os.path.dirname(sourceFilePath))
-
+            os.remove(scriptPath)
 
     #导出bat脚本并执行
     def J_exportFbx(self,sourceFilePath,destinationFilePath,scriptPath):
@@ -208,6 +243,13 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         else:
             self.treeWidget_In.clearSelection()
             self.selectState = 0
+
+    def J_writeMaxScript(self, scriptStr,toolName):
+        filPath=os.getcwd().replace('\\','/')+'/'+toolName+'.ms'
+        f=open(filPath,'w')
+        f.write(scriptStr)
+        f.close()
+        return filPath
     def J_autoSelect(self):
         itemsSelected = self.treeWidget_In.selectedItems()
     def closeEvent(self, *args, **kwargs):
