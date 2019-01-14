@@ -28,7 +28,7 @@ global proc J_ls()
     }
     
     string $JmodulesfilePathX[];
-    $JmodulesfilePathX[0]=J_getSysPath()+"/Jpymodules";
+    $JmodulesfilePathX[0]=J_getSysPath()+"/JpyModules";
     J_getFolders($JmodulesfilePathX,$JmodulesfilePathX[0]);
     for ($JmodulesfilePathItem in $JmodulesfilePathX)
     {
