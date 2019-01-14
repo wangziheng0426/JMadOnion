@@ -1,0 +1,49 @@
+/////////////////////////////////////////////////////////////
+///\file J_batchSimulation.mel
+///
+///\brief    后台解算脚本，挂载在mayabatch上，或者在maya种直接执行，即可完成自动解算
+///
+///\author 桔
+///\version 1.0
+///\date  22:08 2019/1/14
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+/// 自动解算
+global proc J_batchSimulation()
+{
+    string $referenceNodes[]=`ls -type reference`;
+    for ($i in $referenceNodes)
+        {
+        string $refFileName=`referenceQuery -filename  $i `;
+        print $refFileName;
+        //预留替换ref
+        }
+    string $sceneName=`file -q -sceneName`;
+    string $buffer[];
+    $numTokens = `tokenize $sceneName "/" $buffer`;
+    string $cachePath="";
+    for ($index=0;$index<size($buffer)-1;$index++)
+    {
+    $cachePath=$cachePath+$buffer[$index]+"/";    
+    }
+    int $startFrame=`playbackOptions -q -min`-50;
+    int $endFrame=`playbackOptions -q -max`;
+    string $allNucleus[]=`ls -type nucleus`;
+    for ($item in $allNucleus)
+    {
+    setAttr ($item+".startFrame") $startFrame;    
+    setAttr ($item+".enable") 1;  
+    }
+    select `ls -type nCloth`;
+    select -tgl `ls -type hairSystem`;
+    catch(`deleteCacheFile 2 { "delete", "" }`) ;
+    doCreateNclothCache 5 { "3", $startFrame, $endFrame, "OneFile", "1", "","1","","0", "add", "0", "1", "1","0","1","mcx" } ;
+    file -save;
+}
+
+
+
+
+
