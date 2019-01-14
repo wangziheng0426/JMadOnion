@@ -2,3 +2,4 @@
 import check
 import public
 import vfx
+import rigid
