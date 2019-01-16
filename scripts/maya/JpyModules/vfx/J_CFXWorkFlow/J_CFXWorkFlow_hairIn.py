@@ -124,7 +124,7 @@ def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPl
                     +hairNodeItem['hairNode']+' vraySeparator_vray_hair_shader; vrayAddAttr '\
                     +hairNodeItem['hairNode']+' vrayHairShader;')
                 except:
-                    print 'vra 渲染器出错'
+                    print 'vray 渲染器出错'
         if cmds.objExists(shaderNode):
             shaderNameExists=1
             if cmds.objectType(shaderNode) in allShader:
