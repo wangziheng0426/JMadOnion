@@ -40,10 +40,43 @@ global proc J_batchSimulation()
     select -tgl `ls -type hairSystem`;
     catch(`deleteCacheFile 2 { "delete", "" }`) ;
     doCreateNclothCache 5 { "3", $startFrame, $endFrame, "OneFile", "1", "","1","","0", "add", "0", "1", "1","0","1","mcx" } ;
+    setAttr -type "string" defaultRenderGlobals.currentRenderer "mayaSoftware";
+    setAttr "defaultRenderGlobals.animation" 1;
+    setAttr "defaultRenderGlobals.animationRange" $startFrame;
+    setAttr "defaultRenderGlobals.endFrame" $endFrame;
+    J_createMatForCloth(1);
     file -save;
 }
-
-
-
+//Ìí¼ÓËæ»ú²ÄÖÊ11:12 2019/1/17
+global proc J_createMatForCloth(int $run)
+{
+if($run==1)
+    {
+        string $allClothNodes[]=`ls -type "nCloth"`;
+        int $index=0;
+        for ($item in $allClothNodes)
+        {
+            string $mat=`shadingNode -asShader blinn`;
+            sets -renderable true -noSurfaceShader true -empty -name ($mat+"SG");
+            connectAttr -f ($mat+".outColor") ($mat+"SG"+".surfaceShader");
+            float $temp[3];
+            J_randomColorForMat($temp);
+            setAttr ($mat+".color") -type double3 $temp[0] $temp[1] $temp[2] ;
+            string $getClothMesh[]=`listConnections -s 0 -shapes 1 -type "mesh" $item`;
+            for ($item1 in $getClothMesh)
+            {
+                defaultNavigation -source $mat -destination  ($item1+".instObjGroups[0]") -connectToExisting;
+            }
+        }
+    }
+}
+global proc J_randomColorForMat(float $color3[])
+{
+    int $a=rand(3);
+    $color3[0]=rand(.7);
+    $color3[1]=rand(.7);
+    $color3[2]=rand(.7);
+    $color3[$a]=1;
+}
 
 
