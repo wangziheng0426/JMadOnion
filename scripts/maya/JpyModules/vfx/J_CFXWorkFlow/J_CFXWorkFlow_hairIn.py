@@ -15,6 +15,8 @@ import maya.cmds as cmds
 import maya.mel as mel
 def J_CFXWorkFlow_hairIn():
     cacheFileName = cmds.fileDialog2(fileMode=1, caption="Import hair")
+    if cacheFileName is None:
+        return
     readCacheFile=open(cacheFileName[0],'r')
     hairData={}
     abcNode=''
@@ -117,6 +119,25 @@ def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPl
         shaderNameExists=0
         shaderNodeExists=0
         shaderNode=hairNodeItem['shader'][currentRenderer][0]
+        import JpyModules
+        if currentRenderer=='vray': 
+            if JpyModules.public.J_loadPlugin('vrayformaya.mll'):
+                print 'vray loaded'
+            else:
+                print 'failed to load vray'
+                return
+        if currentRenderer=='mtoa': 
+            if JpyModules.public.J_loadPlugin('mtoa.mll'):
+                print 'mtoa loaded'
+            else:
+                print 'failed to load mtoa'
+                return
+        if currentRenderer=='redShift': 
+            if JpyModules.public.J_loadPlugin('redshift4maya.mll'):
+                print 'redshift loaded'
+            else:
+                print 'failed to load redshift'
+                return
         if currentRenderer=='vray':
             if not cmds.attributeQuery(rendererPlug,node=hairNodeItem['hairNode'],exists=True):
                 try:
