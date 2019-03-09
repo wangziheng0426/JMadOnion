@@ -1,0 +1,49 @@
+/////////////////////////////////////////////////////////////
+///\file J_modelAnimToJointAnim.mel
+///
+///\brief    带动画的模型转为骨骼
+///
+///\author 桔
+///\version 1.0
+///\date  21:57 2019/3/4
+///History:  
+///
+///////////////////////////////////////////////////////////////
+global proc J_modelAnimToJointAnim()//带动画的模型转为骨骼
+{
+string $sel[]=`ls -sl`;
+if(size($sel))
+{
+string $jointNode=`createNode joint`;
+string $gemoGrp=`createNode transform`;
+string $subJoints[];
+	int $startFrame =`playbackOptions -q -min`;
+	int $endFrame  =`playbackOptions -q -max`;
+int $count;
+for($i =0;$i<size($sel);$i++)
+{
+    string $n[]=`duplicate $sel[$i]`;
+    
+    select $n[0];FreezeTransformations;
+    makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;
+    parent $n[0] $gemoGrp;
+    $subJoints[$i] =`createNode joint`;
+    vector $pos=`xform -q -ws -rp $sel[$i]`;
+    setAttr ($subJoints[$i]+".translateX") ($pos.x);
+    setAttr ($subJoints[$i]+".translateY") ($pos.y);
+    setAttr ($subJoints[$i]+".translateZ") ($pos.z);
+    select $sel[$i];
+    select -tgl $subJoints[$i] ;
+    doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+    doCreateScaleConstraintArgList 1 { "0","1","1","1","0","0","0","1","","1" };
+    select $n[0];
+    select -tgl $subJoints[$i] ;
+    SmoothBindSkin;
+	parent $subJoints[$i] $jointNode;
+}
+string $tempx=$startFrame+":"+$endFrame;
+select $subJoints;
+bakeResults -simulation true -t $tempx -sampleBy 1 -disableImplicitControl true -preserveOutsideKeys true -sparseAnimCurveBake false -removeBakedAttributeFromLayer false -bakeOnOverrideLayer false -minimizeRotation true -controlPoints false -shape true;
+delete `ls -type parentConstraint`;
+}
+}

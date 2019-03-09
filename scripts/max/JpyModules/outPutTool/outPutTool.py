@@ -19,31 +19,67 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     selectState=0
     maxToFbxScript='fn J_outPutGeoAndBone = \n'+\
                     '(\n'+\
-                    '    outFileName=inputPath\n'+\
+                    'unhide objects\n'+\
+                    'outFileName=inputPath\n'+\
+                    'bodyParts=#("Body_H_001","Eye_001","Hair_001","Body_001","Body_002","Body_003","Mech_001",\n'+\
+					'                "Mech_002","Mech_101","Mech_102","Gem_001","Gem_002","Glass_001")\n'+\
+					'bodyParts1=#("Body_H_001_P","Eye_001_P","Hair_001_P","Body_001_P","Body_002_P","Body_003_P","Mech_001_P",\n'+\
+					'                "Mech_002_P","Mech_101_P","Mech_102_P","Gem_001_P","Gem_002_P","Glass_001_P")\n'+\
+                    'if (matchPattern  MaxFileName pattern:("*001_P.max") or matchPattern  MaxFileName pattern:("*001_P_3K.max") )do\n'+\
+                    '    (bodyParts=bodyParts1)\n'+\
                     '    select_bone=#()\n'+\
-                    '    select_geo=#()\n'+\
+                    '    select_geo=#()\n'+ \
+                    '    clearSelection()\n' + \
                     '    for item in geometry do\n'+\
                     '    (\n'+\
-                    '        if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
+                    '       if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
                     '            (   \n'+\
                     '                append select_bone item\n'+\
                     '            )\n'+\
-                    '        if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
-                    '            (   \n'+\
-                    '                append select_geo item\n'+\
-                    '                select item\n'+\
-                    '                $.material= none\n'+\
-                    '            )\n'+\
+                    '       if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
+                    '           (   \n'+\
+                    '           for part in bodyParts do\n'+\
+                    '               (\n'+\
+                    '                   if (matchPattern  item.name pattern:("*"+part)) do\n'+\
+                    '                       (append select_geo item)\n'+\
+                    '               )\n'+\
+                    '           )\n'+\
                     '    )\n'+\
                     '    try select select_bone catch()\n'+\
                     '    try selectMore select_geo catch()\n'+\
                     '    try selectMore $head_front catch()\n'+\
                     '    FbxExporterSetParam \"Animation\" False\n'+\
                     '    FbxExporterSetParam \"UpAxis\" \"Y\"\n'+\
-                    '    FbxExporterSetParam \"EmbedTextures\" False\n'+\
+                    '    FbxExporterSetParam \"EmbedTextures\" False\n'+ \
+                    '    FbxExporterSetParam \"FileVersion\" \"FBX201200\"\n' + \
                     '    exportFile outFileName #noPrompt selectedOnly:true\n'+\
                     ')\n'+\
                     'J_outPutGeoAndBone()\n'
+    outPutMaterialAttrs='fn J_outPutGeoMaterial =\n'+\
+                        '(\n'+\
+	                    'python.init()\n'+\
+	                    'outFileName=inputPath\n'+\
+	                    '--outFileName="c:/aaa.fbx"\n'+\
+	                    'outFileName=replace outFileName  (outFileName.count  - 3) 4 ".txt"\n'+\
+	                    'bu=python.Import("__builtin__")\n'+\
+	                    'json=python.Import("json")\n'+\
+	                    'outStr=bu.dict()\n'+\
+	                    'for i in sceneMaterials do\n'+\
+	                    '   (\n'+\
+		                '      if classof i ==DirectX_9_Shader do\n'+\
+		                '          (\n'+\
+			            '          for j in 1 to i.numsubs do\n'+\
+			            '              (\n'+\
+				        '                  outStr[i[j].name]=(i[j].value as string)\n'+\
+			            '              )\n'+\
+		                '          )\n'+\
+                        '   )\n'+\
+	                    'file =bu.open outFileName "w"\n'+\
+	                    'file.write (json.dumps outStr)\n'+\
+	                    'file.close()\n'+\
+                        ')\n'+\
+                        'J_outPutGeoMaterial() \n'
+
     outPutBip='fn export_bip_fn =\n'+\
                 '  (\n'+\
                 '    path_S=inputPath\n'+\
@@ -154,7 +190,9 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         itemsSelected = self.treeWidget_In.selectedItems()
         inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
         outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
-        scriptPath = self.J_writeMaxScript(self.maxToFbxScript, 'J_convertMaxToFbx')
+        #添加导出参数脚本
+        #scriptPath = self.J_writeMaxScript(self.maxToFbxScript, 'J_convertMaxToFbx')
+        scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutMaterialAttrs, 'J_convertMaxToFbx')
         for item in itemsSelected:
             #拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
             sourceFilePath=str(item.text(2)).decode('utf-8')
@@ -168,7 +206,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             tempItem.setText(0,item.text(0))
             tempItem.setText(1,res)
             tempItem.setText(2, destinationFilePath)
-            os.remove(scriptPath)
+        os.remove(scriptPath)
             # 转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
 
     #导出bip文件
@@ -198,7 +236,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             # 收集需要复制制定类型文件到指定位置的文件夹
             if os.path.dirname(sourceFilePath) not in pathsTocCollect:
                 pathsTocCollect.append(os.path.dirname(sourceFilePath))
-            os.remove(scriptPath)
+        os.remove(scriptPath)
 
     #导出bat脚本并执行
     def J_exportFbx(self,sourceFilePath,destinationFilePath,scriptPath):
