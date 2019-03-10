@@ -3,7 +3,7 @@ import os,re
 import subprocess
 
 J_path=r'c:/cccc'
-def connectVideo(inPath):
+def J_connectVideo(inPath):
     inPath=inPath.decode('utf-8').replace('\\','/')
     allFile=''
     writeFileAll=open((inPath+'/'+'run.bat'),'w')
@@ -30,6 +30,6 @@ def connectVideo(inPath):
 
     writeFileAll.write(allFile)
     writeFileAll.close()
-connectVideo(J_path)
+J_connectVideo(J_path)
     
 
