@@ -21,30 +21,35 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     '(\n'+\
                     'unhide objects\n'+\
                     'outFileName=inputPath\n'+\
-                    'bodyParts=#("Body_H_001","Eye_001","Hair_001","Body_001","Body_002","Body_003","Mech_001",\n'+\
+                    'bodyParts=#("Hair_001","Body_001","Body_002","Body_003","Mech_001",\n'+\
 					'                "Mech_002","Mech_101","Mech_102","Gem_001","Gem_002","Glass_001")\n'+\
-					'bodyParts1=#("Body_H_001_P","Eye_001_P","Hair_001_P","Body_001_P","Body_002_P","Body_003_P","Mech_001_P",\n'+\
+					'bodyParts1=#("Body_001_P","Body_002_P","Body_003_P","Mech_001_P",\n'+\
 					'                "Mech_002_P","Mech_101_P","Mech_102_P","Gem_001_P","Gem_002_P","Glass_001_P")\n'+\
                     'if (matchPattern  MaxFileName pattern:("*001_P.max") or matchPattern  MaxFileName pattern:("*001_P_3K.max") )do\n'+\
                     '    (bodyParts=bodyParts1)\n'+\
-                    '    select_bone=#()\n'+\
-                    '    select_geo=#()\n'+ \
-                    '    clearSelection()\n' + \
-                    '    for item in geometry do\n'+\
-                    '    (\n'+\
-                    '       if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
-                    '            (   \n'+\
-                    '                append select_bone item\n'+\
-                    '            )\n'+\
-                    '       if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
-                    '           (   \n'+\
-                    '           for part in bodyParts do\n'+\
-                    '               (\n'+\
-                    '                   if (matchPattern  item.name pattern:("*"+part)) do\n'+\
-                    '                       (append select_geo item)\n'+\
-                    '               )\n'+\
+                    'select_bone=#()\n'+\
+                    'select_geo=#()\n'+ \
+                    'clearSelection()\n' + \
+                    'for item in geometry do\n'+\
+                    '(\n'+\
+                    '   if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
+                    '        (   \n'+\
+                    '            append select_bone item\n'+\
+                    '        )\n'+\
+                    '   if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
+                    '       (   \n'+\
+                    '       for part in bodyParts do\n'+\
+                    '           (\n'+\
+                    '               if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and item.pivot == [0,0,0])) do\n'+\
+                    '                   (append select_geo item)\n'+\
                     '           )\n'+\
-                    '    )\n'+\
+                    '       )\n'+ \
+                    '   if not ((matchPattern MaxFileName pattern:("*001_P.max") or matchPattern MaxFileName pattern:("*001_P_3K.max"))) do\n'+ \
+                    '       (\n'+ \
+                    '       if ((matchPattern item.name pattern:("*Eye_001") )or (matchPattern item.name pattern:("*Body_H_001")) )  do\n'+ \
+                    '           (append select_geo item)\n'+ \
+                    '       )\n'+ \
+                    '   )\n'+\
                     '    try select select_bone catch()\n'+\
                     '    try selectMore select_geo catch()\n'+\
                     '    try selectMore $head_front catch()\n'+\
@@ -191,8 +196,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
         outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
         #添加导出参数脚本
-        #scriptPath = self.J_writeMaxScript(self.maxToFbxScript, 'J_convertMaxToFbx')
-        scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutMaterialAttrs, 'J_convertMaxToFbx')
+        scriptPath = self.J_writeMaxScript(self.maxToFbxScript, 'J_convertMaxToFbx')
+        #scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutMaterialAttrs, 'J_convertMaxToFbx')
         for item in itemsSelected:
             #拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
             sourceFilePath=str(item.text(2)).decode('utf-8')
