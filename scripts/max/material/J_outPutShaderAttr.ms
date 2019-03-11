@@ -2,7 +2,7 @@ fn J_outPutGeoMaterial =
 (
 	python.init()
 	outFileName=inputPath
-	outFileName="c:/aaa.fbx"
+	outFileName=maxFilePath+maxFileName
 	outFileName=replace outFileName  (outFileName.count  - 3) 4 ".txt"
 	bu=python.Import("__builtin__")
 	json=python.Import("json")
