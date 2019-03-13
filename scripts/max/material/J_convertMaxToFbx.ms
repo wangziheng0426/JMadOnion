@@ -1,8 +1,9 @@
 fn J_outPutGeoAndBone = 
 (
     unhide objects
-    outFileName=inputPath
+    --outFileName=inputPath
     outFileName=maxFilePath+maxFileName
+	outFileName=replace outFileName  (outFileName.count  - 3) 4 ".fbx"
     bodyParts=#("Hair_001","Body_001","Body_002","Body_003","Mech_001",
                     "Mech_002","Mech_101","Mech_102","Gem_001","Gem_002","Glass_001")
     bodyParts1=#("Body_001_P","Body_002_P","Body_003_P","Mech_001_P",
