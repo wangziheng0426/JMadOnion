@@ -33,6 +33,10 @@ def J_CFXWorkFlow_outInBetweenGeo(sample=1,sourceGeo=[],startTime=-1,endTime=0):
                     cmds.delete(item1)
             gemoDupList[item].append(dupGeo)
     for item in gemoDupList:
-        cmds.blendShape(item[1:],item[0],inBetween=True)
+        blendNode=cmds.blendShape(item[1:],item[0],inBetween=True)
         cmds.delete(item[1:])
+        cmds.currentTime(startTime)
+        cmds.setKeyframe( blendNode, attribute='w[0]', value=0 ,outTangentType="linear",inTangentType="linear")
+        cmds.currentTime(endTime)
+        cmds.setKeyframe( blendNode, attribute='w[0]', value=1 ,outTangentType="linear",inTangentType="linear")
         
