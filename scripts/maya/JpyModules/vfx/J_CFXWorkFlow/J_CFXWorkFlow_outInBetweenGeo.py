@@ -39,4 +39,5 @@ def J_CFXWorkFlow_outInBetweenGeo(sample=1,sourceGeo=[],startTime=-1,endTime=0):
         cmds.setKeyframe( blendNode, attribute='w[0]', value=0 ,outTangentType="linear",inTangentType="linear")
         cmds.currentTime(endTime)
         cmds.setKeyframe( blendNode, attribute='w[0]', value=1 ,outTangentType="linear",inTangentType="linear")
+        cmds.parent(item[0],world=True)
         
