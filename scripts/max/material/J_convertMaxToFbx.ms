@@ -23,7 +23,7 @@ fn J_outPutGeoAndBone =
             (   
             for part in bodyParts do
                 (
-                if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and item.pivot == [0,0,0])) do
+                if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and length(item.pivot)<1)) do
                     (append select_geo item)
                 )
             )
