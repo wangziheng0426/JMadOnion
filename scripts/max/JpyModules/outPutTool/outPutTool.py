@@ -40,7 +40,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     '       (   \n'+\
                     '       for part in bodyParts do\n'+\
                     '           (\n'+\
-                    '               if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and item.pivot == [0,0,0])) do\n'+\
+                    '               if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and length(item.pivot)<1)) do\n'+\
                     '                   (append select_geo item)\n'+\
                     '           )\n'+\
                     '       )\n'+ \
