@@ -48,6 +48,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     '       (\n'+ \
                     '       if ((matchPattern item.name pattern:("*Eye_001") )or (matchPattern item.name pattern:("*Body_H_001")) )  do\n'+ \
                     '           (append select_geo item)\n'+ \
+                    '       if ((matchPattern item.name pattern:("*Eye_Effect_001") )or (matchPattern item.name pattern:("*Pupil_Effect_001")) )  do\n' + \
+                    '           (append select_geo item)\n' + \
                     '       )\n'+ \
                     '   )\n'+\
                     '    try select select_bone catch()\n'+\
