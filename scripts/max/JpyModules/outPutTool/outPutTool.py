@@ -36,7 +36,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                      '        (bodyParts=bodyParts1)	\n' + \
                      '	if (matchPattern  MaxFileName pattern:("*Nude_001.max"))do\n' + \
                      '		(bodyParts=#("Nude_Body_001","Nude_Hair_001"))	\n' + \
-                     '	if (matchPattern  MaxFileName pattern:("*Swimwear_001.max"))do\n' + \
+                     '	if (matchPattern  MaxFileName pattern:("*Swimwear_001.max") or matchPattern  MaxFileName pattern:("*Swimwear_001_3K.max"))do\n' + \
                      '		(bodyParts=#("Swimwear_Body_001","Swimwear_Hair_001","Swimwear_Body_002","Swimwear_Body_003","Swimwear_Mech_001",\n' + \
                      '			"Swimwear_Mech_002","Swimwear_Mech_101","Swimwear_Mech_102","Swimwear_Gem_001","Swimwear_Gem_002","Swimwear_Glass_001"))				\n' + \
                      '    select_bone=#()\n' + \
@@ -44,7 +44,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                      '    clearSelection()\n' + \
                      '	boneCount=0\n' + \
                      '	is_Pfile=matchPattern  MaxFileName pattern:("*_001_P.max")\n' + \
-                     '	is_P3Kfile= matchPattern  MaxFileName pattern:("*_001+P_3K.max")\n' + \
+                     '	is_P3Kfile= matchPattern  MaxFileName pattern:("*_001_P_3K.max")\n' + \
                      '	is_Nudefile= matchPattern  MaxFileName pattern:("*_Nude*") \n' + \
                      '	is_Swimwearfile=matchPattern  MaxFileName pattern:("*_Swimwear*")\n' + \
                      '    for item in geometry do\n' + \

@@ -13,54 +13,114 @@
 ///\return "success";
 global proc string J_playBlastToolWin()//拍屏工具
 {
-string $lists[]={"当前帧","帧速率","摄像机","制作人","时间","场景名"};
-int $options[]={0,0,0,0,0,0};
+string $lists[]={"当前帧","帧速率","摄像机"};
 string $J_checkBoxs[];
 if (`window -ex J_playBlastWin`)
-	deleteUI -window J_playBlastWin;
-	window -w 300 -h (size($lists)*2+200) -title "拍平工具" J_playBlastWin;
-		frameLayout -cll 1 -cl 0  -h (size($lists)*20) -l "选择要删除的项目"  J_getJunkLayOut;
-		formLayout  -nd 100  -h (size($lists)*20) J_getJunkFormLayOut;
-		
-		$J_checkBoxs[0]=`checkBox -v 0 -onCommand "J_playBlastCheckBoxAllOn"
-										-offCommand "J_playBlastCheckBoxAllOff" -label "all"`;
-		formLayout -e -af $J_checkBoxs[0] top 5 -af $J_checkBoxs[0] left 5 J_getJunkFormLayOut;
-		
-		for($i=0;$i<size($lists);$i++)
-		{
-			int $leftPos=5+($i)%2*140;
-			$J_checkBoxs[$i+1]=`checkBox -v 0 -label $lists[$i]`;
-			formLayout -e 
-				-af $J_checkBoxs[$i+1] left $leftPos
-				-ac $J_checkBoxs[$i+1] top 5 $J_checkBoxs[$i-$i%2]
-			J_getJunkFormLayOut;
-		}
-		textField J_playBlastText;
-		button -l "走你" -c  "J_playBlast" J_playBlastButton;
-		formLayout -e 
-					-ac J_playBlastText top 5 $J_checkBoxs[size($J_checkBoxs)-1]
-					-af J_playBlastText left 5
-					-af J_playBlastText right 5
-		
-					-ac J_playBlastButton top 5 J_playBlastText
-					-af J_playBlastButton left 5
-					-af J_playBlastButton right 5
-		 J_getJunkFormLayOut;
+    deleteUI -window J_playBlastWin;
+    window -w 300 -h (size($lists)*2+200) -title "拍屏工具" J_playBlastWin;
+        frameLayout -cll 1 -cl 0  -h (size($lists)*20) -l "选择拍屏要添加的条目"  J_playBlastLayOut;
+        formLayout  -nd 100  -h (size($lists)*20) J_playBlastFormLayOut;
+        
+        $J_checkBoxs[0]=`checkBox -v 0 -onCommand "J_playBlastCheckBoxAllOn"
+                                        -offCommand "J_playBlastCheckBoxAllOff" -label "all"`;
+        $J_changeShader=`checkBox -v 0 -label "change shader"`;
+        formLayout -e -af $J_checkBoxs[0] top 5 -af $J_checkBoxs[0] left 5 J_playBlastFormLayOut;
+        
+        for($i=0;$i<size($lists);$i++)
+        {
+            int $leftPos=5+($i)%2*140;
+            $J_checkBoxs[$i+1]=`checkBox -v 0 -label $lists[$i]`;
+            formLayout -e 
+                -af $J_checkBoxs[$i+1] left $leftPos
+                -ac $J_checkBoxs[$i+1] top 5 $J_checkBoxs[$i-$i%2]
+            J_playBlastFormLayOut;
+        }
+        textField -tx `file -q -sceneName` J_playBlastText;
+        button -l "走你" -c  "J_playBlast" J_playBlastButton;
+        formLayout -e 
+                    -af $J_changeShader top 5 
+                    -ac $J_changeShader left 105 $J_checkBoxs[0]
+                    
+                    -ac J_playBlastText top 5 $J_checkBoxs[size($J_checkBoxs)-1]
+                    -af J_playBlastText left 5
+                    -af J_playBlastText right 5
+        
+                    -ac J_playBlastButton top 5 J_playBlastText
+                    -af J_playBlastButton left 5
+                    -af J_playBlastButton right 5
+         J_playBlastFormLayOut;
 showWindow J_playBlastWin;
 return "success";
 }
 
-///删除指定节点并反馈
+///拍屏
 global proc J_playBlast()
+{string $formCh[]=`formLayout -q -childArray J_playBlastFormLayOut`;
+if (`checkBox -q -ex $formCh[1]`)
 {
+    J_displayColor(0);
+}
 
+string $filePath=`textField -q -tx J_playBlastText`;
+string $buffer[];
+$numTokens = `tokenize filePath "." $buffer`;
+PlayblastWindow;
+J_displayColor(1);
+}
+global proc J_displayColor(int $state)
+{
+    //string $sel[]=`ls -sl -type transform`;
+    //if (size($sel)<1)
+    //{
+    //    $sel=`ls -type mesh`;
+    //}
+    //if (size($sel)<1)
+    //    {return;}
+    string $sel[]=`ls -type mesh`;
+    int $currentItem=0;
+    for ($item in $sel)
+    {
+        $currentItem+=1;
+        setAttr ($item+".displayColors") 1;
+        setAttr -type "string" ($item+".displayColorChannel") "None";
+        vector $colorAtPoint=J_createRandomColorShader($currentItem,size($sel));
+        polyColorPerVertex -rgb ($colorAtPoint.x) ($colorAtPoint.y) ($colorAtPoint.z) $item;
+    
+        if ($state>0)
+        {
+            setAttr ($item+".displayColors") 0;
+            setAttr -type "string" ($item+".displayColorChannel") "Ambient";
+        }
+        
+    }
 
 }
-global proc J_turnOnAllHUBs()
+global proc vector J_createRandomColorShader(int $currentItem,int $allItemCount)
 {
-    setCameraNamesVisibility(1);
-    setCurrentFrameVisibility(1);
-    setSceneTimecodeVisibility(1);
+    int $x=rand(2);
+    int $y=rand(2);
+    int $z=rand(2);
+    vector $res=<<$x*(noise($currentItem)*0.5+0.5),$y*(noise($currentItem)*0.5+0.5),$z*(noise($currentItem)*0.5+0.5)>>;
+    return $res;
+}
+global proc J_swithHUBs()
+{
+    int $options[];
+    string $formCh[]=`formLayout -q -childArray J_playBlastFormLayOut`;
+    int $count=0;
+    for ($item in $formCh)
+    {
+        if(`checkBox -q -ex $item`)
+        {
+        $options[$count]=`checkBox -q -v $formCh[$count]`;
+        $count++;
+        }
+    }
+    print $options;
+    setCurrentFrameVisibility($options[2]);
+    setFrameRateVisibility($options[3]);
+    setCameraNamesVisibility($options[4]);
+
 }
 global proc string J_getWinUserName()
 {
@@ -72,22 +132,23 @@ global proc string J_getWinUserName()
 ///切换选项开关
 global proc J_playBlastCheckBoxAllOn()
 {
-	string $formCh[]=`formLayout -q -childArray J_getJunkFormLayOut`;
-	for($i=1;$i<size($formCh);$i++)
-	{
-		if(`checkBox -q -ex $formCh[$i]`)
-		checkBox -e -v 1 $formCh[$i];
-	}
+    string $formCh[]=`formLayout -q -childArray J_playBlastFormLayOut`;
+    for($i=1;$i<size($formCh);$i++)
+    {
+        if(`checkBox -q -ex $formCh[$i]`)
+        checkBox -e -v 1 $formCh[$i];
+    }
 
 }
 
 ///切换选项开关
 global proc J_playBlastCheckBoxAllOff()
-{	string $formCh[]=`formLayout -q -childArray J_getJunkFormLayOut`;
-	for($i=1;$i<size($formCh);$i++)
-	{
-		if(`checkBox -q -ex $formCh[$i]`)
-		checkBox -e -v 0 $formCh[$i];
-	}
+{   string $formCh[]=`formLayout -q -childArray J_playBlastFormLayOut`;
+    for($i=1;$i<size($formCh);$i++)
+    {
+        if(`checkBox -q -ex $formCh[$i]`)
+        checkBox -e -v 0 $formCh[$i];
+    }
 
 }
+J_playBlastToolWin
