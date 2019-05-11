@@ -15,7 +15,7 @@ fn J_outPutGeoAndBone =
         (bodyParts=bodyParts1)	
 	if (matchPattern  MaxFileName pattern:("*Nude_001.max"))do
 		(bodyParts=#("Nude_Body_001","Nude_Hair_001"))	
-	if (matchPattern  MaxFileName pattern:("*Swimwear_001.max"))do
+	if (matchPattern  MaxFileName pattern:("*Swimwear_001.max") or matchPattern  MaxFileName pattern:("*Swimwear_001_3K.max"))do
 		(bodyParts=#("Swimwear_Body_001","Swimwear_Hair_001","Swimwear_Body_002","Swimwear_Body_003","Swimwear_Mech_001",
 			"Swimwear_Mech_002","Swimwear_Mech_101","Swimwear_Mech_102","Swimwear_Gem_001","Swimwear_Gem_002","Swimwear_Glass_001"))				
     select_bone=#()
@@ -23,7 +23,7 @@ fn J_outPutGeoAndBone =
     clearSelection()
 	boneCount=0
 	is_Pfile=matchPattern  MaxFileName pattern:("*_001_P.max")
-	is_P3Kfile= matchPattern  MaxFileName pattern:("*_001+P_3K.max")
+	is_P3Kfile= matchPattern  MaxFileName pattern:("*_001_P_3K.max")
 	is_Nudefile= matchPattern  MaxFileName pattern:("*_Nude*") 
 	is_Swimwearfile=matchPattern  MaxFileName pattern:("*_Swimwear*")
     for item in geometry do
@@ -42,6 +42,7 @@ fn J_outPutGeoAndBone =
                 if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and length(item.pivot)<1)) do
                     (
 						print item
+						print part
 						append select_geo item
 						logString=logString+item.name+"\n"
 					if (item.parent!=undefined) then

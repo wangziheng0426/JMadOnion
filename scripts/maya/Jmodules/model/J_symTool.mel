@@ -66,37 +66,37 @@ for($i=0;$i<$PointCount[0];$i++)///区分x轴左右两侧
     
 }
 //数据比对
-//print $PointLeft;
-int $count=0;
-string $allLeft[];
-string $allRight[];
+//  print $PointLeft;
+    int $count=0;
+    string $allLeft[];
+    string $allRight[];
 
-for($i=0;$i<size($PointLeft);$i++)
-{
-    for($j=0;$j<size($PointRight);$j++)
+    for($i=0;$i<size($PointLeft);$i++)
     {
-        vector $t0=($PointLeftV[$i]);
-        vector $t1=($PointRightV[$j]);
-        int $ax=(abs($t0.x)*1000);
-        int $ay=(($t0.y)*1000);
-        int $az=(($t0.z)*1000);
-        //print ("aaa"+($sel+".vtx["+$PointLeft[$i]+"]")+$t0+" "+$az+"\n");
+        for($j=0;$j<size($PointRight);$j++)
+        {
+            vector $t0=($PointLeftV[$i]);
+            vector $t1=($PointRightV[$j]);
+            int $ax=(abs($t0.x)*1000);
+            int $ay=(($t0.y)*1000);
+            int $az=(($t0.z)*1000);
+            //print ("aaa"+($sel+".vtx["+$PointLeft[$i]+"]")+$t0+" "+$az+"\n");
+            
+            int $bx=(($t1.x)*1000);
+            int $by=(($t1.y)*1000);
+            int $bz=(($t1.z)*1000);
+            
+            if($ax<$bx+1&&$ax>$bx-1 &&  $ay>$by-1 && $ay<$by+1 &&  $az>$bz-1&&$az<$bz+1)
+            {
+                polyColorPerVertex -rgb 1 0 0 ($sel+".vtx["+$PointLeft[$i]+"]") ;
+                polyColorPerVertex -rgb 0 0 1 ($sel+".vtx["+$PointRight[$j]+"]") ;
+                select -tgl ($sel+".vtx["+$PointLeft[$i]+"]");
+                //print ($sel+".vtx["+$PointLeft[$i]+"]");print" \n";//
+                break;
+            }
+            
+            //print ($sel+".vtx["+$PointRight[$i]+"]");print" \n";
+        }
         
-        int $bx=(($t1.x)*1000);
-        int $by=(($t1.y)*1000);
-        int $bz=(($t1.z)*1000);
-        
-        if($ax<$bx+1&&$ax>$bx-1 &&  $ay>$by-1 && $ay<$by+1 &&  $az>$bz-1&&$az<$bz+1)
-		{
-			polyColorPerVertex -rgb 1 0 0 ($sel+".vtx["+$PointLeft[$i]+"]") ;
-			polyColorPerVertex -rgb 0 0 1 ($sel+".vtx["+$PointRight[$j]+"]") ;
-			select -tgl ($sel+".vtx["+$PointLeft[$i]+"]");
-			//print ($sel+".vtx["+$PointLeft[$i]+"]");print" \n";//
-			break;
-		}
-		
-		//print ($sel+".vtx["+$PointRight[$i]+"]");print" \n";
     }
-    
-}
 };
