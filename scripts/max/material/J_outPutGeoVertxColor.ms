@@ -1,7 +1,7 @@
 fn J_outPutGeoVertxColor =
 (
 	outFileName=maxfilepath +maxfilename
-	logFileName=replace outFileName  (outFileName.count  - 3) 4 ".log"
+	logFileName=replace outFileName  (outFileName.count  - 3) 4 "vertexColor.log"
 	logFile = openfile (logFileName) mode:"w"
 	outString="{\""+maxfilename+"\":["
 	bodyParts=#("Hair_001","Body_001","Body_H_001","Eye_001","Body_002","Body_003","Mech_001","Mech_002","Mech_101","Mech_102","Gem_001","Gem_002","Glass_001",\
@@ -55,10 +55,9 @@ fn CheckVertexColorFn objEach=
 				vertColor= (meshop.getMapVert objEach 0 vertexID)
 				append currentGemData ("\""+vertexID as string+"\":") 
 				append currentGemData "{"
-				append currentGemData ("\"aphla\":"+ vertAlpha as string +",")
-				append currentGemData ("\"colorR\":"+ vertColor[1] as string +",")
-				append currentGemData ("\"colorG\":"+ vertColor[2] as string +",")
-				append currentGemData ("\"colorB\":"+ vertColor[3] as string)
+				append currentGemData ("\"A\":"+ vertAlpha as string +",")
+				append currentGemData ("\"C\":["+ vertColor[1] as string +","+vertColor[2] as string +","+ vertColor[3] as string+"]")
+
 				append currentGemData "}"
 
 				if vertexID!=geoVertsCount do
@@ -84,10 +83,8 @@ fn CheckVertexColorFn objEach=
 			vertColor= (polyop.getMapVert objEach 0 vertexID)
 			append currentGemData ("\""+vertexID as string+"\":") 
 			append currentGemData "{"
-			append currentGemData ("\"aphla\":"+ vertAlpha as string +",")
-			append currentGemData ("\"colorR\":"+ vertColor[1] as string +",")
-			append currentGemData ("\"colorG\":"+ vertColor[2] as string +",")
-			append currentGemData ("\"colorB\":"+ vertColor[3] as string)
+			append currentGemData ("\"A\":"+ vertAlpha as string +",")
+			append currentGemData ("\"C\":["+ vertColor[1] as string +","+vertColor[2] as string +","+ vertColor[3] as string+"]")
 			append currentGemData "}"
 
 			if vertexID!=geoVertsCount do
