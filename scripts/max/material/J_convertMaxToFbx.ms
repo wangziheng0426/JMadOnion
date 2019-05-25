@@ -26,6 +26,11 @@ fn J_outPutGeoAndBone =
 	is_P3Kfile= matchPattern  MaxFileName pattern:("*_001_P_3K.max")
 	is_Nudefile= matchPattern  MaxFileName pattern:("*_Nude*") 
 	is_Swimwearfile=matchPattern  MaxFileName pattern:("*_Swimwear*")
+	if (matchPattern  MaxFileName pattern:("*_Skin*")) do
+		(
+			is_Nudefile=false
+			is_Swimwearfile=false
+		)
     for item in geometry do
     (
 		

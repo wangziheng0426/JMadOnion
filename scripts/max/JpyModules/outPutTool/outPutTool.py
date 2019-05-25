@@ -20,104 +20,218 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     fileTypeToCopy = {'.fbx': '/Animation', '.png': '/Texture'}
     selectState = 0
     maxToFbxScript = 'fn J_outPutGeoAndBone = \n' + \
-                     '(\n' + \
-                     '    unhide objects\n' + \
-                     '    outFileName=inputPath\n' + \
-                     '    --outFileName=maxFilePath+maxFileName\n' + \
-                     '	outFileName=replace outFileName  (outFileName.count  - 3) 4 ".fbx"\n' + \
-                     '	logFileName=replace outFileName  (outFileName.count  - 3) 4 ".log"\n' + \
-                     '	logString="\\n"\n' + \
-                     '	logFile = openfile (logFileName) mode:"w"\n' + \
-                     '    bodyParts=#("Hair_001","Body_001","Body_002","Body_003","Mech_001",\n' + \
-                     '                    "Mech_002","Mech_101","Mech_102","Gem_001","Gem_002","Glass_001")\n' + \
-                     '    bodyParts1=#("Body_001_P","Body_002_P","Body_003_P","Mech_001_P",\n' + \
-                     '                    "Mech_002_P","Mech_101_P","Mech_102_P","Gem_001_P","Gem_002_P","Glass_001_P")\n' + \
-                     '	if (matchPattern  MaxFileName pattern:("*001_P.max") or matchPattern  MaxFileName pattern:("*001_P_3K.max") )do\n' + \
-                     '        (bodyParts=bodyParts1)	\n' + \
-                     '	if (matchPattern  MaxFileName pattern:("*Nude_001.max"))do\n' + \
-                     '		(bodyParts=#("Nude_Body_001","Nude_Hair_001"))	\n' + \
-                     '	if (matchPattern  MaxFileName pattern:("*Swimwear_001.max") or matchPattern  MaxFileName pattern:("*Swimwear_001_3K.max"))do\n' + \
-                     '		(bodyParts=#("Swimwear_Body_001","Swimwear_Hair_001","Swimwear_Body_002","Swimwear_Body_003","Swimwear_Mech_001",\n' + \
-                     '			"Swimwear_Mech_002","Swimwear_Mech_101","Swimwear_Mech_102","Swimwear_Gem_001","Swimwear_Gem_002","Swimwear_Glass_001"))				\n' + \
-                     '    select_bone=#()\n' + \
-                     '    select_geo=#()\n' + \
-                     '    clearSelection()\n' + \
-                     '	boneCount=0\n' + \
-                     '	is_Pfile=matchPattern  MaxFileName pattern:("*_001_P.max")\n' + \
-                     '	is_P3Kfile= matchPattern  MaxFileName pattern:("*_001_P_3K.max")\n' + \
-                     '	is_Nudefile= matchPattern  MaxFileName pattern:("*_Nude*") \n' + \
-                     '	is_Swimwearfile=matchPattern  MaxFileName pattern:("*_Swimwear*")\n' + \
-                     '    for item in geometry do\n' + \
-                     '    (\n' + \
-                     '		\n' + \
-                     '        if (classof item == Biped_Object or classof item == BoneGeometry) do\n' + \
-                     '            (\n' + \
-                     '                append select_bone item\n' + \
-                     '				boneCount=boneCount+1\n' + \
-                     '            )\n' + \
-                     '        if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n' + \
-                     '            (   \n' + \
-                     '            for part in bodyParts do\n' + \
-                     '                (\n' + \
-                     '                if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and length(item.pivot)<1)) do\n' + \
-                     '                    (\n' + \
-                     '						append select_geo item\n' + \
-                     '						logString=logString+item.name+"\\n"\n' + \
-                     '					if (item.parent!=undefined) then\n' + \
-                     '						(logString=logString+"    parentNode: "+item.parent.name+"\\n")\n' + \
-                     '					else\n' + \
-                     '						(logString=logString+"    parentNode: NotExists"+ "\\n")\n' + \
-                     '					if (item.modifiers[#Skin]!=undefined) then\n' + \
-                     '						(logString=logString+"    skinNode: "+"Exists"+"\\n")\n' + \
-                     '					else\n' + \
-                     '						(logString=logString+"    skinNode: "+"NotExists"+"\\n")						\n' + \
-                     '					)\n' + \
-                     '                )\n' + \
-                     '            )\n' + \
-                     '		\n' + \
-                     '        if not (is_Pfile or is_P3Kfile or is_Nudefile or is_Swimwearfile ) do\n' + \
-                     '            (\n' + \
-                     '            if (matchPattern item.name pattern:("*Eye_001") or matchPattern item.name pattern:("*Body_H_001") )  do\n' + \
-                     '                (\n' + \
-                     '					append select_geo item\n' + \
-                     '					logString=logString+item.name+"\\n"\n' + \
-                     '					if (item.parent!=undefined) then\n' + \
-                     '						(logString=logString+"    parentNode: "+item.parent.name+"\\n")\n' + \
-                     '					else\n' + \
-                     '						(logString=logString+"    parentNode: NotExists"+ "\\n")\n' + \
-                     '					if (item.modifiers[#Skin]!=undefined) then\n' + \
-                     '						(logString=logString+"    skinNode: "+"Exists"+"\\n")\n' + \
-                     '					else\n' + \
-                     '						(logString=logString+"    skinNode: "+"NotExists"+"\\n")\n' + \
-                     '				)\n' + \
-                     '			if (matchPattern item.name pattern:("*Eye_Effect_001") or matchPattern item.name pattern:("*Pupil_Effect_001") )  do\n' + \
-                     '                (\n' + \
-                     '					append select_geo item\n' + \
-                     '					logString=logString+item.name+"\\n"\n' + \
-                     '					if (item.parent!=undefined) then\n' + \
-                     '						(logString=logString+"    parentNode: "+item.parent.name+"\\n")\n' + \
-                     '					else\n' + \
-                     '						(logString=logString+"    parentNode: NotExists"+ "\\n")\n' + \
-                     '					if (item.modifiers[#Skin]!=undefined) then\n' + \
-                     '						(logString=logString+"    skinNode: "+"Exists"+"\\n")\n' + \
-                     '					else\n' + \
-                     '						(logString=logString+"    skinNode: "+"NotExists"+"\\n")\n' + \
-                     '				)\n' + \
-                     '            )\n' + \
-                     '    )	\n' + \
-                     '    try select select_bone catch()\n' + \
-                     '    try selectMore select_geo catch()\n' + \
-                     '    try selectMore $head_front catch()\n' + \
-                     '    FbxExporterSetParam "Animation" False\n' + \
-                     '    FbxExporterSetParam "UpAxis" "Y"\n' + \
-                     '    FbxExporterSetParam "EmbedTextures" False\n' + \
-                     '    FbxExporterSetParam "FileVersion" "FBX201200"\n' + \
-                     '    exportFile outFileName #noPrompt selectedOnly:true\n' + \
-                     '	logString=logString+"\\nBoneCount "+(boneCount as string )+"\\n"\n' + \
-                     '	print logString to:logFile\n' + \
-                     '	close logFile\n' + \
-                     ')\n' + \
-                     'J_outPutGeoAndBone()\n'
+                    '(\n' + \
+                    '    unhide objects\n' + \
+                    '    outFileName=inputPath\n' + \
+                    '	outFileName=replace outFileName  (outFileName.count  - 3) 4 ".fbx"\n' + \
+                    '	logFileName=replace outFileName  (outFileName.count  - 3) 4 ".log"\n' + \
+                    '	logString="\\n"\n' + \
+                    '	logFile = openfile (logFileName) mode:"w"\n' + \
+                    '    bodyParts=#("Hair_001","Body_001","Body_002","Body_003","Mech_001",\n' + \
+                    '                    "Mech_002","Mech_101","Mech_102","Gem_001","Gem_002","Glass_001")\n' + \
+                    '    bodyParts1=#("Body_001_P","Body_002_P","Body_003_P","Mech_001_P",\n' + \
+                    '                    "Mech_002_P","Mech_101_P","Mech_102_P","Gem_001_P","Gem_002_P","Glass_001_P")\n' + \
+                    '	if (matchPattern  MaxFileName pattern:("*001_P.max") or matchPattern  MaxFileName pattern:("*001_P_3K.max") )do\n' + \
+                    '        (bodyParts=bodyParts1)	\n' + \
+                    '	if (matchPattern  MaxFileName pattern:("*Nude_001.max"))do\n' + \
+                    '		(bodyParts=#("Nude_Body_001","Nude_Hair_001"))	\n' + \
+                    '	if (matchPattern  MaxFileName pattern:("*Swimwear_001.max") or matchPattern  MaxFileName pattern:("*Swimwear_001_3K.max"))do\n' + \
+                    '		(bodyParts=#("Swimwear_Body_001","Swimwear_Hair_001","Swimwear_Body_002","Swimwear_Body_003","Swimwear_Mech_001",\n' + \
+                    '			"Swimwear_Mech_002","Swimwear_Mech_101","Swimwear_Mech_102","Swimwear_Gem_001","Swimwear_Gem_002","Swimwear_Glass_001"))				\n' + \
+                    '    select_bone=#()\n' + \
+                    '    select_geo=#()\n' + \
+                    '    clearSelection()\n' + \
+                    '	boneCount=0\n' + \
+                    '	is_Pfile=matchPattern  MaxFileName pattern:("*_001_P.max")\n' + \
+                    '	is_P3Kfile= matchPattern  MaxFileName pattern:("*_001_P_3K.max")\n' + \
+                    '	is_Nudefile= matchPattern  MaxFileName pattern:("*_Nude*") \n' + \
+                    '	is_Swimwearfile=matchPattern  MaxFileName pattern:("*_Swimwear*")\n' + \
+                    '   if (matchPattern MaxFileName  pattern:("*_Skin*")) do\n' + \
+                    '      (\n' + \
+                    '      is_Nudefile = false\n' + \
+                    '      is_Swimwearfile = false\n' + \
+                    '      )\n' + \
+                    '    for item in geometry do\n' + \
+                    '    (\n' + \
+                    '		\n' + \
+                    '        if (classof item == Biped_Object or classof item == BoneGeometry) do\n' + \
+                    '            (\n' + \
+                    '                append select_bone item\n' + \
+                    '				boneCount=boneCount+1\n' + \
+                    '            )\n' + \
+                    '        if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n' + \
+                    '            (   \n' + \
+                    '            for part in bodyParts do\n' + \
+                    '                (\n' + \
+                    '                if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and length(item.pivot)<1)) do\n' + \
+                    '                    (\n' + \
+                    '						append select_geo item\n' + \
+                    '						logString=logString+item.name+"\\n"\n' + \
+                    '					if (item.parent!=undefined) then\n' + \
+                    '						(logString=logString+"    parentNode: "+item.parent.name+"\\n")\n' + \
+                    '					else\n' + \
+                    '						(logString=logString+"    parentNode: NotExists"+ "\\n")\n' + \
+                    '					if (item.modifiers[#Skin]!=undefined) then\n' + \
+                    '						(logString=logString+"    skinNode: "+"Exists"+"\\n")\n' + \
+                    '					else\n' + \
+                    '						(logString=logString+"    skinNode: "+"NotExists"+"\\n")						\n' + \
+                    '					)\n' + \
+                    '                )\n' + \
+                    '            )\n' + \
+                    '		\n' + \
+                    '        if not (is_Pfile or is_P3Kfile or is_Nudefile or is_Swimwearfile ) do\n' + \
+                    '            (\n' + \
+                    '            if (matchPattern item.name pattern:("*Eye_001") or matchPattern item.name pattern:("*Body_H_001") )  do\n' + \
+                    '                (\n' + \
+                    '					append select_geo item\n' + \
+                    '					logString=logString+item.name+"\\n"\n' + \
+                    '					if (item.parent!=undefined) then\n' + \
+                    '						(logString=logString+"    parentNode: "+item.parent.name+"\\n")\n' + \
+                    '					else\n' + \
+                    '						(logString=logString+"    parentNode: NotExists"+ "\\n")\n' + \
+                    '					if (item.modifiers[#Skin]!=undefined) then\n' + \
+                    '						(logString=logString+"    skinNode: "+"Exists"+"\\n")\n' + \
+                    '					else\n' + \
+                    '						(logString=logString+"    skinNode: "+"NotExists"+"\\n")\n' + \
+                    '				)\n' + \
+                    '			if (matchPattern item.name pattern:("*Eye_Effect_001") or matchPattern item.name pattern:("*Pupil_Effect_001") )  do\n' + \
+                    '                (\n' + \
+                    '					append select_geo item\n' + \
+                    '					logString=logString+item.name+"\\n"\n' + \
+                    '					if (item.parent!=undefined) then\n' + \
+                    '						(logString=logString+"    parentNode: "+item.parent.name+"\\n")\n' + \
+                    '					else\n' + \
+                    '						(logString=logString+"    parentNode: NotExists"+ "\\n")\n' + \
+                    '					if (item.modifiers[#Skin]!=undefined) then\n' + \
+                    '						(logString=logString+"    skinNode: "+"Exists"+"\\n")\n' + \
+                    '					else\n' + \
+                    '						(logString=logString+"    skinNode: "+"NotExists"+"\\n")\n' + \
+                    '				)\n' + \
+                    '            )\n' + \
+                    '    )	\n' + \
+                    '    try select select_bone catch()\n' + \
+                    '    try selectMore select_geo catch()\n' + \
+                    '    try selectMore $head_front catch()\n' + \
+                    '    FbxExporterSetParam "Animation" False\n' + \
+                    '    FbxExporterSetParam "UpAxis" "Y"\n' + \
+                    '    FbxExporterSetParam "EmbedTextures" False\n' + \
+                    '    FbxExporterSetParam "FileVersion" "FBX201200"\n' + \
+                    '    exportFile outFileName #noPrompt selectedOnly:true\n' + \
+                    '	logString=logString+"\\nBoneCount "+(boneCount as string )+"\\n"\n' + \
+                    '	print logString to:logFile\n' + \
+                    '	close logFile\n' + \
+                    ')\n' + \
+                    'J_outPutGeoAndBone()\n'
+
+    outPutVertexColor='fn CheckVertexColorFn objEach=\n'+\
+                    '(\n'+\
+                    '	geoVertsCount = getNumVerts objEach\n'+\
+                    '	currentGemData=\"{\\"part\\":\\"\"+objEach.name+\"\\",\\"rgba\\":\"\n'+\
+                    '	--editableMesh\n'+\
+                    '	if classof objEach.baseobject == Editable_mesh then\n'+\
+                    '	(\n'+\
+                    '		if (meshop.getMapSupport objEach 0 == false) do\n'+\
+                    '		(\n'+\
+                    '			append currentGemData (\"\\"None\\"\")\n'+\
+                    '		)\n'+\
+                    '		if meshop.getMapSupport objEach -2 then\n'+\
+                    '		(\n'+\
+                    '			append currentGemData \"[\"\n'+\
+                    '			for vertexID in 1 to geoVertsCount do \n'+\
+                    '			(\n'+\
+                    '				vertAlpha = (meshop.getMapVert objEach -2 vertexID).x\n'+\
+                    '				vertColor= (meshop.getMapVert objEach 0 vertexID)\n'+\
+                    '				\n'+\
+                    '				append currentGemData \"[\"\n'+\
+                    '				\n'+\
+                    '				append currentGemData (\"\\"\"+vertColor[1] as string + \"\\",\"+\"\\"\"+vertColor[2] as string + \"\\",\"+\"\\"\"+vertColor[2] as string + \"\\",\"+\"\\"\"+vertAlpha as string + \"\\"\")\n'+\
+                    '\n'+\
+                    '				append currentGemData \"]\"\n'+\
+                    '\n'+\
+                    '				if vertexID!=geoVertsCount do\n'+\
+                    '					(append currentGemData \",\")\n'+\
+                    '			)\n'+\
+                    '			append currentGemData \"]\"			\n'+\
+                    '		)	\n'+\
+                    '		\n'+\
+                    '	)\n'+\
+                    '		\n'+\
+                    '	--editablePoly\n'+\
+                    '	if classof objEach.baseobject == Editable_Poly then\n'+\
+                    '	(\n'+\
+                    '		if (polyop.getMapSupport objEach 0 == false) do\n'+\
+                    '		(\n'+\
+                    '			append currentGemData (\"\\"None\\"\")\n'+\
+                    '		)\n'+\
+                    '		if polyop.getMapSupport objEach -2 then\n'+\
+                    '		(\n'+\
+                    '			append currentGemData \"[\"\n'+\
+                    '			for vertexID in 1 to geoVertsCount do \n'+\
+                    '			(\n'+\
+                    '			vertAlpha = (polyop.getMapVert objEach -2 vertexID).x\n'+\
+                    '			vertColor= (polyop.getMapVert objEach 0 vertexID)\n'+\
+                    '				\n'+\
+                    '			append currentGemData \"[\"\n'+\
+                    '			\n'+\
+                    '			append currentGemData (\"\\"\"+vertColor[1] as string + \"\\",\"+\"\\"\"+vertColor[2] as string + \"\\",\"+\"\\"\"+vertColor[2] as string + \"\\",\"+\"\\"\"+vertAlpha as string + \"\\"\")\n'+\
+                    '\n'+\
+                    '			append currentGemData \"]\"\n'+\
+                    '\n'+\
+                    '			if vertexID!=geoVertsCount do\n'+\
+                    '				(append currentGemData \",\")\n'+\
+                    '			)\n'+\
+                    '			\n'+\
+                    '		)		\n'+\
+                    '		append currentGemData \"]\"\n'+\
+                    '	)\n'+\
+                    '	\n'+\
+                    '	append currentGemData \"}\"\n'+\
+                    '	gc()\n'+\
+                    '	return currentGemData\n'+\
+                    ')\n'+\
+                    '\n'+\
+                    '\n'+\
+                    'fn J_outPutGeoVertxColor =\n'+\
+                    '(\n'+\
+                    '	outFileName=inputPath\n'+\
+                    '	logFileName=replace outFileName  (outFileName.count  - 3) 4 \"_vertexColor.log\"\n'+\
+                    '	logFile = openfile (logFileName) mode:\"w\"\n'+\
+                    '	outString=\"{\\"\"+\"GeoVertexColorDataFromJson\"+\"\\":[\"\n'+\
+                    '	bodyParts=#(\"Hair_001\",\"Body_001\",\"Body_H_001\",\"Eye_001\",\"Body_002\",\"Body_003\",\"Mech_001\",\"Mech_002\",\"Mech_101\",\"Mech_102\",\"Gem_001\",\"Gem_002\",\"Glass_001\",\n'+\
+                    '		\"Body_001_P\",\"Body_002_P\",\"Body_003_P\",\"Mech_001_P\",\"Mech_002_P\",\"Mech_101_P\",\"Mech_102_P\",\"Gem_001_P\",\"Gem_002_P\",\"Glass_001_P\",\n'+\
+                    '		\"Nude_Body_001\",\"Nude_Hair_001\",\n'+\
+                    '		\"Swimwear_Body_001\",\"Swimwear_Hair_001\",\"Swimwear_Body_002\",\"Swimwear_Body_003\",\"Swimwear_Mech_001\",\n'+\
+                    '		\"Swimwear_Mech_002\",\"Swimwear_Mech_101\",\"Swimwear_Mech_102\",\"Swimwear_Gem_001\",\"Swimwear_Gem_002\",\"Swimwear_Glass_001\"\n'+\
+                    '		)\n'+\
+                    '		\n'+\
+                    '	outGeo=#()\n'+\
+                    '	for item in geometry do\n'+\
+                    '	(\n'+\
+                    '		for part in bodyParts do\n'+\
+                    '		(\n'+\
+                    '			if (matchPattern  item.name pattern:(\"*\"+part)) do\n'+\
+                    '			(\n'+\
+                    '				append outGeo item\n'+\
+                    '			)\n'+\
+                    '		)\n'+\
+                    '	)\n'+\
+                    '	for i in 1 to outGeo.count do\n'+\
+                    '	(\n'+\
+                    '		if classof outGeo[i] == PolyMeshObject or classof outGeo[i]  == Editable_Poly or classof outGeo[i]  == Editable_mesh do\n'+\
+                    '		(\n'+\
+                    '			append outString (CheckVertexColorFn(outGeo[i]))\n'+\
+                    '			if i!=outGeo.count do (append outString \",\")	\n'+\
+                    '		)		\n'+\
+                    '	)\n'+\
+                    '	append outString \"]}\"\n'+\
+                    '	format outString to:logFile\n'+\
+                    '	close logFile\n'+\
+                    ')\n'+\
+                    '--检查顶点色\n'+\
+                    '\n'+\
+                    'J_outPutGeoVertxColor()\n'+\
+                    '--CheckVertexColorFn($)\n'+\
+                    '\n'
 
     outPutMaterialAttrs = 'fn J_outPutGeoMaterial =\n' + \
                           '(\n' + \
@@ -264,7 +378,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
         outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
         # 添加导出参数脚本
-        scriptPath = self.J_writeMaxScript(self.maxToFbxScript, 'J_convertMaxToFbx')
+        scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutVertexColor, 'J_convertMaxToFbx')
         # scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutMaterialAttrs, 'J_convertMaxToFbx')
         for item in itemsSelected:
             # 拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
