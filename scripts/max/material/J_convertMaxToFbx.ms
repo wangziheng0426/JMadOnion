@@ -1,3 +1,39 @@
+fn J_checkLog  item=
+(
+	logString=""
+	if (item.parent!=undefined) then
+		(logString=logString+"    parentNode: "+item.parent.name+"\n")
+	else
+		(logString=logString+"    parentNode: "+ "\n")
+	if (item.modifiers[#Skin]!=undefined) then
+		(logString=logString+"    skinNode: "+"Exists"+"\n")
+	else
+		(logString=logString+"    skinNode: "+"\n")
+	if classof item.baseobject == Editable_Poly do
+	(
+		if (polyop.getMapSupport item 0 == false) then
+		(
+			append logString ("    no vertex color \n")
+		)
+		else
+		(
+			append logString ("    has vertex color \n")
+		)
+	)
+	if classof item.baseobject == Editable_mesh do
+	(
+		if (meshop.getMapSupport item 0 == false) then
+		(
+			append logString ("    no vertex color \n")
+		)
+		else
+		(
+			append logString ("    has vertex color \n")
+		)
+	)
+	
+	return logString
+)
 fn J_outPutGeoAndBone = 
 (
     unhide objects
@@ -46,18 +82,9 @@ fn J_outPutGeoAndBone =
 					
                 if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and length(item.pivot)<1)) do
                     (
-						print item
-						print part
 						append select_geo item
 						logString=logString+item.name+"\n"
-					if (item.parent!=undefined) then
-						(logString=logString+"    parentNode: "+item.parent.name+"\n")
-					else
-						(logString=logString+"    parentNode: NotExists"+ "\n")
-					if (item.modifiers[#Skin]!=undefined) then
-						(logString=logString+"    skinNode: "+"Exists"+"\n")
-					else
-						(logString=logString+"    skinNode: "+"NotExists"+"\n")						
+						append logString (J_checkLog(item))				
 					)
                 )
             )
@@ -68,27 +95,13 @@ fn J_outPutGeoAndBone =
                 (
 					append select_geo item
 					logString=logString+item.name+"\n"
-					if (item.parent!=undefined) then
-						(logString=logString+"    parentNode: "+item.parent.name+"\n")
-					else
-						(logString=logString+"    parentNode: NotExists"+ "\n")
-					if (item.modifiers[#Skin]!=undefined) then
-						(logString=logString+"    skinNode: "+"Exists"+"\n")
-					else
-						(logString=logString+"    skinNode: "+"NotExists"+"\n")
+					append logString (J_checkLog(item))	
 				)
 			if (matchPattern item.name pattern:("*Eye_Effect_001") or matchPattern item.name pattern:("*Pupil_Effect_001") )  do
                 (
 					append select_geo item
 					logString=logString+item.name+"\n"
-					if (item.parent!=undefined) then
-						(logString=logString+"    parentNode: "+item.parent.name+"\n")
-					else
-						(logString=logString+"    parentNode: NotExists"+ "\n")
-					if (item.modifiers[#Skin]!=undefined) then
-						(logString=logString+"    skinNode: "+"Exists"+"\n")
-					else
-						(logString=logString+"    skinNode: "+"NotExists"+"\n")
+					append logString (J_checkLog(item))	
 				)
             )
     )	
@@ -101,8 +114,9 @@ fn J_outPutGeoAndBone =
     FbxExporterSetParam "FileVersion" "FBX201200"
     exportFile outFileName #noPrompt selectedOnly:true
 	logString=logString+"\nBoneCount "+(boneCount as string )+"\n"
-	print logString to:logFile
+	format logString to:logFile
 	close logFile
 )
+
 J_outPutGeoAndBone()
 
