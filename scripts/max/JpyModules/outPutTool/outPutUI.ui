@@ -222,6 +222,22 @@
      <string>导出动画</string>
     </property>
    </widget>
+   <widget class="QCheckBox" name="repairFacial">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>580</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>RepairFacial</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

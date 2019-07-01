@@ -21,111 +21,132 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     selectState = 0
     maxToFbxScript ='fn J_checkLog  item=\n'+\
                     '(\n'+\
-                    '	logString=\"\"\n'+\
-                    '	if (item.parent!=undefined) then\n'+\
-                    '		(logString=logString+\"    parentNode: \"+item.parent.name+\"\\n\")\n'+\
-                    '	else\n'+\
-                    '		(logString=logString+\"    parentNode: \"+ \"\\n\")\n'+\
-                    '	if (item.modifiers[#Skin]!=undefined) then\n'+\
-                    '		(logString=logString+\"    skinNode: \"+\"Exists\"+\"\\n\")\n'+\
-                    '	else\n'+\
-                    '		(logString=logString+\"    skinNode: \"+\"\\n\")\n'+\
-                    '	if classof item.baseobject == Editable_Poly do\n'+\
-                    '	(\n'+\
-                    '		if (polyop.getMapSupport item 0 == false) then\n'+\
-                    '		(\n'+\
-                    '			append logString (\"    no vertex color \\n\")\n'+\
-                    '		)\n'+\
-                    '		else\n'+\
-                    '		(\n'+\
-                    '			append logString (\"    has vertex color \\n\")\n'+\
-                    '		)\n'+\
-                    '	)\n'+\
-                    '	if classof item.baseobject == Editable_mesh do\n'+\
-                    '	(\n'+\
-                    '		if (meshop.getMapSupport item 0 == false) then\n'+\
-                    '		(\n'+\
-                    '			append logString (\"    no vertex color \\n\")\n'+\
-                    '		)\n'+\
-                    '		else\n'+\
-                    '		(\n'+\
-                    '			append logString (\"    has vertex color \\n\")\n'+\
-                    '		)\n'+\
-                    '	)\n'+\
-                    '	\n'+\
-                    '	return logString\n'+\
+                    '   logString=\"\"\n'+\
+                    '   if (item.parent!=undefined) then\n'+\
+                    '       (logString=logString+\"    parentNode: \"+item.parent.name+\"\\n\")\n'+\
+                    '   else\n'+\
+                    '       (logString=logString+\"    parentNode: \"+ \"\\n\")\n'+\
+                    '   if (item.modifiers[#Skin]!=undefined) then\n'+\
+                    '       (logString=logString+\"    skinNode: \"+\"Exists\"+\"\\n\")\n'+\
+                    '   else\n'+\
+                    '       (logString=logString+\"    skinNode: \"+\"\\n\")\n'+\
+                    '   if classof item.baseobject == Editable_Poly do\n'+\
+                    '   (\n'+\
+                    '       if (polyop.getMapSupport item 0 == false) then\n'+\
+                    '       (\n'+\
+                    '           append logString (\"    no vertex color \\n\")\n'+\
+                    '       )\n'+\
+                    '       else\n'+\
+                    '       (\n'+\
+                    '           append logString (\"    has vertex color \\n\")\n'+\
+                    '       )\n'+\
+                    '   )\n'+\
+                    '   if classof item.baseobject == Editable_mesh do\n'+\
+                    '   (\n'+\
+                    '       if (meshop.getMapSupport item 0 == false) then\n'+\
+                    '       (\n'+\
+                    '           append logString (\"    no vertex color \\n\")\n'+\
+                    '       )\n'+\
+                    '       else\n'+\
+                    '       (\n'+\
+                    '           append logString (\"    has vertex color \\n\")\n'+\
+                    '       )\n'+\
+                    '   )\n'+\
+                    '   \n'+\
+                    '   return logString\n'+\
                     ')\n'+\
                     'fn J_outPutGeoAndBone = \n'+\
                     '(\n'+\
                     '    unhide objects\n'+\
                     '    outFileName=inputPath\n'+\
                     '    --outFileName=maxFilePath+maxFileName\n'+\
-                    '	outFileName=replace outFileName  (outFileName.count  - 3) 4 \".fbx\"\n'+\
-                    '	logFileName=replace outFileName  (outFileName.count  - 3) 4 \".log\"\n'+\
-                    '	logString=\"\\n\"\n'+\
-                    '	logFile = openfile (logFileName) mode:\"w\"\n'+\
+                    '   outFileName=replace outFileName  (outFileName.count  - 3) 4 \".fbx\"\n'+\
+                    '   logFileName=replace outFileName  (outFileName.count  - 3) 4 \".log\"\n'+\
+                    '   modelName=replace  maxFileName (maxFileName.count - 7) 8 \"\"\n'+\
+                    '   logString=\"\\n\"\n'+\
+                    '   dressUpParts=\"\\n\"\n'+\
+                    '   dressUpItem=\"\\n\"\n'+\
+                    '   logFile = openfile (logFileName) mode:\"w\"\n'+\
                     '    bodyParts=#(\"Hair_001\",\"Body_001\",\"Body_002\",\"Body_003\",\"Mech_001\",\n'+\
                     '                    \"Mech_002\",\"Mech_101\",\"Mech_102\",\"Gem_001\",\"Gem_002\",\"Glass_001\")\n'+\
                     '    bodyParts1=#(\"Body_001_P\",\"Body_002_P\",\"Body_003_P\",\"Mech_001_P\",\n'+\
                     '                    \"Mech_002_P\",\"Mech_101_P\",\"Mech_102_P\",\"Gem_001_P\",\"Gem_002_P\",\"Glass_001_P\")\n'+\
-                    '	if (matchPattern  MaxFileName pattern:(\"*001_P.max\") or matchPattern  MaxFileName pattern:(\"*001_P_3K.max\") )do\n'+\
-                    '        (bodyParts=bodyParts1)	\n'+\
-                    '	if (matchPattern  MaxFileName pattern:(\"*Nude_001.max\"))do\n'+\
-                    '		(bodyParts=#(\"Nude_Body_001\",\"Nude_Hair_001\"))	\n'+\
-                    '	if (matchPattern  MaxFileName pattern:(\"*Swimwear_001.max\") or matchPattern  MaxFileName pattern:(\"*Swimwear_001_3K.max\"))do\n'+\
-                    '		(bodyParts=#(\"Swimwear_Body_001\",\"Swimwear_Hair_001\",\"Swimwear_Body_002\",\"Swimwear_Body_003\",\"Swimwear_Mech_001\",\n'+\
-                    '			\"Swimwear_Mech_002\",\"Swimwear_Mech_101\",\"Swimwear_Mech_102\",\"Swimwear_Gem_001\",\"Swimwear_Gem_002\",\"Swimwear_Glass_001\"))				\n'+\
+                    '   if (matchPattern  MaxFileName pattern:(\"*001_P.max\") or matchPattern  MaxFileName pattern:(\"*001_P_3K.max\") )do\n'+\
+                    '        (bodyParts=bodyParts1) \n'+\
+                    '   if (matchPattern  MaxFileName pattern:(\"*Nude_001.max\"))do\n'+\
+                    '       (bodyParts=#(\"Nude_Body_001\",\"Nude_Hair_001\"))  \n'+\
+                    '   if (matchPattern  MaxFileName pattern:(\"*Swimwear_001.max\") or matchPattern  MaxFileName pattern:(\"*Swimwear_001_3K.max\"))do\n'+\
+                    '       (bodyParts=#(\"Swimwear_Body_001\",\"Swimwear_Hair_001\",\"Swimwear_Body_002\",\"Swimwear_Body_003\",\"Swimwear_Mech_001\",\n'+\
+                    '           \"Swimwear_Mech_002\",\"Swimwear_Mech_101\",\"Swimwear_Mech_102\",\"Swimwear_Gem_001\",\"Swimwear_Gem_002\",\"Swimwear_Glass_001\"))                \n'+\
                     '    select_bone=#()\n'+\
                     '    select_geo=#()\n'+\
                     '    clearSelection()\n'+\
-                    '	boneCount=0\n'+\
-                    '	is_Pfile=matchPattern  MaxFileName pattern:(\"*_001_P.max\")\n'+\
-                    '	is_P3Kfile= matchPattern  MaxFileName pattern:(\"*_001_P_3K.max\")\n'+\
-                    '	is_Nudefile= matchPattern  MaxFileName pattern:(\"*_Nude*\") \n'+\
-                    '	is_Swimwearfile=matchPattern  MaxFileName pattern:(\"*_Swimwear*\")\n'+\
-                    '	if (matchPattern  MaxFileName pattern:(\"*_Skin*\")) do\n'+\
-                    '		(\n'+\
-                    '			is_Nudefile=false\n'+\
-                    '			is_Swimwearfile=false\n'+\
-                    '		)\n'+\
+                    '   boneCount=0\n'+\
+                    '   is_Pfile=matchPattern  MaxFileName pattern:(\"*_001_P.max\")\n'+\
+                    '   is_P3Kfile= matchPattern  MaxFileName pattern:(\"*_P_3K.max\")\n'+\
+                    '   is_Nudefile= matchPattern  MaxFileName pattern:(\"*_Nude*\") \n'+\
+                    '   is_Swimwearfile=matchPattern  MaxFileName pattern:(\"*_Swimwear*\")\n'+\
+                    '   is_StandedAloneSwimwear=matchPattern  MaxFileName pattern:(\"*Skin*\")\n'+\
+                    '   if (is_StandedAloneSwimwear==true)do\n'+\
+                    '       (is_Swimwearfile=false)\n'+\
+                    '   if (matchPattern  MaxFileName pattern:(\"*_Skin*\")) do\n'+\
+                    '       (\n'+\
+                    '           --is_Nudefile=false\n'+\
+                    '           is_Swimwearfile=false\n'+\
+                    '       )\n'+\
                     '    for item in geometry do\n'+\
                     '    (\n'+\
-                    '		\n'+\
+                    '       \n'+\
                     '        if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
                     '            (\n'+\
                     '                append select_bone item\n'+\
-                    '				boneCount=boneCount+1\n'+\
+                    '               boneCount=boneCount+1\n'+\
                     '            )\n'+\
                     '        if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
                     '            (   \n'+\
                     '            for part in bodyParts do\n'+\
                     '                (\n'+\
-                    '					\n'+\
-                    '                if (matchPattern  item.name pattern:(\"*\"+part) and (item.modifiers[#Skin] != undefined and length(item.pivot)<1)) do\n'+\
+                    '                   \n'+\
+                    '                if (matchPattern  item.name pattern:(\"*\"+part) ) do\n'+\
                     '                    (\n'+\
-                    '						append select_geo item\n'+\
-                    '						logString=logString+item.name+\"\\n\"\n'+\
-                    '						append logString (J_checkLog(item))				\n'+\
-                    '					)\n'+\
+                    '                       append logString item.name\n'+\
+                    '                       if(classof item.modifiers[0]!= undefined and length(item.pivot)<1) then\n'+\
+                    '                       (\n'+\
+                    '                       append select_geo item\n'+\
+                    '                       append logString  \"        exported\\n\"\n'+\
+                    '                       append logString (J_checkLog(item))     \n'+\
+                    '                       append dressUpParts (part+\",\")\n'+\
+                    '                       append dressUpItem (item.name +\",\")\n'+\
+                    '                       )else\n'+\
+                    '                   (append logString \"        lost\\n\")\n'+\
+                    '                   )\n'+\
+                    '                   \n'+\
                     '                )\n'+\
                     '            )\n'+\
-                    '		\n'+\
+                    '       \n'+\
                     '        if not (is_Pfile or is_P3Kfile or is_Nudefile or is_Swimwearfile ) do\n'+\
                     '            (\n'+\
                     '            if (matchPattern item.name pattern:(\"*Eye_001\") or matchPattern item.name pattern:(\"*Body_H_001\") )  do\n'+\
                     '                (\n'+\
-                    '					append select_geo item\n'+\
-                    '					logString=logString+item.name+\"\\n\"\n'+\
-                    '					append logString (J_checkLog(item))	\n'+\
-                    '				)\n'+\
-                    '			if (matchPattern item.name pattern:(\"*Eye_Effect_001\") or matchPattern item.name pattern:(\"*Pupil_Effect_001\") )  do\n'+\
+                    '                   append select_geo item\n'+\
+                    '                   logString=logString+item.name+\"\\n\"\n'+\
+                    '                   append logString (J_checkLog(item)) \n'+\
+                    '               )\n'+\
+                    '           if (matchPattern item.name pattern:(\"*Eye_Effect_001\") or matchPattern item.name pattern:(\"*Pupil_Effect_001\") )  do\n'+\
                     '                (\n'+\
-                    '					append select_geo item\n'+\
-                    '					logString=logString+item.name+\"\\n\"\n'+\
-                    '					append logString (J_checkLog(item))	\n'+\
-                    '				)\n'+\
+                    '                   append select_geo item\n'+\
+                    '                   logString=logString+item.name+\"\\n\"\n'+\
+                    '                   append logString (J_checkLog(item)) \n'+\
+                    '               )\n'+\
+                    '           if (matchPattern item.name pattern:(\"*Facial_Shy_001\") )  do\n'+\
+                    '                (\n'+\
+                    '                   append select_geo item\n'+\
+                    '                   logString=logString+item.name+\"\\n\"\n'+\
+                    '                   append logString (J_checkLog(item)) \n'+\
+                    '               )   \n'+\
+                    '               \n'+\
                     '            )\n'+\
-                    '    )	\n'+\
+                    '    )  \n'+\
                     '    try select select_bone catch()\n'+\
                     '    try selectMore select_geo catch()\n'+\
                     '    try selectMore $head_front catch()\n'+\
@@ -134,9 +155,9 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     '    FbxExporterSetParam \"EmbedTextures\" False\n'+\
                     '    FbxExporterSetParam \"FileVersion\" \"FBX201200\"\n'+\
                     '    exportFile outFileName #noPrompt selectedOnly:true\n'+\
-                    '	logString=logString+\"\\nBoneCount \"+(boneCount as string )+\"\\n\"\n'+\
-                    '	format logString to:logFile\n'+\
-                    '	close logFile\n'+\
+                    '   logString=logString+\"\\nBoneCount \"+(boneCount as string )+\"\\n\" +dressUpParts+\"\\n\" + dressUpItem\n'+\
+                    '   format logString to:logFile\n'+\
+                    '   close logFile\n'+\
                     ')\n'+\
                     '\n'+\
                     'J_outPutGeoAndBone()\n'+\
@@ -152,7 +173,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     '	(\n'+\
                     '		if (meshop.getMapSupport objEach 0 == false) do\n'+\
                     '		(\n'+\
-                    '			append currentGemData (\"\\"None\\"\")\n'+\
+                    '			append currentGemData (\"[[\\"-1\\",\\"-1\\",\\"-1\\",\\"-1\\"]]\")\n'+\
                     '		)\n'+\
                     '		if meshop.getMapSupport objEach -2 then\n'+\
                     '		(\n'+\
@@ -285,6 +306,89 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 '    biped.saveBipFile $.controller path_S\n' + \
                 '  )\n' + \
                 'export_bip_fn()\n'
+    facialRepair='fn J_facialReparent = \n'+\
+                    '(\n'+\
+                    '	unhide objects\n'+\
+                    '	clearSelection()\n'+\
+                    '	log=\"\"\n'+\
+                    '	bodyHPart=undefined\n'+\
+                    '	eyePart=undefined\n'+\
+                    '	facialShyPart=undefined\n'+\
+                    '	\n'+\
+                    '	eyeEffect=undefined\n'+\
+                    '	pupilEffect=undefined\n'+\
+                    '    for item in geometry do\n'+\
+                    '    (\n'+\
+                    '		if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
+                    '			(   if matchPattern  item.name pattern:(\"*Body_H_001\")  and length(item.pivot)<1  do\n'+\
+                    '				(	\n'+\
+                    '					bodyHPart=item	\n'+\
+                    '				)	\n'+\
+                    '				if matchPattern  item.name pattern:(\"*Body_H_001\")  and length(item.pivot)>1  do\n'+\
+                    '				(\n'+\
+                    '					log +=(item.name +\" transform is not 0 \\n\")\n'+\
+                    '				)	\n'+\
+                    '				if matchPattern  item.name pattern:(\"*_Eye_001\") do\n'+\
+                    '				(\n'+\
+                    '					eyePart=item\n'+\
+                    '				)\n'+\
+                    '				if matchPattern  item.name pattern:(\"*_Facial_Shy_001\") do\n'+\
+                    '				(\n'+\
+                    '					facialShyPart=item\n'+\
+                    '				)	\n'+\
+                    '				if matchPattern  item.name pattern:(\"*_Eye_Effect_001\") do\n'+\
+                    '				(\n'+\
+                    '					eyeEffect=item\n'+\
+                    '				)\n'+\
+                    '				if matchPattern  item.name pattern:(\"*Pupil_Effect_001\") do\n'+\
+                    '				(\n'+\
+                    '					pupilEffect=item\n'+\
+                    '				)					\n'+\
+                    '			)\n'+\
+                    '    )	\n'+\
+                    '	\n'+\
+                    '	\n'+\
+                    '		if bodyHPart!=undefined do\n'+\
+                    '		(\n'+\
+                    '			if  bodyHPart.modifiers[#Skin] != undefined do\n'+\
+                    '			(\n'+\
+                    '				temp=bodyHPart.modifiers[#Skin].name\n'+\
+                    '				deleteModifier bodyHPart bodyHPart.modifiers[#Skin]\n'+\
+                    '				log +=(bodyHPart.name + temp+\" deleted\\n\")						\n'+\
+                    '				)\n'+\
+                    '			bodyHPart.parent = $\'Bip001 Head\'\n'+\
+                    '			log +=(bodyHPart.name +\" parented to Bip001 Head\\n\")\n'+\
+                    '		)\n'+\
+                    '		if eyePart!=undefined and bodyHPart!=undefined do\n'+\
+                    '		(	\n'+\
+                    '			eyePart.parent =bodyHPart				\n'+\
+                    '			log +=(eyePart.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                    '		)\n'+\
+                    '		if facialShyPart!=undefined and bodyHPart!=undefined do\n'+\
+                    '		(	\n'+\
+                    '			facialShyPart.parent =bodyHPart				\n'+\
+                    '			log +=(facialShyPart.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                    '		)\n'+\
+                    '		if eyeEffect!=undefined and bodyHPart!=undefined do\n'+\
+                    '		(	\n'+\
+                    '			eyeEffect.parent =bodyHPart				\n'+\
+                    '			log +=(eyeEffect.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                    '		)\n'+\
+                    '		if pupilEffect!=undefined and bodyHPart!=undefined do\n'+\
+                    '		(	\n'+\
+                    '			pupilEffect.parent =bodyHPart				\n'+\
+                    '			log +=(pupilEffect.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                    '		)\n'+\
+                    '		\n'+\
+                    '	if bodyHPart==undefined do\n'+\
+                    '	(log +=(\" Body_H_001 not found\\\n\"))\n'+\
+                    '	if eyePart==undefined do\n'+\
+                    '	(log +=(\" Eye_001 not found\\\n\"))\n'+\
+                    '--messagebox log\n'+\
+                    ')\n'+\
+                    'J_facialReparent()\n'
+
+
 
     def __init__(self):
         super(J_outPutTool, self).__init__()
@@ -398,7 +502,10 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
         outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
         # 添加导出参数脚本
-        scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutVertexColor, 'J_convertMaxToFbx')
+        if self.repairFacial.isChecked()==True:
+            scriptPath = self.J_writeMaxScript(self.facialRepair+self.maxToFbxScript, 'J_convertMaxToFbx')
+        else:
+            scriptPath = self.J_writeMaxScript( self.maxToFbxScript, 'J_convertMaxToFbx')
         # scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutMaterialAttrs, 'J_convertMaxToFbx')
         for item in itemsSelected:
             # 拼装输出路径，在制定目录后面添加源文件夹，不存在就创建

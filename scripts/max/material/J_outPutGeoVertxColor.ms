@@ -7,7 +7,7 @@ fn CheckVertexColorFn objEach=
 	(
 		if (meshop.getMapSupport objEach 0 == false) do
 		(
-			append currentGemData ("\"None\"")
+			append currentGemData ("[[\"-1\",\"-1\",\"-1\",\"-1\"]]")
 		)
 		if meshop.getMapSupport objEach -2 then
 		(
