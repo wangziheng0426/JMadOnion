@@ -75,6 +75,9 @@ class Ui_MainWindow(object):
         self.pushButton_ExportAnimation = QtGui.QPushButton(self.centralwidget)
         self.pushButton_ExportAnimation.setGeometry(QtCore.QRect(380, 610, 110, 41))
         self.pushButton_ExportAnimation.setObjectName(_fromUtf8("pushButton_ExportAnimation"))
+        self.repairFacial = QtGui.QCheckBox(self.centralwidget)
+        self.repairFacial.setGeometry(QtCore.QRect(530, 580, 100, 16))
+        self.repairFacial.setObjectName(_fromUtf8("repairFacial"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1014, 23))
@@ -88,7 +91,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("动画转换工具", "动画转换工具", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.label.setText(_translate("MainWindow", "输入路径选择", None))
         self.pushButton_InPath.setText(_translate("MainWindow", "打开源目录", None))
         self.pushButton_OutPath.setText(_translate("MainWindow", "打开目标目录", None))
@@ -104,4 +107,5 @@ class Ui_MainWindow(object):
         self.pushButton_AutoSelect.setText(_translate("MainWindow", "智能选择", None))
         self.pushButton_ExportTexture.setText(_translate("MainWindow", "导出贴图", None))
         self.pushButton_ExportAnimation.setText(_translate("MainWindow", "导出动画", None))
+        self.repairFacial.setText(_translate("MainWindow", "RepairFacial", None))
 

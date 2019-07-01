@@ -41,7 +41,10 @@ fn J_outPutGeoAndBone =
     outFileName=maxFilePath+maxFileName
 	outFileName=replace outFileName  (outFileName.count  - 3) 4 ".fbx"
 	logFileName=replace outFileName  (outFileName.count  - 3) 4 ".log"
+	modelName=replace  maxFileName (maxFileName.count - 7) 8 ""
 	logString="\n"
+	dressUpParts="\n"
+	dressUpItem="\n"
 	logFile = openfile (logFileName) mode:"w"
     bodyParts=#("Hair_001","Body_001","Body_002","Body_003","Mech_001",
                     "Mech_002","Mech_101","Mech_102","Gem_001","Gem_002","Glass_001")
@@ -59,12 +62,15 @@ fn J_outPutGeoAndBone =
     clearSelection()
 	boneCount=0
 	is_Pfile=matchPattern  MaxFileName pattern:("*_001_P.max")
-	is_P3Kfile= matchPattern  MaxFileName pattern:("*_001_P_3K.max")
+	is_P3Kfile= matchPattern  MaxFileName pattern:("*_P_3K.max")
 	is_Nudefile= matchPattern  MaxFileName pattern:("*_Nude*") 
 	is_Swimwearfile=matchPattern  MaxFileName pattern:("*_Swimwear*")
+	is_StandedAloneSwimwear=matchPattern  MaxFileName pattern:("*Skin*")
+	if (is_StandedAloneSwimwear==true)do
+		(is_Swimwearfile=false)
 	if (matchPattern  MaxFileName pattern:("*_Skin*")) do
 		(
-			is_Nudefile=false
+			--is_Nudefile=false
 			is_Swimwearfile=false
 		)
     for item in geometry do
@@ -80,12 +86,20 @@ fn J_outPutGeoAndBone =
             for part in bodyParts do
                 (
 					
-                if (matchPattern  item.name pattern:("*"+part) and (item.modifiers[#Skin] != undefined and length(item.pivot)<1)) do
+                if (matchPattern  item.name pattern:("*"+part) ) do
                     (
+						append logString item.name
+						if(classof item.modifiers[0]!= undefined and length(item.pivot)<1) then
+						(
 						append select_geo item
-						logString=logString+item.name+"\n"
-						append logString (J_checkLog(item))				
+						append logString  "        exported\n"
+						append logString (J_checkLog(item))		
+						append dressUpParts (part+",")
+						append dressUpItem (item.name +",")
+						)else
+					(append logString "        lost\n")
 					)
+					
                 )
             )
 		
@@ -103,6 +117,13 @@ fn J_outPutGeoAndBone =
 					logString=logString+item.name+"\n"
 					append logString (J_checkLog(item))	
 				)
+			if (matchPattern item.name pattern:("*Facial_Shy_001") )  do
+                (
+					append select_geo item
+					logString=logString+item.name+"\n"
+					append logString (J_checkLog(item))	
+				)	
+				
             )
     )	
     try select select_bone catch()
@@ -113,7 +134,7 @@ fn J_outPutGeoAndBone =
     FbxExporterSetParam "EmbedTextures" False
     FbxExporterSetParam "FileVersion" "FBX201200"
     exportFile outFileName #noPrompt selectedOnly:true
-	logString=logString+"\nBoneCount "+(boneCount as string )+"\n"
+	logString=logString+"\nBoneCount "+(boneCount as string )+"\n" +dressUpParts+"\n" + dressUpItem
 	format logString to:logFile
 	close logFile
 )
