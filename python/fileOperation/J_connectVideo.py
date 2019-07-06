@@ -24,8 +24,9 @@ def J_connectVideo(inPath):
                 writeCombinFile.write(videoToCombin)
                 writeCombinFile.close()
                 print videoToCombin
-                os.popen(('c:/ffmpeg.exe -f concat -i ' +combinFileListName +' -c copy '+combinFileName+'\n').encode('gbk'))
+                os.popen(('c:/ffmpeg.exe -f concat -i \"' +combinFileListName +'\" -c copy \"'+combinFileName+'\"\n').encode('gbk'))
                 allFile+=('c:/ffmpeg.exe -f concat -i ' +combinFileListName +' -c copy '+combinFileName+'\n').encode('gbk')+"\n"
+                #print ('c:/ffmpeg.exe -f concat -i \"' +combinFileListName +'\" -c copy \"'+combinFileName+'\"\n').encode('gbk')
                 os.remove(combinFileListName)
 
                 
