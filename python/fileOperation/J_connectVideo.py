@@ -2,7 +2,7 @@
 import os,re
 import subprocess
 
-J_path=r'c:/ccc'
+J_path=r'D:\temp\ys0626'
 def J_connectVideo(inPath):
     inPath=inPath.decode('utf-8').replace('\\','/')
     allFile=''
@@ -13,23 +13,28 @@ def J_connectVideo(inPath):
                 combinFileListName=item[0].replace('\\','/')+'/'+items.replace('_bxxA.mp4','_combinJ.Cbn')
                 combinFileName=item[0].replace('\\','/')+'/'+items.replace('_bxxA.mp4','_combinJ.mp4')
                 stringToFind=items.replace('A.mp4','')
-                print stringToFind
+
                 writeCombinFile=open(combinFileListName,'w')
-                
+                print '+++++++++++++++++'
                 videoToCombin=''
-                for itemx in os.listdir(inPath):
+                for itemx in os.listdir(item[0]):
                     if itemx.find(stringToFind)>-1:
-                        videoToCombin+=('file '+itemx+'\n').encode('gbk')
+                        videoToCombin+=('file \''+itemx+'\'\n').encode('gbk')
                 
                 writeCombinFile.write(videoToCombin)
                 writeCombinFile.close()
-                
-                
-                allFile+=('c:/ffmpeg.exe -f concat -i ' +combinFileListName +' -c copy '+combinFileName+'\n').encode('gbk')
+                print videoToCombin
+                os.popen(('c:/ffmpeg.exe -safe 0 -f concat -i \"' +combinFileListName +'\" -c copy \"'+combinFileName+'\"\n').encode('gbk'))
+                allFile+=('c:/ffmpeg.exe -safe 0 -f concat -i \"' +combinFileListName +'\" -c copy \"'+combinFileName+'\"\n').encode('gbk')+"\n"
+                print ('c:/ffmpeg.exe -safe 0 -f concat -i \"' +combinFileListName +'\" -c copy \"'+combinFileName+'\"\n').encode('gbk')
+                #os.remove(combinFileListName)
 
-
+                
     writeFileAll.write(allFile)
     writeFileAll.close()
+
+    
 J_connectVideo(J_path)
+
     
 
