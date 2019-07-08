@@ -1,3 +1,5 @@
 *.pyc
 /J_living
 J_living/
+/scripts/*.exe
+/scripts/*.pk

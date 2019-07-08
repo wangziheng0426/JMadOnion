@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'main.ui'
+# Form implementation generated from reading ui file 'myShipMainUi.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #
@@ -22,11 +22,11 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(800, 600)
-        self.centralwidget = QtGui.QWidget(MainWindow)
+class Ui_myShipMain(object):
+    def setupUi(self, myShipMain):
+        myShipMain.setObjectName(_fromUtf8("myShipMain"))
+        myShipMain.resize(800, 600)
+        self.centralwidget = QtGui.QWidget(myShipMain)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
         self.groupBox.setGeometry(QtCore.QRect(0, 0, 461, 80))
@@ -46,24 +46,24 @@ class Ui_MainWindow(object):
         self.radioButton_5 = QtGui.QRadioButton(self.centralwidget)
         self.radioButton_5.setGeometry(QtCore.QRect(180, 130, 89, 16))
         self.radioButton_5.setObjectName(_fromUtf8("radioButton_5"))
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtGui.QMenuBar(MainWindow)
+        myShipMain.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(myShipMain)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtGui.QStatusBar(MainWindow)
+        myShipMain.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(myShipMain)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
-        MainWindow.setStatusBar(self.statusbar)
+        myShipMain.setStatusBar(self.statusbar)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.retranslateUi(myShipMain)
+        QtCore.QMetaObject.connectSlotsByName(myShipMain)
 
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        self.groupBox.setTitle(_translate("MainWindow", "GroupBox", None))
-        self.radioButton.setText(_translate("MainWindow", "RadioButton", None))
-        self.radioButton_2.setText(_translate("MainWindow", "RadioButton", None))
-        self.radioButton_3.setText(_translate("MainWindow", "RadioButton", None))
-        self.radioButton_4.setText(_translate("MainWindow", "RadioButton", None))
-        self.radioButton_5.setText(_translate("MainWindow", "RadioButton", None))
+    def retranslateUi(self, myShipMain):
+        myShipMain.setWindowTitle(_translate("myShipMain", "MainWindow", None))
+        self.groupBox.setTitle(_translate("myShipMain", "GroupBox", None))
+        self.radioButton.setText(_translate("myShipMain", "RadioButton", None))
+        self.radioButton_2.setText(_translate("myShipMain", "RadioButton", None))
+        self.radioButton_3.setText(_translate("myShipMain", "RadioButton", None))
+        self.radioButton_4.setText(_translate("myShipMain", "RadioButton", None))
+        self.radioButton_5.setText(_translate("myShipMain", "RadioButton", None))
 

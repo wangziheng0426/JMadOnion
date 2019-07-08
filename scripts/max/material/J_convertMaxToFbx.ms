@@ -97,7 +97,7 @@ fn J_outPutGeoAndBone =
 						append dressUpParts (part+",")
 						append dressUpItem (item.name +",")
 						)else
-					(append logString "        lost\n")
+							(append logString "        lost\n")
 					)
 					
                 )

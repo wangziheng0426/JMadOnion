@@ -443,8 +443,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 itemWid0 = QtGui.QTreeWidgetItem(j_rootParent)
                 itemWid0.setText(0, item)
                 itemWid0.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-                if (len(os.listdir(j_path + '/' + item)) > 0):
-                    self.J_addItem((j_path + '/' + item), itemWid0)
+                #if (len(os.listdir(j_path + '/' + item)) > 0):
+                    #self.J_addItem((j_path + '/' + item), itemWid0)
 
     def J_getPathOutPut(self):
         filePath0 = QtGui.QFileDialog.getExistingDirectory(self)
