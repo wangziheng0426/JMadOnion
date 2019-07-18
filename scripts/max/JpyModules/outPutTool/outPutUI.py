@@ -77,7 +77,7 @@ class Ui_MainWindow(object):
         self.pushButton_ExportAnimation.setObjectName(_fromUtf8("pushButton_ExportAnimation"))
         self.repairFacial = QtGui.QCheckBox(self.centralwidget)
         self.repairFacial.setGeometry(QtCore.QRect(530, 580, 101, 16))
-        self.repairFacial.setChecked(True)
+        self.repairFacial.setChecked(False)
         self.repairFacial.setObjectName(_fromUtf8("repairFacial"))
         self.pushButton = QtGui.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(740, 610, 131, 41))

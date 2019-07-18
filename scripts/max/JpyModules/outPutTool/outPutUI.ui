@@ -223,6 +223,9 @@
     </property>
    </widget>
    <widget class="QCheckBox" name="repairFacial">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>530</x>
@@ -234,8 +237,11 @@
     <property name="text">
      <string>RepairFacial</string>
     </property>
-    <property name="checked">
+    <property name="checkable">
      <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton">
