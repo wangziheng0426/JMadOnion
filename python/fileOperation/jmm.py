@@ -3,15 +3,15 @@ import os
 import subprocess
 
 J_path=r''
-outpath=r''
+outPath=J_path
+#outPath=r''
 def convertMM(inPath,outpath,fileTypes,startTime='0',reslution='960*540',crf='18',codeMode='hevc'):
-    inPath=inPath.decode('utf-8')
+    inPath=inPath.decode('utf-8').replace('\\','/')
+    outpath=outpath.decode('utf-8').replace('\\','/')
     allFile=''
     writeFileAll=open((inPath+'/runAll.bat'),'w')
     for item in os.walk(inPath):
         print '-------------------'
-        print item[0]
-        
         stringToWrite=''
         for items in item[2]:
             filePath='\\'.join((item[0],items)).replace('\\','/')
@@ -35,4 +35,4 @@ def convertMM(inPath,outpath,fileTypes,startTime='0',reslution='960*540',crf='18
     allFile+='shutdown -f -s -t 60'
     writeFileAll.write(allFile)
     writeFileAll.close()
-convertMM(J_path,outpath,['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','m2ts'],'00:00:00','1280*720',18,'hevc')
+convertMM(J_path,outPath,['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','m2ts'],'00:00:00','1280*720',18,'hevc')
