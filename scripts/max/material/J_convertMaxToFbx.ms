@@ -73,36 +73,14 @@ fn J_outPutGeoAndBone =
 			--is_Nudefile=false
 			is_Swimwearfile=false
 		)
-    for item in geometry do
-    (
 		
-        if (classof item == Biped_Object or classof item == BoneGeometry) do
+	for item in geometry do
+	(
+		if (classof item == Biped_Object or classof item == BoneGeometry) do
             (
                 append select_bone item
 				boneCount=boneCount+1
-            )
-        if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do
-            (   
-            for part in bodyParts do
-                (
-					
-                if (matchPattern  item.name pattern:("*"+part) ) do
-                    (
-						append logString item.name
-						if(classof item.modifiers[0]!= undefined and length(item.pivot)<1) then
-						(
-						append select_geo item
-						append logString  "        exported\n"
-						append logString (J_checkLog(item))		
-						append dressUpParts (part+",")
-						append dressUpItem (item.name +",")
-						)else
-							(append logString "        lost\n")
-					)
-					
-                )
-            )
-		
+            )      
         if not (is_Pfile or is_P3Kfile or is_Nudefile or is_Swimwearfile ) do
             (
             if (matchPattern item.name pattern:("*Eye_001") or matchPattern item.name pattern:("*Body_H_001") )  do
@@ -126,6 +104,28 @@ fn J_outPutGeoAndBone =
 				
             )
     )	
+	for part in bodyParts do
+	(
+		for item in geometry do
+		(
+		if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do
+            (   					
+			if (matchPattern  item.name pattern:("*"+part) ) do
+				(
+					append logString item.name
+					if(classof item.modifiers[#Skin]!= undefined and length(item.pivot)<1) then
+					(
+					append select_geo item
+					append logString  "        exported\n"
+					append logString (J_checkLog(item))		
+					append dressUpParts (part+",")
+					append dressUpItem (item.name +",")
+					)else
+						(append logString "        lost\n")
+				)
+            )
+		)
+	)
     try select select_bone catch()
     try selectMore select_geo catch()
     try selectMore $head_front catch()
