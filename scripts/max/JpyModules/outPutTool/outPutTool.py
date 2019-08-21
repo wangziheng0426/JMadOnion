@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import outPutUI
-import sys, os, subprocess, shutil, time, re
+import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib
 import _winreg
 
 reload(sys)
@@ -59,7 +59,6 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     '(\n'+\
                     '    unhide objects\n'+\
                     '    outFileName=inputPath\n'+\
-                    '    --outFileName=maxFilePath+maxFileName\n'+\
                     '   outFileName=replace outFileName  (outFileName.count  - 3) 4 \".fbx\"\n'+\
                     '   logFileName=replace outFileName  (outFileName.count  - 3) 4 \".log\"\n'+\
                     '   modelName=replace  maxFileName (maxFileName.count - 7) 8 \"\"\n'+\
@@ -94,36 +93,14 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     '           --is_Nudefile=false\n'+\
                     '           is_Swimwearfile=false\n'+\
                     '       )\n'+\
-                    '    for item in geometry do\n'+\
-                    '    (\n'+\
                     '       \n'+\
-                    '        if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
+                    '   for item in geometry do\n'+\
+                    '   (\n'+\
+                    '       if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
                     '            (\n'+\
                     '                append select_bone item\n'+\
                     '               boneCount=boneCount+1\n'+\
-                    '            )\n'+\
-                    '        if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
-                    '            (   \n'+\
-                    '            for part in bodyParts do\n'+\
-                    '                (\n'+\
-                    '                   \n'+\
-                    '                if (matchPattern  item.name pattern:(\"*\"+part) ) do\n'+\
-                    '                    (\n'+\
-                    '                       append logString item.name\n'+\
-                    '                       if(classof item.modifiers[0]!= undefined and length(item.pivot)<1) then\n'+\
-                    '                       (\n'+\
-                    '                       append select_geo item\n'+\
-                    '                       append logString  \"        exported\\n\"\n'+\
-                    '                       append logString (J_checkLog(item))     \n'+\
-                    '                       append dressUpParts (part+\",\")\n'+\
-                    '                       append dressUpItem (item.name +\",\")\n'+\
-                    '                       )else\n'+\
-                    '                   (append logString \"        lost\\n\")\n'+\
-                    '                   )\n'+\
-                    '                   \n'+\
-                    '                )\n'+\
-                    '            )\n'+\
-                    '       \n'+\
+                    '            )      \n'+\
                     '        if not (is_Pfile or is_P3Kfile or is_Nudefile or is_Swimwearfile ) do\n'+\
                     '            (\n'+\
                     '            if (matchPattern item.name pattern:(\"*Eye_001\") or matchPattern item.name pattern:(\"*Body_H_001\") )  do\n'+\
@@ -147,6 +124,28 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     '               \n'+\
                     '            )\n'+\
                     '    )  \n'+\
+                    '   for part in bodyParts do\n'+\
+                    '   (\n'+\
+                    '       for item in geometry do\n'+\
+                    '       (\n'+\
+                    '       if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
+                    '            (                      \n'+\
+                    '           if (matchPattern  item.name pattern:(\"*\"+part) ) do\n'+\
+                    '               (\n'+\
+                    '                   append logString item.name\n'+\
+                    '                   if(classof item.modifiers[#Skin]!= undefined and length(item.pivot)<1) then\n'+\
+                    '                   (\n'+\
+                    '                   append select_geo item\n'+\
+                    '                   append logString  \"        exported\\n\"\n'+\
+                    '                   append logString (J_checkLog(item))     \n'+\
+                    '                   append dressUpParts (part+\",\")\n'+\
+                    '                   append dressUpItem (item.name +\",\")\n'+\
+                    '                   )else\n'+\
+                    '                       (append logString \"        lost\\n\")\n'+\
+                    '               )\n'+\
+                    '            )\n'+\
+                    '       )\n'+\
+                    '   )\n'+\
                     '    try select select_bone catch()\n'+\
                     '    try selectMore select_geo catch()\n'+\
                     '    try selectMore $head_front catch()\n'+\
@@ -163,116 +162,6 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     'J_outPutGeoAndBone()\n'+\
                     '\n'
 
-
-    outPutVertexColor='fn CheckVertexColorFn objEach=\n'+\
-                    '(\n'+\
-                    '	geoVertsCount = getNumVerts objEach\n'+\
-                    '	currentGemData=\"{\\"part\\":\\"\"+objEach.name+\"\\",\\"rgba\\":\"\n'+\
-                    '	--editableMesh\n'+\
-                    '	if classof objEach.baseobject == Editable_mesh then\n'+\
-                    '	(\n'+\
-                    '		if (meshop.getMapSupport objEach 0 == false) do\n'+\
-                    '		(\n'+\
-                    '			append currentGemData (\"[[\\"-1\\",\\"-1\\",\\"-1\\",\\"-1\\"]]\")\n'+\
-                    '		)\n'+\
-                    '		if meshop.getMapSupport objEach -2 then\n'+\
-                    '		(\n'+\
-                    '			append currentGemData \"[\"\n'+\
-                    '			for vertexID in 1 to geoVertsCount do \n'+\
-                    '			(\n'+\
-                    '				vertAlpha = (meshop.getMapVert objEach -2 vertexID).x\n'+\
-                    '				vertColor= (meshop.getMapVert objEach 0 vertexID)\n'+\
-                    '				\n'+\
-                    '				append currentGemData \"[\"\n'+\
-                    '				\n'+\
-                    '				append currentGemData (\"\\"\"+vertColor[1] as string + \"\\",\"+\"\\"\"+vertColor[2] as string + \"\\",\"+\"\\"\"+vertColor[2] as string + \"\\",\"+\"\\"\"+vertAlpha as string + \"\\"\")\n'+\
-                    '\n'+\
-                    '				append currentGemData \"]\"\n'+\
-                    '\n'+\
-                    '				if vertexID!=geoVertsCount do\n'+\
-                    '					(append currentGemData \",\")\n'+\
-                    '			)\n'+\
-                    '			append currentGemData \"]\"			\n'+\
-                    '		)	\n'+\
-                    '		\n'+\
-                    '	)\n'+\
-                    '		\n'+\
-                    '	--editablePoly\n'+\
-                    '	if classof objEach.baseobject == Editable_Poly then\n'+\
-                    '	(\n'+\
-                    '		if (polyop.getMapSupport objEach 0 == false) do\n'+\
-                    '		(\n'+\
-                    '			append currentGemData (\"\\"None\\"\")\n'+\
-                    '		)\n'+\
-                    '		if polyop.getMapSupport objEach -2 then\n'+\
-                    '		(\n'+\
-                    '			append currentGemData \"[\"\n'+\
-                    '			for vertexID in 1 to geoVertsCount do \n'+\
-                    '			(\n'+\
-                    '			vertAlpha = (polyop.getMapVert objEach -2 vertexID).x\n'+\
-                    '			vertColor= (polyop.getMapVert objEach 0 vertexID)\n'+\
-                    '				\n'+\
-                    '			append currentGemData \"[\"\n'+\
-                    '			\n'+\
-                    '			append currentGemData (\"\\"\"+vertColor[1] as string + \"\\",\"+\"\\"\"+vertColor[2] as string + \"\\",\"+\"\\"\"+vertColor[2] as string + \"\\",\"+\"\\"\"+vertAlpha as string + \"\\"\")\n'+\
-                    '\n'+\
-                    '			append currentGemData \"]\"\n'+\
-                    '\n'+\
-                    '			if vertexID!=geoVertsCount do\n'+\
-                    '				(append currentGemData \",\")\n'+\
-                    '			)\n'+\
-                    '			\n'+\
-                    '		)		\n'+\
-                    '		append currentGemData \"]\"\n'+\
-                    '	)\n'+\
-                    '	\n'+\
-                    '	append currentGemData \"}\"\n'+\
-                    '	gc()\n'+\
-                    '	return currentGemData\n'+\
-                    ')\n'+\
-                    '\n'+\
-                    '\n'+\
-                    'fn J_outPutGeoVertxColor =\n'+\
-                    '(\n'+\
-                    '	outFileName=inputPath\n'+\
-                    '	logFileName=replace outFileName  (outFileName.count  - 3) 4 \"_vertexColor.log\"\n'+\
-                    '	logFile = openfile (logFileName) mode:\"w\"\n'+\
-                    '	outString=\"{\\"\"+\"GeoVertexColorDataFromJson\"+\"\\":[\"\n'+\
-                    '	bodyParts=#(\"Hair_001\",\"Body_001\",\"Body_H_001\",\"Eye_001\",\"Body_002\",\"Body_003\",\"Mech_001\",\"Mech_002\",\"Mech_101\",\"Mech_102\",\"Gem_001\",\"Gem_002\",\"Glass_001\",\n'+\
-                    '		\"Body_001_P\",\"Body_002_P\",\"Body_003_P\",\"Mech_001_P\",\"Mech_002_P\",\"Mech_101_P\",\"Mech_102_P\",\"Gem_001_P\",\"Gem_002_P\",\"Glass_001_P\",\n'+\
-                    '		\"Nude_Body_001\",\"Nude_Hair_001\",\n'+\
-                    '		\"Swimwear_Body_001\",\"Swimwear_Hair_001\",\"Swimwear_Body_002\",\"Swimwear_Body_003\",\"Swimwear_Mech_001\",\n'+\
-                    '		\"Swimwear_Mech_002\",\"Swimwear_Mech_101\",\"Swimwear_Mech_102\",\"Swimwear_Gem_001\",\"Swimwear_Gem_002\",\"Swimwear_Glass_001\"\n'+\
-                    '		)\n'+\
-                    '		\n'+\
-                    '	outGeo=#()\n'+\
-                    '	for item in geometry do\n'+\
-                    '	(\n'+\
-                    '		for part in bodyParts do\n'+\
-                    '		(\n'+\
-                    '			if (matchPattern  item.name pattern:(\"*\"+part)) do\n'+\
-                    '			(\n'+\
-                    '				append outGeo item\n'+\
-                    '			)\n'+\
-                    '		)\n'+\
-                    '	)\n'+\
-                    '	for i in 1 to outGeo.count do\n'+\
-                    '	(\n'+\
-                    '		if classof outGeo[i] == PolyMeshObject or classof outGeo[i]  == Editable_Poly or classof outGeo[i]  == Editable_mesh do\n'+\
-                    '		(\n'+\
-                    '			append outString (CheckVertexColorFn(outGeo[i]))\n'+\
-                    '			if i!=outGeo.count do (append outString \",\")	\n'+\
-                    '		)		\n'+\
-                    '	)\n'+\
-                    '	append outString \"]}\"\n'+\
-                    '	format outString to:logFile\n'+\
-                    '	close logFile\n'+\
-                    ')\n'+\
-                    '--检查顶点色\n'+\
-                    '\n'+\
-                    'J_outPutGeoVertxColor()\n'+\
-                    '--CheckVertexColorFn($)\n'+\
-                    '\n'
 
     outPutMaterialAttrs = 'fn J_outPutGeoMaterial =\n' + \
                           '(\n' + \
@@ -307,87 +196,116 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 '  )\n' + \
                 'export_bip_fn()\n'
     facialRepair='fn J_facialReparent = \n'+\
+                '(\n'+\
+                '   unhide objects\n'+\
+                '   clearSelection()\n'+\
+                '   log=\"\"\n'+\
+                '   bodyHPart=undefined\n'+\
+                '   eyePart=undefined\n'+\
+                '   facialShyPart=undefined\n'+\
+                '   \n'+\
+                '   eyeEffect=undefined\n'+\
+                '   pupilEffect=undefined\n'+\
+                '    for item in geometry do\n'+\
+                '    (\n'+\
+                '       if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
+                '           (   if matchPattern  item.name pattern:(\"*Body_H_001\")  and length(item.pivot)<1  do\n'+\
+                '               (   \n'+\
+                '                   bodyHPart=item  \n'+\
+                '               )   \n'+\
+                '               if matchPattern  item.name pattern:(\"*Body_H_001\")  and length(item.pivot)>1  do\n'+\
+                '               (\n'+\
+                '                   log +=(item.name +\" transform is not 0 \\n\")\n'+\
+                '               )   \n'+\
+                '               if matchPattern  item.name pattern:(\"*_Eye_001\") do\n'+\
+                '               (\n'+\
+                '                   eyePart=item\n'+\
+                '               )\n'+\
+                '               if matchPattern  item.name pattern:(\"*_Facial_Shy_001\") do\n'+\
+                '               (\n'+\
+                '                   facialShyPart=item\n'+\
+                '               )   \n'+\
+                '               if matchPattern  item.name pattern:(\"*_Eye_Effect_001\") do\n'+\
+                '               (\n'+\
+                '                   eyeEffect=item\n'+\
+                '               )\n'+\
+                '               if matchPattern  item.name pattern:(\"*Pupil_Effect_001\") do\n'+\
+                '               (\n'+\
+                '                   pupilEffect=item\n'+\
+                '               )                   \n'+\
+                '           )\n'+\
+                '    )  \n'+\
+                '   \n'+\
+                '   \n'+\
+                '       if bodyHPart!=undefined do\n'+\
+                '       (\n'+\
+                '           if  bodyHPart.modifiers[#Skin] != undefined do\n'+\
+                '           (\n'+\
+                '               temp=bodyHPart.modifiers[#Skin].name\n'+\
+                '               deleteModifier bodyHPart bodyHPart.modifiers[#Skin]\n'+\
+                '               log +=(bodyHPart.name + temp+\" deleted\\n\")                       \n'+\
+                '               )\n'+\
+                '           bodyHPart.parent = $\'Bip001 Head\'\n'+\
+                '           log +=(bodyHPart.name +\" parented to Bip001 Head\\n\")\n'+\
+                '       )\n'+\
+                '       if eyePart!=undefined and bodyHPart!=undefined do\n'+\
+                '       (   \n'+\
+                '           eyePart.parent =bodyHPart               \n'+\
+                '           log +=(eyePart.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                '       )\n'+\
+                '       if facialShyPart!=undefined and bodyHPart!=undefined do\n'+\
+                '       (   \n'+\
+                '           facialShyPart.parent =bodyHPart             \n'+\
+                '           log +=(facialShyPart.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                '       )\n'+\
+                '       if eyeEffect!=undefined and bodyHPart!=undefined do\n'+\
+                '       (   \n'+\
+                '           eyeEffect.parent =bodyHPart             \n'+\
+                '           log +=(eyeEffect.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                '       )\n'+\
+                '       if pupilEffect!=undefined and bodyHPart!=undefined do\n'+\
+                '       (   \n'+\
+                '           pupilEffect.parent =bodyHPart               \n'+\
+                '           log +=(pupilEffect.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                '       )\n'+\
+                '       \n'+\
+                '   if bodyHPart==undefined do\n'+\
+                '   (log +=(\" Body_H_001 not found\\\n\"))\n'+\
+                '   if eyePart==undefined do\n'+\
+                '   (log +=(\" Eye_001 not found\\\n\"))\n'+\
+                ')\n'+\
+                'J_facialReparent()\n'
+
+
+
+
+    createNewMorpher='fn J_createMorpher =\n'+\
                     '(\n'+\
-                    '	unhide objects\n'+\
-                    '	clearSelection()\n'+\
-                    '	log=\"\"\n'+\
-                    '	bodyHPart=undefined\n'+\
-                    '	eyePart=undefined\n'+\
-                    '	facialShyPart=undefined\n'+\
-                    '	\n'+\
-                    '	eyeEffect=undefined\n'+\
-                    '	pupilEffect=undefined\n'+\
-                    '    for item in geometry do\n'+\
-                    '    (\n'+\
-                    '		if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
-                    '			(   if matchPattern  item.name pattern:(\"*Body_H_001\")  and length(item.pivot)<1  do\n'+\
-                    '				(	\n'+\
-                    '					bodyHPart=item	\n'+\
-                    '				)	\n'+\
-                    '				if matchPattern  item.name pattern:(\"*Body_H_001\")  and length(item.pivot)>1  do\n'+\
-                    '				(\n'+\
-                    '					log +=(item.name +\" transform is not 0 \\n\")\n'+\
-                    '				)	\n'+\
-                    '				if matchPattern  item.name pattern:(\"*_Eye_001\") do\n'+\
-                    '				(\n'+\
-                    '					eyePart=item\n'+\
-                    '				)\n'+\
-                    '				if matchPattern  item.name pattern:(\"*_Facial_Shy_001\") do\n'+\
-                    '				(\n'+\
-                    '					facialShyPart=item\n'+\
-                    '				)	\n'+\
-                    '				if matchPattern  item.name pattern:(\"*_Eye_Effect_001\") do\n'+\
-                    '				(\n'+\
-                    '					eyeEffect=item\n'+\
-                    '				)\n'+\
-                    '				if matchPattern  item.name pattern:(\"*Pupil_Effect_001\") do\n'+\
-                    '				(\n'+\
-                    '					pupilEffect=item\n'+\
-                    '				)					\n'+\
-                    '			)\n'+\
-                    '    )	\n'+\
-                    '	\n'+\
-                    '	\n'+\
-                    '		if bodyHPart!=undefined do\n'+\
+                    '	for item in geometry do\n'+\
+                    '	(\n'+\
+                    '		if (matchPattern  item.name pattern:(\"*_Body_H_001\") and item.parent.name ==\"Bip001 Head\" ) do\n'+\
                     '		(\n'+\
-                    '			if  bodyHPart.modifiers[#Skin] != undefined do\n'+\
+                    '			if ( item.modifiers[#Skin]!= undefined) do\n'+\
                     '			(\n'+\
-                    '				temp=bodyHPart.modifiers[#Skin].name\n'+\
-                    '				deleteModifier bodyHPart bodyHPart.modifiers[#Skin]\n'+\
-                    '				log +=(bodyHPart.name + temp+\" deleted\\n\")						\n'+\
-                    '				)\n'+\
-                    '			bodyHPart.parent = $\'Bip001 Head\'\n'+\
-                    '			log +=(bodyHPart.name +\" parented to Bip001 Head\\n\")\n'+\
-                    '		)\n'+\
-                    '		if eyePart!=undefined and bodyHPart!=undefined do\n'+\
-                    '		(	\n'+\
-                    '			eyePart.parent =bodyHPart				\n'+\
-                    '			log +=(eyePart.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
-                    '		)\n'+\
-                    '		if facialShyPart!=undefined and bodyHPart!=undefined do\n'+\
-                    '		(	\n'+\
-                    '			facialShyPart.parent =bodyHPart				\n'+\
-                    '			log +=(facialShyPart.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
-                    '		)\n'+\
-                    '		if eyeEffect!=undefined and bodyHPart!=undefined do\n'+\
-                    '		(	\n'+\
-                    '			eyeEffect.parent =bodyHPart				\n'+\
-                    '			log +=(eyeEffect.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
-                    '		)\n'+\
-                    '		if pupilEffect!=undefined and bodyHPart!=undefined do\n'+\
-                    '		(	\n'+\
-                    '			pupilEffect.parent =bodyHPart				\n'+\
-                    '			log +=(pupilEffect.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
+                    '				deleteModifier item item.modifiers[#Skin]\n'+\
+                    '			)\n'+ \
+                     '			if ( item.modifiers[#Morpher]!= undefined) do\n' + \
+                     '			(\n' + \
+                     '				deleteModifier item item.modifiers[#Morpher]\n' + \
+                     '			)\n' + \
+                     '			\n'+ \
+                     '			temp=copy item\n' + \
+                     '			addmodifier item (Morpher ())\n'+ \
+                     '        select  item\n'+ \
+                    '         max    modify   mode\n'+ \
+                    '			WM3_MC_BuildFromNode (item.modifiers[#Morpher]) 1 temp  \n'+\
                     '		)\n'+\
                     '		\n'+\
-                    '	if bodyHPart==undefined do\n'+\
-                    '	(log +=(\" Body_H_001 not found\\\n\"))\n'+\
-                    '	if eyePart==undefined do\n'+\
-                    '	(log +=(\" Eye_001 not found\\\n\"))\n'+\
-                    '--messagebox log\n'+\
+                    '	)\n'+\
+                    '	\n'+\
                     ')\n'+\
-                    'J_facialReparent()\n'
-
+                    'J_createMorpher()\n'+\
+                    '\n'
 
 
     def __init__(self):
@@ -421,7 +339,49 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                               r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
         settingFilePath = _winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/fileConvertSetting.ini'
         return settingFilePath
+    #写excel表格数据，根据硬盘文件目录填表#####################################################################
+    def J_createExcelFromFile(self):
+        excelFilePath = 'd:/modelInfo1.xls'
+        inTextField = r'D:/project/dongzuo'
+        # readWorkBook=xlrd.open_workbook(excelFilePath,encoding = 'utf-8')
+        writeWorkBook = xlwt.Workbook(encoding='utf-8')
+        sheet01 = writeWorkBook.add_sheet('modelInfo')
+        alignment = xlwt.Alignment()
+        alignment.horz = xlwt.Alignment.HORZ_CENTER
+        alignment.vert = xlwt.Alignment.VERT_CENTER
+        style = xlwt.XFStyle()
+        style.alignment = alignment
+        print style.alignment.wrap
+        style.alignment.wrap = 1
+        count = 0
+        count1 = 0
+        for item1 in os.listdir(inTextField):
+            if (os.path.isdir(inTextField + '/' + item1) and item1!='.svn'):
+                count += 1
+                count2 = 0
+                #print item1.decode('gbk').encode("utf-8") + "                  "
+                r = os.popen('svn info \"' + inTextField + '/' + item1 + "\"")
+                temp = r.readline()
+                while (temp != '' and count2 < 5):
+                    count1 = count1 + 1
+                    count2 = count2 + 1
+                    if (temp.find('URL:') > -1):
+                        break
+                    temp = r.readline()
+                strToWrite = urllib.unquote(temp)
 
+                sheet01.write(count, 0, item1.decode('gbk').encode('utf-8'), style)
+                sheet01.write(count, 1, strToWrite, style)
+                sheet01.row(count).height_mismatch = True
+                sheet01.row(count).height = 1000
+        sheet01.col(0).width = 4000
+        sheet01.col(1).width=6000
+        sheet01.col(2).width =6000
+
+        writeWorkBook.save(excelFilePath)
+
+
+    ###########################################################################################################
     def J_getPath(self):
         self.treeWidget_In.clear()
         filePath0 = QtGui.QFileDialog.getExistingDirectory(self)
@@ -443,14 +403,14 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 itemWid0 = QtGui.QTreeWidgetItem(j_rootParent)
                 itemWid0.setText(0, item)
                 itemWid0.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-                #if (len(os.listdir(j_path + '/' + item)) > 0):
-                    #self.J_addItem((j_path + '/' + item), itemWid0)
+                if (len(os.listdir(j_path + '/' + item)) > 0):
+                    self.J_addItem((j_path + '/' + item), itemWid0)
 
     def J_getPathOutPut(self):
         filePath0 = QtGui.QFileDialog.getExistingDirectory(self)
         self.textOutPath.setPlainText(filePath0.replace('\\', '/'))
 
-    # 整理目录#################################################
+    # 整理目录###############################################################################
     def J_reMatchFilePath(self, inPath, inTextField, outTextField):
         outFile = inPath.replace(inTextField, outTextField).replace('.max', '.fbx')
         filePath = '/'.join(outFile.split('/')[0:-2])
@@ -464,7 +424,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             destinationFileName = destinationFileName[0:-1]
         return destinationFilePath + '/' + destinationFileName
 
-    #############################################################
+    #############################################################################################
     # 导出贴图
     def J_exportTexture(self):
         self.J_exportFileToUnity('.png', '/Texture');
@@ -502,10 +462,13 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
         outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
         # 添加导出参数脚本
+        runMaxScript=self.maxToFbxScript
+        if self.createMorpher.isChecked()==True:
+            runMaxScript=self.createNewMorpher+runMaxScript
         if self.repairFacial.isChecked()==True:
-            scriptPath = self.J_writeMaxScript(self.facialRepair+self.maxToFbxScript, 'J_convertMaxToFbx')
-        else:
-            scriptPath = self.J_writeMaxScript( self.maxToFbxScript, 'J_convertMaxToFbx')
+            runMaxScript= self.facialRepair + runMaxScript
+
+        scriptPath = self.J_writeMaxScript( runMaxScript, 'J_convertMaxToFbx')
         # scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutMaterialAttrs, 'J_convertMaxToFbx')
         for item in itemsSelected:
             # 拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
@@ -594,6 +557,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         self.pushButton_ExportTexture.clicked.connect(self.J_exportTexture)
         self.pushButton_ExportAnimation.clicked.connect(self.J_exportAnimation)
         self.pushButton_AutoSelect.clicked.connect(self.J_autoSelect)
+        self.pushButton_WriteExcel.clicked.connect(self.J_createExcelFromFile)
 
     def J_selectAllItem(self):
         if self.selectState == 0:
