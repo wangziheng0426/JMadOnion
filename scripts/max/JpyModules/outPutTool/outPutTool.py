@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
-import outPutUI
-import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib
+import outPutUI,settingUI
+import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools
 import _winreg
 
 reload(sys)
@@ -11,6 +11,8 @@ from PyQt4 import QtCore
 
 
 class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
+    workModel=0
+    excelSvnPath=''
     maxVersion = {'max2015': 'C:\\Program Files\\Autodesk\\3ds Max 2015\\3dsmax.exe', \
                   'max2016': 'C:\\Program Files\\Autodesk\\3ds Max 2016\\3dsmax.exe', \
                   'max2017': 'C:\\Program Files\\Autodesk\\3ds Max 2017\\3dsmax.exe', \
@@ -277,8 +279,6 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 'J_facialReparent()\n'
 
 
-
-
     createNewMorpher='fn J_createMorpher =\n'+\
                     '(\n'+\
                     '	for item in geometry do\n'+\
@@ -311,28 +311,52 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     def __init__(self):
         super(J_outPutTool, self).__init__()
         self.setupUi(self)
+        self.mainUiInit()
         self.J_createSlots()
-        self.uiInit()
 
-    def uiInit(self):
-        self.treeWidget_In.setColumnWidth(0, 300)
-        self.treeWidget_In.setColumnWidth(1, 50)
-        headerLabelItem = [u'名称', u'状态', u'路径']
+    def mainUiInit(self):
+        #配置表格属性
+        self.treeWidget_In.setColumnWidth(0, 200)
+        self.treeWidget_In.setColumnWidth(1, 150)
+        headerLabelItem = [u'名称', u'中文名', u'和谐名',u'url']
         self.treeWidget_In.setHeaderLabels(headerLabelItem)
         self.treeWidget_Out.setHeaderLabels(headerLabelItem)
+        #读取max列表
         for i in range(0, len(self.maxList)):
             self.comboBox.addItem(self.maxList[i])
             if os.path.exists(self.maxVersion[self.maxList[i]]):
                 self.comboBox.setCurrentIndex(i + 1)
-        # 测试使用
+        #加载配置预设文件
         if os.path.exists(self.settingInit()):
             fileTemp = open(self.settingInit(), 'r')
             inputPath = fileTemp.readline().replace('\n', '').decode('utf-8')
+            #读取上次访问路径
             if os.path.exists(inputPath):
-                self.textInPath.setPlainText(inputPath)
-                self.J_addItem(inputPath, self.treeWidget_In)
-                self.textOutPath.setPlainText(fileTemp.readline())
+                self.lineEdit_inPath.text=inputPath
+                self.lineEdit_outPath.text=fileTemp.readline()
+                self.workModel=int(fileTemp.readline().replace('workModel:',''))
             fileTemp.close()
+            #if self.workModel==0:
+
+            # 初始化列表，根据设置选择svn模式或者本地文件模式
+                #self.J_addItem(inputPath, self.treeWidget_In)
+            if self.workModel==1:
+                self.J_readExcelToCreateUi()
+    def OpenSettingDialog(self):
+        self.wChild=settingUI.Ui_settingDialog()
+        self.Dialog=QtGui.QDialog(self)
+        self.wChild.setupUi(self.Dialog)
+        if self.workModel==0:
+            self.wChild.localModel_radioButton.setChecked(True)
+        if self.workModel==1:
+            self.wChild.svnModel_radioButton.setChecked(True)
+        self.wChild.pushButton_tempPath.clicked.connect(functools.partial(self.J_getPathToCtrl, self.wChild.lineEdit_tempPath))
+        self.wChild.pushButton_source.clicked.connect(functools.partial(self.J_getPathToCtrl, self.wChild.lineEdit_source))
+        self.wChild.pushButton_destination.clicked.connect(functools.partial(self.J_getPathToCtrl, self.wChild.lineEdit_destination))
+
+        self.wChild.apply_pushButton.clicked.connect(self.Dialog.close)
+        self.wChild.close_pushButton.clicked.connect(self.Dialog.close)
+        self.Dialog.exec_()
 
     def settingInit(self):
         key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
@@ -341,9 +365,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         return settingFilePath
     #写excel表格数据，根据硬盘文件目录填表#####################################################################
     def J_createExcelFromFile(self):
-        excelFilePath = 'd:/modelInfo1.xls'
-        inTextField = r'D:/project/dongzuo'
-        # readWorkBook=xlrd.open_workbook(excelFilePath,encoding = 'utf-8')
+        excelFilePath = str(self.lineEdit_outPath.text()).decode('utf-8')+u'/modelInfo.xls'
+        inTextField = str(self.lineEdit_inPath.text()).decode('utf-8')
         writeWorkBook = xlwt.Workbook(encoding='utf-8')
         sheet01 = writeWorkBook.add_sheet('modelInfo')
         alignment = xlwt.Alignment()
@@ -351,7 +374,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         alignment.vert = xlwt.Alignment.VERT_CENTER
         style = xlwt.XFStyle()
         style.alignment = alignment
-        print style.alignment.wrap
+        #print style.alignment.wrap
         style.alignment.wrap = 1
         count = 0
         count1 = 0
@@ -359,10 +382,11 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             if (os.path.isdir(inTextField + '/' + item1) and item1!='.svn'):
                 count += 1
                 count2 = 0
-                #print item1.decode('gbk').encode("utf-8") + "                  "
-                r = os.popen('svn info \"' + inTextField + '/' + item1 + "\"")
+                command=('svn info \"' + inTextField + '/' + item1 + "\"").encode('gbk')
+                r = os.popen(command)
                 temp = r.readline()
                 while (temp != '' and count2 < 5):
+                    print temp
                     count1 = count1 + 1
                     count2 = count2 + 1
                     if (temp.find('URL:') > -1):
@@ -370,7 +394,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     temp = r.readline()
                 strToWrite = urllib.unquote(temp)
 
-                sheet01.write(count, 0, item1.decode('gbk').encode('utf-8'), style)
+                #sheet01.write(count, 0, item1.decode('gbk').encode('utf-8'), style)
+                sheet01.write(count, 0, item1.lower(), style)
                 sheet01.write(count, 1, strToWrite, style)
                 sheet01.row(count).height_mismatch = True
                 sheet01.row(count).height = 1000
@@ -379,16 +404,59 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         sheet01.col(2).width =6000
 
         writeWorkBook.save(excelFilePath)
-
-
     ###########################################################################################################
+    ###读excel创建ui
+    def J_readExcelToCreateUi(self):
+        xl = xlrd.open_workbook('c:/model/modelInfomation.xls')
+        table1 = xl.sheet_by_name(u"modelInfo")
+        rowCount= table1.nrows
+        for i in range(1,rowCount):
+            modelName=table1.cell(i,0).value
+            modelSvnPath=table1.cell(i,1).value
+            modelChineseName=table1.cell(i,3).value
+
+            itemWid0 = QtGui.QTreeWidgetItem(self.treeWidget_In)
+            itemWid0.setText(0, modelName)
+            itemWid0.setText(1, modelSvnPath)
+            itemWid0.setText(2, modelChineseName)
+            #itemWid0.setTextAlignment(0, QtCore.Qt.AlignVCenter)
+            #itemWid0.setSizeHint(0,QtCore.QSize(10,20))
+
+            itemWid0.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            itemWid0.setCheckState(1,QtCore.Qt.Unchecked);
+            itemWid1 = QtGui.QTreeWidgetItem(itemWid0)
+            itemWid1.setText(0,"aaa")
+            '''
+            ###############################
+            command = ('svn list --search '+modelName+'*.max \"' + modelSvnPath +  "\"").encode('gbk')
+            r = os.popen(command)
+            temp = r.readline()
+            tempCount=0
+            while (temp != '' and tempCount < 50):
+                #print temp
+                if temp!='\n':
+                    tempCount = tempCount + 1
+                    itemWid1 = QtGui.QTreeWidgetItem(itemWid0)
+                    itemWid1.setText(0, temp)
+                    temp = r.readline()
+            #################################
+            '''
+    ###########################################################
     def J_getPath(self):
         self.treeWidget_In.clear()
         filePath0 = QtGui.QFileDialog.getExistingDirectory(self)
         filePath = str(filePath0.replace('\\', '/')).decode('utf-8')
 
         self.J_addItem(filePath, self.treeWidget_In)
-        self.textInPath.setPlainText(filePath0)
+        self.lineEdit_inPath.setText(filePath0)
+
+    def J_getPathToCtrl(self,ctrl):
+        temp=QtGui.QFileDialog()
+        temp.setDirectory(ctrl.displayText())
+        filePath0 = temp.getExistingDirectory(self)
+        if filePath0!='':
+            ctrl.setText( filePath0.replace('\\', '/'))
+
 
     def J_addItem(self, j_path, j_rootParent):
         allch = os.listdir(j_path)
@@ -406,9 +474,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 if (len(os.listdir(j_path + '/' + item)) > 0):
                     self.J_addItem((j_path + '/' + item), itemWid0)
 
-    def J_getPathOutPut(self):
-        filePath0 = QtGui.QFileDialog.getExistingDirectory(self)
-        self.textOutPath.setPlainText(filePath0.replace('\\', '/'))
+
 
     # 整理目录###############################################################################
     def J_reMatchFilePath(self, inPath, inTextField, outTextField):
@@ -438,8 +504,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     def J_exportFileToUnity(self, fileType, folderName):
         pathsTocCollect = []
         itemsSelected = self.treeWidget_In.selectedItems()
-        inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
-        outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
+        inTextField = str(self.lineEdit_inPath.text).decode('utf-8')
+        outTextField = str(self.lineEdit_outPath.text).decode('utf-8')
         # 收集需要复制制定类型文件到指定位置的文件夹
         for item in itemsSelected:
             # 拼装输出路径，在制定目录后面添加源文件夹，不存在就创建
@@ -459,8 +525,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     # 转换max文件到fbx按钮命令
     def J_converMaxToFbx(self):
         itemsSelected = self.treeWidget_In.selectedItems()
-        inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
-        outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
+        inTextField = str(self.lineEdit_inPath.text).decode('utf-8')
+        outTextField = str(self.lineEdit_outPath.text).decode('utf-8')
         # 添加导出参数脚本
         runMaxScript=self.maxToFbxScript
         if self.createMorpher.isChecked()==True:
@@ -492,8 +558,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     # 导出bip文件
     def J_converMaxToBip(self):
         itemsSelected = self.treeWidget_In.selectedItems()
-        inTextField = str(self.textInPath.toPlainText()).decode('utf-8')
-        outTextField = str(self.textOutPath.toPlainText()).decode('utf-8')
+        inTextField = str(self.lineEdit_inPath.text).decode('utf-8').replace('\n','')
+        outTextField = str(self.lineEdit_outPath.text).decode('utf-8').replace('\n','')
         pathsTocCollect = []
         scriptPath = self.J_writeMaxScript(self.outPutBip, 'J_outPutBip')
         for item in itemsSelected:
@@ -520,7 +586,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
 
     # 导出bat脚本并执行
     def J_exportFbx(self, sourceFilePath, destinationFilePath, scriptPath):
-        batFile = str(self.textOutPath.toPlainText()).decode('utf-8') + '/temp.bat'
+        batFile = str(self.lineEdit_outPath.text).decode('utf-8') + '/temp.bat'
         if not (sourceFilePath)[-4:].lower() == '.max':  # or not (destinationFilePath)[-4:].lower()=='.fbx':
             return 'failed'
         # 默认读取max最高版本
@@ -547,18 +613,24 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     shutil.copy(os.path.join(root, item).replace('\\', '/'),
                                 os.path.join(outPath, item).replace('\\', '/'))
 
-    # 链接按钮
+    ################################ 链接按钮
     def J_createSlots(self):
         self.pushButton_InPath.clicked.connect(self.J_getPath)
-        self.pushButton_OutPath.clicked.connect(self.J_getPathOutPut)
+        self.pushButton_OutPath.clicked.connect(functools.partial(self.J_getPathToCtrl, self.lineEdit_outPath))
         self.pushButton_MaxToFbx.clicked.connect(self.J_converMaxToFbx)
         self.pushButton_MaxToBip.clicked.connect(self.J_converMaxToBip)
         self.pushButton_SelectAll.clicked.connect(self.J_selectAllItem)
         self.pushButton_ExportTexture.clicked.connect(self.J_exportTexture)
         self.pushButton_ExportAnimation.clicked.connect(self.J_exportAnimation)
         self.pushButton_AutoSelect.clicked.connect(self.J_autoSelect)
-        self.pushButton_WriteExcel.clicked.connect(self.J_createExcelFromFile)
+        #self.pushButton_WriteExcel.clicked.connect(self.J_createExcelFromFile)
+        self.pushButton_WriteExcel.clicked.connect(self.J_readExcelToCreateUi)
+        #self.action_workModel.Triggered
 
+    @QtCore.pyqtSlot()
+    def on_action_workModel_triggered(self):
+        self.OpenSettingDialog()
+    ################################ 链接按钮
     def J_selectAllItem(self):
         if self.selectState == 0:
             self.treeWidget_In.selectAll()
@@ -579,13 +651,16 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         itemsSelected = self.treeWidget_In.selectedItems()
 
     def closeEvent(self, *args, **kwargs):
+        self.saveSettings()
+    def saveSettings(self):
         file = open(self.settingInit(), 'w')
-        pathToSave = str(self.textInPath.toPlainText()).decode('utf-8') + '\n'
+        #保存选择的目录
+        pathToSave = str(self.lineEdit_inPath.text).decode('utf-8').replace('\n','') + '\n'
         file.writelines(pathToSave, )
-        pathToSave = str(self.textOutPath.toPlainText()).decode('utf-8')
+        pathToSave = str(self.lineEdit_outPath.text).decode('utf-8').replace('\n','') + '\n'
         file.writelines(pathToSave, )
+        file.writelines('workModel:'+str(self.workModel)+'\n', )
         file.close()
-
 
 def main():
     app = QtGui.QApplication(sys.argv)
