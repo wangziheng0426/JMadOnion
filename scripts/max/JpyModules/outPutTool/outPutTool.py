@@ -13,6 +13,7 @@ from PyQt4 import QtCore
 class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     workModel=0
     excelSvnPath=''
+    unityPath=''
     maxVersion = {'max2015': 'C:\\Program Files\\Autodesk\\3ds Max 2015\\3dsmax.exe', \
                   'max2016': 'C:\\Program Files\\Autodesk\\3ds Max 2016\\3dsmax.exe', \
                   'max2017': 'C:\\Program Files\\Autodesk\\3ds Max 2017\\3dsmax.exe', \
@@ -21,293 +22,6 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     maxList = ['max2015', 'max2016', 'max2017', 'max2018', '3ds Max Design']
     fileTypeToCopy = {'.fbx': '/Animation', '.png': '/Texture'}
     selectState = 0
-    maxToFbxScript ='fn J_checkLog  item=\n'+\
-                    '(\n'+\
-                    '   logString=\"\"\n'+\
-                    '   if (item.parent!=undefined) then\n'+\
-                    '       (logString=logString+\"    parentNode: \"+item.parent.name+\"\\n\")\n'+\
-                    '   else\n'+\
-                    '       (logString=logString+\"    parentNode: \"+ \"\\n\")\n'+\
-                    '   if (item.modifiers[#Skin]!=undefined) then\n'+\
-                    '       (logString=logString+\"    skinNode: \"+\"Exists\"+\"\\n\")\n'+\
-                    '   else\n'+\
-                    '       (logString=logString+\"    skinNode: \"+\"\\n\")\n'+\
-                    '   if classof item.baseobject == Editable_Poly do\n'+\
-                    '   (\n'+\
-                    '       if (polyop.getMapSupport item 0 == false) then\n'+\
-                    '       (\n'+\
-                    '           append logString (\"    no vertex color \\n\")\n'+\
-                    '       )\n'+\
-                    '       else\n'+\
-                    '       (\n'+\
-                    '           append logString (\"    has vertex color \\n\")\n'+\
-                    '       )\n'+\
-                    '   )\n'+\
-                    '   if classof item.baseobject == Editable_mesh do\n'+\
-                    '   (\n'+\
-                    '       if (meshop.getMapSupport item 0 == false) then\n'+\
-                    '       (\n'+\
-                    '           append logString (\"    no vertex color \\n\")\n'+\
-                    '       )\n'+\
-                    '       else\n'+\
-                    '       (\n'+\
-                    '           append logString (\"    has vertex color \\n\")\n'+\
-                    '       )\n'+\
-                    '   )\n'+\
-                    '   \n'+\
-                    '   return logString\n'+\
-                    ')\n'+\
-                    'fn J_outPutGeoAndBone = \n'+\
-                    '(\n'+\
-                    '    unhide objects\n'+\
-                    '    outFileName=inputPath\n'+\
-                    '   outFileName=replace outFileName  (outFileName.count  - 3) 4 \".fbx\"\n'+\
-                    '   logFileName=replace outFileName  (outFileName.count  - 3) 4 \".log\"\n'+\
-                    '   modelName=replace  maxFileName (maxFileName.count - 7) 8 \"\"\n'+\
-                    '   logString=\"\\n\"\n'+\
-                    '   dressUpParts=\"\\n\"\n'+\
-                    '   dressUpItem=\"\\n\"\n'+\
-                    '   logFile = openfile (logFileName) mode:\"w\"\n'+\
-                    '    bodyParts=#(\"Hair_001\",\"Body_001\",\"Body_002\",\"Body_003\",\"Mech_001\",\n'+\
-                    '                    \"Mech_002\",\"Mech_101\",\"Mech_102\",\"Gem_001\",\"Gem_002\",\"Glass_001\")\n'+\
-                    '    bodyParts1=#(\"Body_001_P\",\"Body_002_P\",\"Body_003_P\",\"Mech_001_P\",\n'+\
-                    '                    \"Mech_002_P\",\"Mech_101_P\",\"Mech_102_P\",\"Gem_001_P\",\"Gem_002_P\",\"Glass_001_P\")\n'+\
-                    '   if (matchPattern  MaxFileName pattern:(\"*001_P.max\") or matchPattern  MaxFileName pattern:(\"*001_P_3K.max\") )do\n'+\
-                    '        (bodyParts=bodyParts1) \n'+\
-                    '   if (matchPattern  MaxFileName pattern:(\"*Nude_001.max\"))do\n'+\
-                    '       (bodyParts=#(\"Nude_Body_001\",\"Nude_Hair_001\"))  \n'+\
-                    '   if (matchPattern  MaxFileName pattern:(\"*Swimwear_001.max\") or matchPattern  MaxFileName pattern:(\"*Swimwear_001_3K.max\"))do\n'+\
-                    '       (bodyParts=#(\"Swimwear_Body_001\",\"Swimwear_Hair_001\",\"Swimwear_Body_002\",\"Swimwear_Body_003\",\"Swimwear_Mech_001\",\n'+\
-                    '           \"Swimwear_Mech_002\",\"Swimwear_Mech_101\",\"Swimwear_Mech_102\",\"Swimwear_Gem_001\",\"Swimwear_Gem_002\",\"Swimwear_Glass_001\"))                \n'+\
-                    '    select_bone=#()\n'+\
-                    '    select_geo=#()\n'+\
-                    '    clearSelection()\n'+\
-                    '   boneCount=0\n'+\
-                    '   is_Pfile=matchPattern  MaxFileName pattern:(\"*_001_P.max\")\n'+\
-                    '   is_P3Kfile= matchPattern  MaxFileName pattern:(\"*_P_3K.max\")\n'+\
-                    '   is_Nudefile= matchPattern  MaxFileName pattern:(\"*_Nude*\") \n'+\
-                    '   is_Swimwearfile=matchPattern  MaxFileName pattern:(\"*_Swimwear*\")\n'+\
-                    '   is_StandedAloneSwimwear=matchPattern  MaxFileName pattern:(\"*Skin*\")\n'+\
-                    '   if (is_StandedAloneSwimwear==true)do\n'+\
-                    '       (is_Swimwearfile=false)\n'+\
-                    '   if (matchPattern  MaxFileName pattern:(\"*_Skin*\")) do\n'+\
-                    '       (\n'+\
-                    '           --is_Nudefile=false\n'+\
-                    '           is_Swimwearfile=false\n'+\
-                    '       )\n'+\
-                    '       \n'+\
-                    '   for item in geometry do\n'+\
-                    '   (\n'+\
-                    '       if (classof item == Biped_Object or classof item == BoneGeometry) do\n'+\
-                    '            (\n'+\
-                    '                append select_bone item\n'+\
-                    '               boneCount=boneCount+1\n'+\
-                    '            )      \n'+\
-                    '        if not (is_Pfile or is_P3Kfile or is_Nudefile or is_Swimwearfile ) do\n'+\
-                    '            (\n'+\
-                    '            if (matchPattern item.name pattern:(\"*Eye_001\") or matchPattern item.name pattern:(\"*Body_H_001\") )  do\n'+\
-                    '                (\n'+\
-                    '                   append select_geo item\n'+\
-                    '                   logString=logString+item.name+\"\\n\"\n'+\
-                    '                   append logString (J_checkLog(item)) \n'+\
-                    '               )\n'+\
-                    '           if (matchPattern item.name pattern:(\"*Eye_Effect_001\") or matchPattern item.name pattern:(\"*Pupil_Effect_001\") )  do\n'+\
-                    '                (\n'+\
-                    '                   append select_geo item\n'+\
-                    '                   logString=logString+item.name+\"\\n\"\n'+\
-                    '                   append logString (J_checkLog(item)) \n'+\
-                    '               )\n'+\
-                    '           if (matchPattern item.name pattern:(\"*Facial_Shy_001\") )  do\n'+\
-                    '                (\n'+\
-                    '                   append select_geo item\n'+\
-                    '                   logString=logString+item.name+\"\\n\"\n'+\
-                    '                   append logString (J_checkLog(item)) \n'+\
-                    '               )   \n'+\
-                    '               \n'+\
-                    '            )\n'+\
-                    '    )  \n'+\
-                    '   for part in bodyParts do\n'+\
-                    '   (\n'+\
-                    '       for item in geometry do\n'+\
-                    '       (\n'+\
-                    '       if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
-                    '            (                      \n'+\
-                    '           if (matchPattern  item.name pattern:(\"*\"+part) ) do\n'+\
-                    '               (\n'+\
-                    '                   append logString item.name\n'+\
-                    '                   if(classof item.modifiers[#Skin]!= undefined and length(item.pivot)<1) then\n'+\
-                    '                   (\n'+\
-                    '                   append select_geo item\n'+\
-                    '                   append logString  \"        exported\\n\"\n'+\
-                    '                   append logString (J_checkLog(item))     \n'+\
-                    '                   append dressUpParts (part+\",\")\n'+\
-                    '                   append dressUpItem (item.name +\",\")\n'+\
-                    '                   )else\n'+\
-                    '                       (append logString \"        lost\\n\")\n'+\
-                    '               )\n'+\
-                    '            )\n'+\
-                    '       )\n'+\
-                    '   )\n'+\
-                    '    try select select_bone catch()\n'+\
-                    '    try selectMore select_geo catch()\n'+\
-                    '    try selectMore $head_front catch()\n'+\
-                    '    FbxExporterSetParam \"Animation\" False\n'+\
-                    '    FbxExporterSetParam \"UpAxis\" \"Y\"\n'+\
-                    '    FbxExporterSetParam \"EmbedTextures\" False\n'+\
-                    '    FbxExporterSetParam \"FileVersion\" \"FBX201200\"\n'+\
-                    '    exportFile outFileName #noPrompt selectedOnly:true\n'+\
-                    '   logString=logString+\"\\nBoneCount \"+(boneCount as string )+\"\\n\" +dressUpParts+\"\\n\" + dressUpItem\n'+\
-                    '   format logString to:logFile\n'+\
-                    '   close logFile\n'+\
-                    ')\n'+\
-                    '\n'+\
-                    'J_outPutGeoAndBone()\n'+\
-                    '\n'
-
-
-    outPutMaterialAttrs = 'fn J_outPutGeoMaterial =\n' + \
-                          '(\n' + \
-                          'python.init()\n' + \
-                          'outFileName=inputPath\n' + \
-                          '--outFileName="c:/aaa.fbx"\n' + \
-                          'outFileName=replace outFileName  (outFileName.count  - 3) 4 ".txt"\n' + \
-                          'bu=python.Import("__builtin__")\n' + \
-                          'json=python.Import("json")\n' + \
-                          'outStr=bu.dict()\n' + \
-                          'for i in sceneMaterials do\n' + \
-                          '   (\n' + \
-                          '      if classof i ==DirectX_9_Shader do\n' + \
-                          '          (\n' + \
-                          '          for j in 1 to i.numsubs do\n' + \
-                          '              (\n' + \
-                          '                  outStr[i[j].name]=(i[j].value as string)\n' + \
-                          '              )\n' + \
-                          '          )\n' + \
-                          '   )\n' + \
-                          'file =bu.open outFileName "w"\n' + \
-                          'file.write (json.dumps outStr)\n' + \
-                          'file.close()\n' + \
-                          ')\n' + \
-                          'J_outPutGeoMaterial() \n'
-
-    outPutBip = 'fn export_bip_fn =\n' + \
-                '  (\n' + \
-                '    path_S=inputPath\n' + \
-                '    select $Bip001\n' + \
-                '    biped.saveBipFile $.controller path_S\n' + \
-                '  )\n' + \
-                'export_bip_fn()\n'
-    facialRepair='fn J_facialReparent = \n'+\
-                '(\n'+\
-                '   unhide objects\n'+\
-                '   clearSelection()\n'+\
-                '   log=\"\"\n'+\
-                '   bodyHPart=undefined\n'+\
-                '   eyePart=undefined\n'+\
-                '   facialShyPart=undefined\n'+\
-                '   \n'+\
-                '   eyeEffect=undefined\n'+\
-                '   pupilEffect=undefined\n'+\
-                '    for item in geometry do\n'+\
-                '    (\n'+\
-                '       if classof item == PolyMeshObject or classof item == Editable_Poly or classof item == Editable_mesh do\n'+\
-                '           (   if matchPattern  item.name pattern:(\"*Body_H_001\")  and length(item.pivot)<1  do\n'+\
-                '               (   \n'+\
-                '                   bodyHPart=item  \n'+\
-                '               )   \n'+\
-                '               if matchPattern  item.name pattern:(\"*Body_H_001\")  and length(item.pivot)>1  do\n'+\
-                '               (\n'+\
-                '                   log +=(item.name +\" transform is not 0 \\n\")\n'+\
-                '               )   \n'+\
-                '               if matchPattern  item.name pattern:(\"*_Eye_001\") do\n'+\
-                '               (\n'+\
-                '                   eyePart=item\n'+\
-                '               )\n'+\
-                '               if matchPattern  item.name pattern:(\"*_Facial_Shy_001\") do\n'+\
-                '               (\n'+\
-                '                   facialShyPart=item\n'+\
-                '               )   \n'+\
-                '               if matchPattern  item.name pattern:(\"*_Eye_Effect_001\") do\n'+\
-                '               (\n'+\
-                '                   eyeEffect=item\n'+\
-                '               )\n'+\
-                '               if matchPattern  item.name pattern:(\"*Pupil_Effect_001\") do\n'+\
-                '               (\n'+\
-                '                   pupilEffect=item\n'+\
-                '               )                   \n'+\
-                '           )\n'+\
-                '    )  \n'+\
-                '   \n'+\
-                '   \n'+\
-                '       if bodyHPart!=undefined do\n'+\
-                '       (\n'+\
-                '           if  bodyHPart.modifiers[#Skin] != undefined do\n'+\
-                '           (\n'+\
-                '               temp=bodyHPart.modifiers[#Skin].name\n'+\
-                '               deleteModifier bodyHPart bodyHPart.modifiers[#Skin]\n'+\
-                '               log +=(bodyHPart.name + temp+\" deleted\\n\")                       \n'+\
-                '               )\n'+\
-                '           bodyHPart.parent = $\'Bip001 Head\'\n'+\
-                '           log +=(bodyHPart.name +\" parented to Bip001 Head\\n\")\n'+\
-                '       )\n'+\
-                '       if eyePart!=undefined and bodyHPart!=undefined do\n'+\
-                '       (   \n'+\
-                '           eyePart.parent =bodyHPart               \n'+\
-                '           log +=(eyePart.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
-                '       )\n'+\
-                '       if facialShyPart!=undefined and bodyHPart!=undefined do\n'+\
-                '       (   \n'+\
-                '           facialShyPart.parent =bodyHPart             \n'+\
-                '           log +=(facialShyPart.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
-                '       )\n'+\
-                '       if eyeEffect!=undefined and bodyHPart!=undefined do\n'+\
-                '       (   \n'+\
-                '           eyeEffect.parent =bodyHPart             \n'+\
-                '           log +=(eyeEffect.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
-                '       )\n'+\
-                '       if pupilEffect!=undefined and bodyHPart!=undefined do\n'+\
-                '       (   \n'+\
-                '           pupilEffect.parent =bodyHPart               \n'+\
-                '           log +=(pupilEffect.name +\" parented to \"+bodyHPart.name+\" \\n\")\n'+\
-                '       )\n'+\
-                '       \n'+\
-                '   if bodyHPart==undefined do\n'+\
-                '   (log +=(\" Body_H_001 not found\\\n\"))\n'+\
-                '   if eyePart==undefined do\n'+\
-                '   (log +=(\" Eye_001 not found\\\n\"))\n'+\
-                ')\n'+\
-                'J_facialReparent()\n'
-
-
-    createNewMorpher='fn J_createMorpher =\n'+\
-                    '(\n'+\
-                    '	for item in geometry do\n'+\
-                    '	(\n'+\
-                    '		if (matchPattern  item.name pattern:(\"*_Body_H_001\") and item.parent.name ==\"Bip001 Head\" ) do\n'+\
-                    '		(\n'+\
-                    '			if ( item.modifiers[#Skin]!= undefined) do\n'+\
-                    '			(\n'+\
-                    '				deleteModifier item item.modifiers[#Skin]\n'+\
-                    '			)\n'+ \
-                     '			if ( item.modifiers[#Morpher]!= undefined) do\n' + \
-                     '			(\n' + \
-                     '				deleteModifier item item.modifiers[#Morpher]\n' + \
-                     '			)\n' + \
-                     '			\n'+ \
-                     '			temp=copy item\n' + \
-                     '			addmodifier item (Morpher ())\n'+ \
-                     '        select  item\n'+ \
-                    '         max    modify   mode\n'+ \
-                    '			WM3_MC_BuildFromNode (item.modifiers[#Morpher]) 1 temp  \n'+\
-                    '		)\n'+\
-                    '		\n'+\
-                    '	)\n'+\
-                    '	\n'+\
-                    ')\n'+\
-                    'J_createMorpher()\n'+\
-                    '\n'
-
-
     def __init__(self):
         super(J_outPutTool, self).__init__()
         self.setupUi(self)
@@ -316,8 +30,10 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
 
     def mainUiInit(self):
         #配置表格属性
-        self.treeWidget_In.setColumnWidth(0, 200)
+        self.treeWidget_In.setColumnWidth(0, 240)
         self.treeWidget_In.setColumnWidth(1, 150)
+        self.treeWidget_In.setColumnWidth(2, 150)
+        self.treeWidget_In.setColumnWidth(3, 550)
         headerLabelItem = [u'名称', u'中文名', u'和谐名',u'url']
         self.treeWidget_In.setHeaderLabels(headerLabelItem)
         self.treeWidget_Out.setHeaderLabels(headerLabelItem)
@@ -329,19 +45,17 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         #加载配置预设文件
         if os.path.exists(self.settingInit()):
             fileTemp = open(self.settingInit(), 'r')
-            inputPath = fileTemp.readline().replace('\n', '').decode('utf-8')
+            inputPath = fileTemp.readline().decode('utf-8').replace('\n','')
             #读取上次访问路径
             if os.path.exists(inputPath):
-                self.lineEdit_inPath.text=inputPath
-                self.lineEdit_outPath.text=fileTemp.readline()
+                self.lineEdit_inPath.setText(inputPath)
+                self.lineEdit_outPath.setText(fileTemp.readline().decode('utf-8').replace('\n',''))
+                self.unityPath=fileTemp.readline().decode('utf-8').replace('\n','')
                 self.workModel=int(fileTemp.readline().replace('workModel:',''))
             fileTemp.close()
-            #if self.workModel==0:
-
             # 初始化列表，根据设置选择svn模式或者本地文件模式
-                #self.J_addItem(inputPath, self.treeWidget_In)
-            if self.workModel==1:
-                self.J_readExcelToCreateUi()
+            self.J_treeWidgetInit()
+    #设置窗口
     def OpenSettingDialog(self):
         self.wChild=settingUI.Ui_settingDialog()
         self.Dialog=QtGui.QDialog(self)
@@ -350,19 +64,37 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             self.wChild.localModel_radioButton.setChecked(True)
         if self.workModel==1:
             self.wChild.svnModel_radioButton.setChecked(True)
-        self.wChild.pushButton_tempPath.clicked.connect(functools.partial(self.J_getPathToCtrl, self.wChild.lineEdit_tempPath))
+
         self.wChild.pushButton_source.clicked.connect(functools.partial(self.J_getPathToCtrl, self.wChild.lineEdit_source))
         self.wChild.pushButton_destination.clicked.connect(functools.partial(self.J_getPathToCtrl, self.wChild.lineEdit_destination))
+        self.wChild.pushButton_unityAssetPath.clicked.connect(functools.partial(self.J_getPathToCtrl, self.wChild.lineEdit_unityPath))
 
-        self.wChild.apply_pushButton.clicked.connect(self.Dialog.close)
+        self.wChild.lineEdit_source.setText(self.lineEdit_inPath.displayText())
+        self.wChild.lineEdit_destination.setText(self.lineEdit_outPath.displayText())
+        self.wChild.lineEdit_unityPath.setText(self.unityPath)
+        self.wChild.apply_pushButton.clicked.connect(self.SettingWinOkBtn)
         self.wChild.close_pushButton.clicked.connect(self.Dialog.close)
         self.Dialog.exec_()
+    #确认按钮
+    def SettingWinOkBtn(self):
+        if self.wChild.svnModel_radioButton.isChecked():
+            self.workModel=1
+        else:
+            self.workModel=0
+        self.lineEdit_inPath.setText(self.wChild.lineEdit_source.displayText())
+        self.lineEdit_outPath.setText(self.wChild.lineEdit_destination.displayText())
+        self.unityPath=self.wChild.lineEdit_unityPath.displayText()
+        self.J_treeWidgetInit()
+        self.Dialog.close()
 
     def settingInit(self):
         key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
                               r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
         settingFilePath = _winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/fileConvertSetting.ini'
+        
         return settingFilePath
+    def getMaxPathInSystem(self):
+        pass
     #写excel表格数据，根据硬盘文件目录填表#####################################################################
     def J_createExcelFromFile(self):
         excelFilePath = str(self.lineEdit_outPath.text()).decode('utf-8')+u'/modelInfo.xls'
@@ -374,7 +106,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         alignment.vert = xlwt.Alignment.VERT_CENTER
         style = xlwt.XFStyle()
         style.alignment = alignment
-        #print style.alignment.wrap
+
         style.alignment.wrap = 1
         count = 0
         count1 = 0
@@ -386,7 +118,6 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 r = os.popen(command)
                 temp = r.readline()
                 while (temp != '' and count2 < 5):
-                    print temp
                     count1 = count1 + 1
                     count2 = count2 + 1
                     if (temp.find('URL:') > -1):
@@ -406,76 +137,129 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         writeWorkBook.save(excelFilePath)
     ###########################################################################################################
     ###读excel创建ui
-    def J_readExcelToCreateUi(self):
-        xl = xlrd.open_workbook('c:/model/modelInfomation.xls')
-        table1 = xl.sheet_by_name(u"modelInfo")
-        rowCount= table1.nrows
-        for i in range(1,rowCount):
-            modelName=table1.cell(i,0).value
-            modelSvnPath=table1.cell(i,1).value
-            modelChineseName=table1.cell(i,3).value
+    def J_treeWidgetInit (self):
+        self.treeWidget_In.clear()
+        inPath=str(self.lineEdit_inPath.displayText()).replace('\n','').decode('utf-8')
+        outPath=str(self.lineEdit_outPath.displayText()).replace('\n','').decode('utf-8')
 
-            itemWid0 = QtGui.QTreeWidgetItem(self.treeWidget_In)
-            itemWid0.setText(0, modelName)
-            itemWid0.setText(1, modelSvnPath)
-            itemWid0.setText(2, modelChineseName)
-            #itemWid0.setTextAlignment(0, QtCore.Qt.AlignVCenter)
-            #itemWid0.setSizeHint(0,QtCore.QSize(10,20))
+        if outPath=='' or inPath=='':
+            return
+        if self.workModel>0:
+            #下载excel表和脚本
+            if not os.path.exists(outPath+'/svn/excel'):
+                os.makedirs(outPath+'/svn/excel')
+            if not os.path.exists(outPath+'/svn/excel/modelInfomation.xls'):
+                tempStr=(u'svn checkout http://svn.babeltime.com/repos/warships/warships/美术资源/舰娘/TA组/roleImporterHelper/excel '+outPath+u'/svn/excel').encode('gbk')
+                os.system(tempStr)
+            if not os.path.exists(outPath+'/svn/maxScript'):
+                tempStr = (u'svn checkout http://svn.babeltime.com/repos/warships/warships/美术资源/舰娘/TA组/roleImporterHelper/maxScript ' + outPath + u'/svn/maxScript').encode('gbk')
+                os.system(tempStr)
 
-            itemWid0.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-            itemWid0.setCheckState(1,QtCore.Qt.Unchecked);
-            itemWid1 = QtGui.QTreeWidgetItem(itemWid0)
-            itemWid1.setText(0,"aaa")
-            '''
-            ###############################
-            command = ('svn list --search '+modelName+'*.max \"' + modelSvnPath +  "\"").encode('gbk')
-            r = os.popen(command)
-            temp = r.readline()
-            tempCount=0
-            while (temp != '' and tempCount < 50):
-                #print temp
-                if temp!='\n':
-                    tempCount = tempCount + 1
-                    itemWid1 = QtGui.QTreeWidgetItem(itemWid0)
-                    itemWid1.setText(0, temp)
-                    temp = r.readline()
-            #################################
-            '''
+            if self.workModel>0:
+                xl = xlrd.open_workbook(outPath+'/svn/excel/modelInfomation.xls')
+                table1 = xl.sheet_by_name(u"modelInfo")
+                rowCount= table1.nrows
+                for i in range(1,rowCount):
+                    modelName=table1.cell(i,0).value.replace('\n','')
+                    modelSvnPath=table1.cell(i,1).value.replace('\n','')
+                    modelChineseName=table1.cell(i,3).value.replace('\n','')
+
+                    itemWid0 = QtGui.QTreeWidgetItem(self.treeWidget_In)
+                    itemWid0.setText(0, modelName)
+                    itemWid0.setText(1, modelChineseName)
+                    #itemWid0.setText(2, modelChineseName)
+                    itemWid0.setText(3, modelSvnPath)
+                    #itemWid0.setTextAlignment(0, QtCore.Qt.AlignVCenter)
+                    #itemWid0.setSizeHint(0,QtCore.QSize(10,20))
+
+                    itemWid0.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+                    itemWid0.setCheckState(1,QtCore.Qt.Unchecked)
+        if self.workModel==0:
+            for item in os.listdir(inPath):
+                if (os.path.isdir(inPath + '/' + item)):
+                    itemWid0 = QtGui.QTreeWidgetItem(self.treeWidget_In)
+                    itemWid0.setText(0, item)
+                    itemWid0.setText(3, inPath )
+                    itemWid0.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+                    itemWid0.setCheckState(1, QtCore.Qt.Unchecked)
+
     ###########################################################
+    #设置目录
     def J_getPath(self):
         self.treeWidget_In.clear()
-        filePath0 = QtGui.QFileDialog.getExistingDirectory(self)
+        temp = QtGui.QFileDialog()
+        temp.setDirectory(str(self.lineEdit_inPath.displayText()).decode('utf-8'))
+        filePath0 = temp.getExistingDirectory(self)
         filePath = str(filePath0.replace('\\', '/')).decode('utf-8')
-
-        self.J_addItem(filePath, self.treeWidget_In)
         self.lineEdit_inPath.setText(filePath0)
-
+        self.J_treeWidgetInit()
     def J_getPathToCtrl(self,ctrl):
         temp=QtGui.QFileDialog()
-        temp.setDirectory(ctrl.displayText())
+        temp.setDirectory(str(ctrl.displayText()).decode('utf-8'))
         filePath0 = temp.getExistingDirectory(self)
         if filePath0!='':
             ctrl.setText( filePath0.replace('\\', '/'))
 
 
     def J_addItem(self, j_path, j_rootParent):
-        allch = os.listdir(j_path)
-        for item in allch:
+        if os.path.isfile(j_path):
+            return
+        for item in os.listdir(j_path):
+            item=item.decode('gbk')
             if (os.path.isfile(j_path + "/" + item)):
                 if item.lower().endswith('.max') and item.lower().find("_001") > -1:
                     itemWid0 = QtGui.QTreeWidgetItem(j_rootParent)
                     itemWid0.setText(0, item)
-                    itemWid0.setText(2, j_path + "/" + item)
-
+                    itemWid0.setText(3, j_path )
             elif (os.path.isdir(j_path + '/' + item)):
                 itemWid0 = QtGui.QTreeWidgetItem(j_rootParent)
                 itemWid0.setText(0, item)
+                itemWid0.setText(3, j_path)
                 itemWid0.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
                 if (len(os.listdir(j_path + '/' + item)) > 0):
                     self.J_addItem((j_path + '/' + item), itemWid0)
 
-
-
+    def on_treeWidget_In_itemDoubleClicked(self,item,index):
+        inPath = str(self.lineEdit_inPath.displayText()).replace('\n', '').decode('utf-8')
+        outPath = str(self.lineEdit_outPath.displayText()).replace('\n', '').decode('utf-8')
+        #添加蒙皮文件
+        if item.childCount() == 0:
+            if self.workModel>0:
+                childList=self.J_getSvnListRes(unicode(item.text(0))+'*.max',unicode(item.text(3)))
+                for childItem in childList:
+                    itemWid1 = QtGui.QTreeWidgetItem(item)
+                    itemWid1.setText(0, childItem)
+                    itemWid1.setText(3, unicode(item.text(3)))
+                childList1 = self.J_getSvnListRes(u'表情*', unicode(item.text(3)))
+                for childItem in childList1:
+                    itemWid2 = QtGui.QTreeWidgetItem(item)
+                    itemWid2.setText(0, childItem)
+                    itemWid2.setText(3, unicode(item.text(3))+'/'+childItem)
+                if unicode(item.text(0)).find(u'表情')>-1:
+                    print unicode(item.text(0)).find(u'表情')
+                    childList2 = self.J_getSvnListRes(u'*.max', unicode(item.text(3)))
+                    for childItem in childList2:
+                        itemWid1 = QtGui.QTreeWidgetItem(item)
+                        itemWid1.setText(0, childItem)
+                        itemWid1.setText(3, unicode(item.text(3))+childItem)
+            else:
+                self.J_addItem(item.text(3)+'/'+item.text(0),item)
+        #添加表情文件夹
+    #查询svn文件，需要输入unicode格式字符串，并返回列表，unicode格式
+    def J_getSvnListRes(self,fileMask,svnPath):
+        command = ('svn list --search \"' + fileMask + '\" \"' + svnPath + '\"').encode('gbk')
+        print command.decode('gbk')
+        r = os.popen(command)
+        temp = r.readline().replace('\n','')
+        list=[]
+        tempCount = 0
+        while (temp != '' and tempCount < 150):
+            if temp!='\n':
+                tempCount = tempCount + 1
+                list.append(temp.decode('gbk'))
+                temp = r.readline().replace('\n','')
+        r.close()
+        return list
     # 整理目录###############################################################################
     def J_reMatchFilePath(self, inPath, inTextField, outTextField):
         outFile = inPath.replace(inTextField, outTextField).replace('.max', '.fbx')
@@ -622,11 +406,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         self.pushButton_SelectAll.clicked.connect(self.J_selectAllItem)
         self.pushButton_ExportTexture.clicked.connect(self.J_exportTexture)
         self.pushButton_ExportAnimation.clicked.connect(self.J_exportAnimation)
-        self.pushButton_AutoSelect.clicked.connect(self.J_autoSelect)
-        #self.pushButton_WriteExcel.clicked.connect(self.J_createExcelFromFile)
-        self.pushButton_WriteExcel.clicked.connect(self.J_readExcelToCreateUi)
-        #self.action_workModel.Triggered
 
+        #self.pushButton_WriteExcel.clicked.connect(self.J_createExcelFromFile)
     @QtCore.pyqtSlot()
     def on_action_workModel_triggered(self):
         self.OpenSettingDialog()
@@ -655,11 +436,12 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     def saveSettings(self):
         file = open(self.settingInit(), 'w')
         #保存选择的目录
-        pathToSave = str(self.lineEdit_inPath.text).decode('utf-8').replace('\n','') + '\n'
-        file.writelines(pathToSave, )
-        pathToSave = str(self.lineEdit_outPath.text).decode('utf-8').replace('\n','') + '\n'
-        file.writelines(pathToSave, )
-        file.writelines('workModel:'+str(self.workModel)+'\n', )
+        strToSave = str(self.lineEdit_inPath.displayText()) + '\n'
+        strToSave = strToSave+ str(self.lineEdit_outPath.displayText()) + '\n'
+        strToSave = strToSave+str(self.unityPath)+'\n'
+        strToSave = strToSave +'workModel:'+str(self.workModel)+'\n'
+
+        file.writelines(str(strToSave).encode('utf-8'), )
         file.close()
 
 def main():
