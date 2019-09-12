@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>479</width>
-    <height>313</height>
+    <height>328</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,7 +59,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>140</y>
+     <y>90</y>
      <width>331</width>
      <height>31</height>
     </rect>
@@ -69,7 +69,7 @@
    <property name="geometry">
     <rect>
      <x>380</x>
-     <y>140</y>
+     <y>90</y>
      <width>81</width>
      <height>31</height>
     </rect>
@@ -82,7 +82,7 @@
    <property name="geometry">
     <rect>
      <x>380</x>
-     <y>190</y>
+     <y>140</y>
      <width>81</width>
      <height>31</height>
     </rect>
@@ -95,7 +95,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>190</y>
+     <y>140</y>
      <width>331</width>
      <height>31</height>
     </rect>
@@ -104,7 +104,7 @@
   <widget class="QPushButton" name="apply_pushButton">
    <property name="geometry">
     <rect>
-     <x>280</x>
+     <x>270</x>
      <y>260</y>
      <width>81</width>
      <height>31</height>
@@ -127,27 +127,27 @@
     <string>cancel</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_tempPath">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>90</y>
-     <width>331</width>
-     <height>31</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_tempPath">
+  <widget class="QPushButton" name="pushButton_unityAssetPath">
    <property name="geometry">
     <rect>
      <x>380</x>
-     <y>90</y>
+     <y>190</y>
      <width>81</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
-    <string>TempPath</string>
+    <string>AssetPath</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_unityPath">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>190</y>
+     <width>331</width>
+     <height>31</height>
+    </rect>
    </property>
   </widget>
  </widget>

@@ -163,7 +163,7 @@
      <string>全选</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_AutoSelect">
+   <widget class="QPushButton" name="pushButton_deSelect">
     <property name="geometry">
      <rect>
       <x>135</x>
@@ -173,7 +173,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>智能选择</string>
+     <string>取消选择</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_ExportTexture">
