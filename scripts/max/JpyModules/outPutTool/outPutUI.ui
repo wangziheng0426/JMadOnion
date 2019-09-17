@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>assetManager</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label">
@@ -122,7 +122,7 @@
      <string>导出max绑定到fbx</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_MaxToBip">
+   <widget class="QPushButton" name="pushButton_DownFile">
     <property name="geometry">
      <rect>
       <x>620</x>
@@ -132,7 +132,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>导出max动画到bip</string>
+     <string>下载资源</string>
     </property>
    </widget>
    <widget class="QComboBox" name="comboBox">
@@ -144,11 +144,6 @@
       <height>22</height>
      </rect>
     </property>
-    <item>
-     <property name="text">
-      <string>max版本选择</string>
-     </property>
-    </item>
    </widget>
    <widget class="QPushButton" name="pushButton_SelectAll">
     <property name="geometry">
@@ -176,7 +171,7 @@
      <string>取消选择</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_ExportTexture">
+   <widget class="QPushButton" name="pushButton_ExportTextureAndAnimation">
     <property name="geometry">
      <rect>
       <x>260</x>
@@ -187,19 +182,6 @@
     </property>
     <property name="text">
      <string>导出贴图</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_ExportAnimation">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>610</y>
-      <width>110</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>导出动画</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="repairFacial">
