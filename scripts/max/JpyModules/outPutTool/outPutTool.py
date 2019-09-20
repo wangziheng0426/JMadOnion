@@ -37,8 +37,9 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         self.treeWidget_In.setColumnWidth(1, 150)
         self.treeWidget_In.setColumnWidth(2, 150)
         self.treeWidget_In.setColumnWidth(3, 550)
+        self.treeWidget_In.setColumnWidth(4, 550)
         self.setWindowTitle( "AssetManager1.1")
-        headerLabelItem = [u'名称', u'中文名', u'和谐名',u'url']
+        headerLabelItem = [u'名称', u'中文名', u'和谐名',u'Model URL',u'Texture URL']
         self.treeWidget_In.setHeaderLabels(headerLabelItem)
         self.treeWidget_Out.setHeaderLabels(headerLabelItem)
         # 读取设置文件目录
@@ -50,12 +51,12 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             os.makedirs(os.getcwd() + '/dataFromSvn/excel')
         if not os.path.exists(os.getcwd() + '/dataFromSvn/excel/modelInfomation.xls'):
             tempStr = (
-                u'svn checkout http://svn.babeltime.com/repos/warships/warships/美术资源/舰娘/TA组/roleImporterHelper/excel ' + os.getcwd() + u'/dataFromSvn/excel').encode(
+                u'svn checkout http://svn.babeltime.com/repos/warships/warships/美术资源/舰娘/TA组/roleImporterHelper/excel \"' + os.getcwd() + u'/dataFromSvn/excel\"').encode(
                 'gbk')
             os.system(tempStr)
         if not os.path.exists(os.getcwd() + '/dataFromSvn/maxScript'):
             tempStr = (
-                u' svn checkout http://svn.babeltime.com/repos/warships/warships/美术资源/舰娘/TA组/roleImporterHelper/maxScript ' + os.getcwd() + u'/dataFromSvn/maxScript').encode(
+                u' svn checkout http://svn.babeltime.com/repos/warships/warships/美术资源/舰娘/TA组/roleImporterHelper/maxScript \"' + os.getcwd() + u'/dataFromSvn/maxScript\"').encode(
                 'gbk')
             os.system(tempStr)
         # 加载max脚本。
@@ -179,12 +180,13 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 modelName=table1.cell(i,0).value.replace('\n','')
                 modelSvnPath=table1.cell(i,1).value.replace('\n','')
                 modelChineseName=table1.cell(i,3).value.replace('\n','')
-
+                textureSvnPath = table1.cell(i, 2).value.replace('\n', '')
                 itemWid0 = QtGui.QTreeWidgetItem(self.treeWidget_In)
                 itemWid0.setText(0, modelName)
                 itemWid0.setText(1, modelChineseName)
                 #itemWid0.setText(2, modelChineseName)
                 itemWid0.setText(3, modelSvnPath)
+                itemWid0.setText(4, textureSvnPath)
                 #itemWid0.setTextAlignment(0, QtCore.Qt.AlignVCenter)
                 #itemWid0.setSizeHint(0,QtCore.QSize(10,20))
 
@@ -247,24 +249,28 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 mask=''
                 if (unicode(item.text(3)).find(u'表情'))<0:
                     mask=unicode(item.text(0))
-                childList=self.J_getSvnListRes(mask+'*.max',unicode(item.text(3)))
+                childList=self.J_getSvnListRes(mask+'*.max',str(item.text(3)).decode('utf-8'))
                 for childItem in childList:
                     itemWid1 = QtGui.QTreeWidgetItem(item)
                     itemWid1.setText(0, childItem)
                     itemWid1.setText(3, unicode(item.text(3)))
+                    itemWid1.setText(4, unicode(item.text(4)))
                 # 获取svn 上的表情文件夹
-                childList1 = self.J_getSvnListRes(u'表情*', unicode(item.text(3)))
+                childList1 = self.J_getSvnListRes(u'表情*', str(item.text(3)).decode('utf-8'))
                 for childItem in childList1:
                     itemWid2 = QtGui.QTreeWidgetItem(item)
-                    itemWid2.setText(0, childItem)
-                    itemWid2.setText(3, unicode(item.text(3))+'/'+str(childItem))
+                    itemWid2.setText(0, childItem.replace('/',''))
+                    itemWid2.setText(3, unicode(item.text(3))+'/'+str(childItem.replace('/','')))
+                    itemWid2.setText(4, unicode(item.text(4)))
                     itemWid2.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
             else:
                 self.J_addItem(item.text(3)+'/'+item.text(0),item)
         #添加表情文件夹
     #查询svn文件，需要输入unicode格式字符串，并返回列表，unicode格式
-    def J_getSvnListRes(self,fileMask,svnPath):
+    def J_getSvnListRes(self,fileMask,svnPath,depth=False):
         command = ('svn list --search \"' + fileMask + '\" \"' + svnPath + '\"').encode('gbk')
+        if (depth):
+            command = ('svn list -R --search \"' + fileMask + '\" \"' + svnPath + '\"').encode('gbk')
         #print command.decode('gbk')
         r = os.popen(command)
         temp = r.readline().replace('\n','')
@@ -273,7 +279,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         while (temp != '' and tempCount < 150):
             if temp!='\n':
                 tempCount = tempCount + 1
-                list.append(temp.decode('gbk').replace('/',''))
+                list.append(temp.decode('gbk'))
                 temp = r.readline().replace('\n','')
         r.close()
         return list
@@ -321,35 +327,34 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 tempItem.setText(1, res)
                 tempItem.setText(2, destinationFilePath)
             else:
-                for item in itemsSelected:
-                    itemParent=item.parent()
-                    destinationFilePath = outTextField
-                    while(itemParent is not None):
-                        if (str(itemParent.text(0)).find(u'表情')<0):
-                            destinationFilePath=destinationFilePath+'/'+str(itemParent.text(0))
-                        itemParent = itemParent.parent()
-                    if not os.path.exists(destinationFilePath):
-                        os.makedirs(destinationFilePath)
-                    if os.path.exists(destinationFilePath+"/"+str(item.text(0))):
-                        os.remove(destinationFilePath+"/"+str(item.text(0)))
-                    #从svn下载文件
-                    tempStr = (u'svn export \"' +sourceFilePath +"\" \"" + destinationFilePath+"\"").encode('gbk')
-                    os.system(tempStr)
-                    #print tempStr.decode('gbk')
-                    #转换fbx
-                    if (convertToFbx):
-                        res = self.J_exportFbx(destinationFilePath+"/"+str(item.text(0)),
-                                               destinationFilePath+"/"+str(item.text(0).toLower().replace('.max','.fbx')),
-                                               scriptPath)
-                        tempItem = QtGui.QTreeWidgetItem(self.treeWidget_Out)
-                        tempItem.setText(0, item.text(0))
-                        tempItem.setText(1, res)
-                        tempItem.setText(2, destinationFilePath)
-                    else:
-                        tempItem = QtGui.QTreeWidgetItem(self.treeWidget_Out)
-                        tempItem.setText(0, item.text(0))
-                        tempItem.setText(1, u"文件已下载")
-                        tempItem.setText(2, destinationFilePath)
+                itemParent=item.parent()
+                destinationFilePath = outTextField
+                while(itemParent is not None):
+                    if (str(itemParent.text(0)).find(u'表情')<0):
+                        destinationFilePath=destinationFilePath+'/'+str(itemParent.text(0))
+                    itemParent = itemParent.parent()
+                if not os.path.exists(destinationFilePath):
+                    os.makedirs(destinationFilePath)
+                if os.path.exists(destinationFilePath+"/"+str(item.text(0))):
+                    os.remove(destinationFilePath+"/"+str(item.text(0)))
+                #从svn下载文件
+                tempStr = (u'svn export \"' +sourceFilePath +"\" \"" + destinationFilePath+"\"").encode('gbk')
+                os.system(tempStr)
+                #print tempStr.decode('gbk')
+                #转换fbx
+                if (convertToFbx):
+                    res = self.J_exportFbx(destinationFilePath+"/"+str(item.text(0)),
+                                           destinationFilePath+"/"+str(item.text(0).toLower().replace('.max','.fbx')),
+                                           scriptPath)
+                    tempItem = QtGui.QTreeWidgetItem(self.treeWidget_Out)
+                    tempItem.setText(0, item.text(0))
+                    tempItem.setText(1, res)
+                    tempItem.setText(2, destinationFilePath)
+                else:
+                    tempItem = QtGui.QTreeWidgetItem(self.treeWidget_Out)
+                    tempItem.setText(0, item.text(0))
+                    tempItem.setText(1, u"文件已下载")
+                    tempItem.setText(2, destinationFilePath)
         os.remove(scriptPath)
 
         # 转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
@@ -391,7 +396,26 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             self.J_findFileAndCopy('.fbx', sourceFilePath, destinationFilePath + '/Animation');
         else:
             for item in self.treeWidget_In.selectedItems():
-            J_getSvnListRes
+                self.downLoadFileFromSVN('.tga','Texture',item,4)
+                self.downLoadFileFromSVN('.png','Texture', item,4)
+                self.downLoadFileFromSVN('.fbx', 'Animation', item, 3)
+    def downLoadFileFromSVN(self,fileMask,subFolder,widgetItem,itemIndex):
+        fileSvnPath = str(widgetItem.text(itemIndex)).decode("utf-8")
+        fileList = self.J_getSvnListRes(fileMask, fileSvnPath, True)
+        itemParent = widgetItem.parent()
+        while (itemParent.parent() is not None):
+            itemParent = itemParent.parent()
+        textureFilePath = str(self.lineEdit_outPath.displayText()).decode('utf-8') + '/' \
+                          + str(itemParent.text(0)).decode('utf-8') + '/'+subFolder
+        if (not os.path.exists(textureFilePath)):
+            os.makedirs(textureFilePath)
+        for item1 in fileList:
+            if item1.lower().find('UnityShader')<0:
+                command = (u'svn export \"' + fileSvnPath + '/' + item1 + "\" \"" + textureFilePath + "\"").encode(
+                    'gbk')
+                print command
+                os.system(command)
+
     #按类型查询文件并拷贝到指定目录 参数：类型  搜索目录   目标目录
     def J_findFileAndCopy(self,fileType,inPutPath,outPutPath):
         for item in os.walk(inPutPath):
