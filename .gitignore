@@ -3,3 +3,5 @@
 J_living/
 /scripts/*.exe
 /scripts/*.pk
+/python/pyTools/build
+/python/pyTools/.idea

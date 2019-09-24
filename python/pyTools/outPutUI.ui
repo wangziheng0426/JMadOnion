@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1014</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>assetManager</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>输入路径选择</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_InPath">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>40</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>打开源目录</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_OutPath">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>40</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>打开目标目录</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>10</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>输出路径选择</string>
+    </property>
+   </widget>
+   <widget class="QTreeWidget" name="treeWidget_In">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>491</width>
+      <height>491</height>
+     </rect>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::MultiSelection</enum>
+    </property>
+    <column>
+     <property name="text">
+      <string>name</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>date</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QTreeWidget" name="treeWidget_Out">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>80</y>
+      <width>491</width>
+      <height>491</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>name</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>status</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QPushButton" name="pushButton_MaxToFbx">
+    <property name="geometry">
+     <rect>
+      <x>500</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>导出max绑定到fbx</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_DownFile">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>下载资源</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>580</y>
+      <width>491</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_SelectAll">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>全选</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_deSelect">
+    <property name="geometry">
+     <rect>
+      <x>135</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>取消选择</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_ExportTextureAndAnimation">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>610</y>
+      <width>110</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>导出贴图</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="repairFacial">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>580</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>RepairFacial</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_WriteExcel">
+    <property name="geometry">
+     <rect>
+      <x>736</x>
+      <y>610</y>
+      <width>131</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>整理表格</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="createMorpher">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>580</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CreateMorpher</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="exportToUnity">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>580</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>exportToUnity</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_inPath">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>391</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_outPath">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>40</y>
+      <width>391</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar_setting">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1014</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_setting">
+    <property name="title">
+     <string>设置</string>
+    </property>
+    <addaction name="action_workModel"/>
+   </widget>
+   <addaction name="menu_setting"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_workModel">
+   <property name="text">
+    <string>工作模式</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
