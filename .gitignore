@@ -5,3 +5,5 @@ J_living/
 /scripts/*.pk
 /python/pyTools/build
 /python/pyTools/.idea
+/python/pyTools/dataFromSvn
+/scripts/maya/J_file/spritesTexture/*.dir

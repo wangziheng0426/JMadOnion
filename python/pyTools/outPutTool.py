@@ -209,7 +209,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         temp.setDirectory(str(self.lineEdit_inPath.displayText()).decode('utf-8'))
         filePath0 = temp.getExistingDirectory(self)
         filePath = str(filePath0.replace('\\', '/')).decode('utf-8')
-        self.lineEdit_inPath.setText(filePath0)
+        self.lineEdit_inPath.setText(filePath)
         self.J_treeWidgetInit()
     #修改文本条内容
     def J_getPathToCtrl(self,ctrl):
