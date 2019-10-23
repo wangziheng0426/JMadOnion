@@ -70,12 +70,13 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.wChild.pushButton_cutVideo.clicked.connect(
             functools.partial(self.createNewJobToList, modelIndex))
         self.wChild.pushButton_nextVideo.clicked.connect(
-            functools.partial(self.saveSettingToTable, modelIndex))
+            functools.partial(self.saveSettingToTable, modelIndex,True))
         self.wChild.pushButton_delete.clicked.connect(
             functools.partial(self.deleteLine, modelIndex))
         self.win.exec_()
         #创建列表
     def createNewJobToList(self,modelIndex):
+        self.saveSettingToTable(modelIndex, False)
         rt = modelIndex.row()
         ct = modelIndex.column()
         mItem0 = QtGui.QStandardItem()
@@ -90,9 +91,9 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             self.model.setItem(rt+1,i,mItem1)
         self.model.item(rt + 1, 6).setText(self.model.item(rt,6).text()+'A')
 
-        self.saveSettingToTable(modelIndex)
+        self.saveSettingToTable(modelIndex,True)
         #保存参数
-    def saveSettingToTable(self,modelIndex):
+    def saveSettingToTable(self,modelIndex,goNext):
         st = self.wChild.lineEdit_st1.displayText() + ':' + self.wChild.lineEdit_st2.displayText() + ':' + self.wChild.lineEdit_st3.displayText()
         et = self.wChild.lineEdit_et1.displayText() + ':' + self.wChild.lineEdit_et2.displayText() + ':' + self.wChild.lineEdit_et3.displayText()
         crf= self.wChild.lineEdit_crf.displayText()
@@ -105,7 +106,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.model.item(modelIndex.row(), 5).setText(crf)
         self.win.close()
 
-        if modelIndex.row()<self.model.rowCount()-1:
+        if modelIndex.row()<self.model.rowCount()-1 and goNext:
             self.OpenCutSettingDialog(self.model.item(modelIndex.row()+1,0).index())
     def deleteLine(self,modelIndex):
         row = modelIndex.row()
