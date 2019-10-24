@@ -20,7 +20,7 @@ string $J_modelClearMCcommandName[]={"整理模型","单面显示","错误检查","选择边缘"
                                     "解锁所有属性","删除多余shape","清理无用节点","删除无连接材质",
                                     "单双面显示切换","删除无用uvset","整理法线"};
 string $J_modelClearMCcommand[]={"runModelClearMC","J_doubleFaceLight","J_modelClear_getInfoA","J_hardEdgeIm","J_symTool","J_deleteAllGroup",
-                                    "J_unLockAttrs()","J_removeShape","J_deleteJunkWin","J_deleteMat",
+                                    "J_unLockAttrs(`ls -sl`)","J_removeShape","J_deleteJunkWin","J_deleteMat",
                                     "J_doubleFaceLight","J_removeUV","J_modelClear_runRNor"};
 string $J_modelClearMC_btn[];
 if (`window -ex checkNodesWin`)
