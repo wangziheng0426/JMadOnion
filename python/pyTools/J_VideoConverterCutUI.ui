@@ -314,7 +314,12 @@
    </item>
    <item>
     <property name="text">
-     <string>1024*540</string>
+     <string>960*540</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>1024*576</string>
     </property>
    </item>
    <item>

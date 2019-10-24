@@ -83,10 +83,16 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             inputPath = fileTemp.readline().decode('utf-8').replace('\n','')
             #读取上次访问路径
             if os.path.exists(inputPath):
-                self.lineEdit_inPath.setText(inputPath)
-                self.lineEdit_outPath.setText(fileTemp.readline().decode('utf-8').replace('\n',''))
-                self.unityPath=fileTemp.readline().decode('utf-8').replace('\n','')
-                self.workModel=int(fileTemp.readline().replace('workModel:',''))
+                try:
+                    self.lineEdit_inPath.setText(inputPath)
+                    self.lineEdit_outPath.setText(fileTemp.readline().decode('utf-8').replace('\n',''))
+                    self.unityPath=fileTemp.readline().decode('utf-8').replace('\n','')
+                    self.workModel=int(fileTemp.readline().replace('workModel:',''))
+                except:
+                    self.lineEdit_inPath.setText('')
+                    self.lineEdit_outPath.setText('')
+                    self.unityPath = ''
+                    self.workModel = 0
             fileTemp.close()
             # 初始化列表，根据设置选择svn模式或者本地文件模式
             self.J_treeWidgetInit()
