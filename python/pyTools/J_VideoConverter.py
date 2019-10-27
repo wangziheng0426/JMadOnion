@@ -90,7 +90,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             mItem1.setText(self.model.item(rt,i).text())
             self.model.setItem(rt+1,i,mItem1)
         self.model.item(rt + 1, 6).setText(self.model.item(rt,6).text()+'A')
-
+        self.model.item(rt + 1, 2).setText('0:0:0')
         self.saveSettingToTable(modelIndex,True)
         #保存参数
     def saveSettingToTable(self,modelIndex,goNext):
