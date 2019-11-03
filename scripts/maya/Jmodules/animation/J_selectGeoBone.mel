@@ -1,0 +1,23 @@
+/////////////////////////////////////////////////////////////
+///\file J_selectGeoBone.mel
+///\brief 选择模型蒙皮的骨骼
+///
+///\author 桔
+///\version 1.0
+///\date  18:45 2019/11/1
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///选择模型蒙皮的骨骼
+global proc J_selectGeoBone()
+{
+    
+    string $sel[]=`ls  -sl`;
+    if (`objectType  $sel[0]`=="transform")
+    {
+    string $chs[]=`listRelatives -c -shapes  $sel[0]`;
+    string $skinClusters[]= `listConnections  -type skinCluster $chs[0]`;
+    select `listConnections   -type joint $skinClusters[0]`;
+    }
+}
