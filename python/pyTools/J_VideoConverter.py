@@ -239,7 +239,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     writeCombinFile.write(videoToCombin)
                     writeCombinFile.close()
                     allFile += ('c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n').encode('gbk') + "\n"
-        writeFileAll.write(allFile.encode('gbk'))
+        writeFileAll.write(allFile)
         writeFileAll.close()
         return allFile
 
