@@ -38,10 +38,10 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         self.treeWidget_In.setColumnWidth(2, 150)
         self.treeWidget_In.setColumnWidth(3, 550)
         self.treeWidget_In.setColumnWidth(4, 550)
-        self.setWindowTitle( "AssetManager1.1")
+        self.setWindowTitle( "AssetManager1.2")
         headerLabelItem = [u'名称', u'中文名', u'和谐名',u'Model URL',u'Texture URL']
         self.treeWidget_In.setHeaderLabels(headerLabelItem)
-        self.treeWidget_Out.setHeaderLabels(headerLabelItem)
+
         # 读取设置文件目录
         key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
                               r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
@@ -209,6 +209,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
 
     ###########################################################
     #设置目录
+    '''
     def J_getInputPath(self):
         self.treeWidget_In.clear()
         temp = QtGui.QFileDialog()
@@ -217,6 +218,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         filePath = str(filePath0.replace('\\', '/')).decode('utf-8')
         self.lineEdit_inPath.setText(filePath)
         self.J_treeWidgetInit()
+        '''
     #修改文本条内容
     def J_getPathToCtrl(self,ctrl):
         temp=QtGui.QFileDialog()
@@ -328,10 +330,6 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 if not os.path.exists(os.path.dirname(destinationFilePath)):
                     os.makedirs(os.path.dirname(destinationFilePath))
                 res = self.J_exportFbx(sourceFilePath, destinationFilePath, scriptPath)
-                tempItem = QtGui.QTreeWidgetItem(self.treeWidget_Out)
-                tempItem.setText(0, item.text(0))
-                tempItem.setText(1, res)
-                tempItem.setText(2, destinationFilePath)
             else:
                 itemParent=item.parent()
                 destinationFilePath = outTextField
@@ -346,23 +344,15 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 #从svn下载文件
                 tempStr = (u'svn export \"' +sourceFilePath +"\" \"" + destinationFilePath+"\"").encode('gbk')
                 os.system(tempStr)
-                #print tempStr.decode('gbk')
                 #转换fbx
                 if (convertToFbx):
                     res = self.J_exportFbx(destinationFilePath+"/"+str(item.text(0)),
                                            destinationFilePath+"/"+str(item.text(0).toLower().replace('.max','.fbx')),
                                            scriptPath)
-                    tempItem = QtGui.QTreeWidgetItem(self.treeWidget_Out)
-                    tempItem.setText(0, item.text(0))
-                    tempItem.setText(1, res)
-                    tempItem.setText(2, destinationFilePath)
-                else:
-                    tempItem = QtGui.QTreeWidgetItem(self.treeWidget_Out)
-                    tempItem.setText(0, item.text(0))
-                    tempItem.setText(1, u"文件已下载")
-                    tempItem.setText(2, destinationFilePath)
         os.remove(scriptPath)
-
+        msgBox = QtGui.QMessageBox.about(self, u'提示', u"转换完成")
+        msgBox.setWindowFlags(QtCore.Qt.CustomizeWindowHint)
+        msgBox.exec_()  # 模态对话框
         # 转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
         # 清除所有选择
         self.treeWidget_In.clearSelection();
@@ -434,17 +424,15 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
 
     ################################ 链接按钮
     def J_createSlots(self):
-        self.pushButton_InPath.clicked.connect(self.J_getInputPath)
-        self.pushButton_OutPath.clicked.connect(functools.partial(self.J_getPathToCtrl, self.lineEdit_outPath))
+        self.pushButton_InPath.clicked.connect(self.OpenSettingDialog)
+
         self.pushButton_MaxToFbx.clicked.connect(functools.partial(self.J_converMaxToFbx, True))
         self.pushButton_DownFile.clicked.connect(functools.partial(self.J_converMaxToFbx, False))
         self.pushButton_SelectAll.clicked.connect(self.J_selectAllItem)
         self.pushButton_ExportTextureAndAnimation.clicked.connect(self.J_exportTextureAndAnimation)
 
         #self.pushButton_WriteExcel.clicked.connect(self.J_createExcelFromFile)
-    @QtCore.pyqtSlot()
-    def on_action_workModel_triggered(self):
-        self.OpenSettingDialog()
+
     ################################ 链接按钮
     #全选，取消全选
     def J_selectAllItem(self):
