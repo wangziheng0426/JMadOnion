@@ -261,6 +261,7 @@ global proc J_runYetiCacheImportCache()
         if (!`objExists $nodeName`)
         {
             createNode "pgYetiMaya" -n $nodeName ;
+            connectAttr time1.outTime ( $nodeName + ".currentTime" );
         }
         string $attr=fgetword($fileId);
         setAttr -type "string" ($nodeName+".cacheFileName") $attr;
