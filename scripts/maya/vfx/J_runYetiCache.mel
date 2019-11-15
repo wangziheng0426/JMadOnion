@@ -193,10 +193,9 @@ global proc runYetiCacheAllBtn()
 //输出yeti缓存方法（节点名，缓存路径，缓存名，起始时间，结束时间，采样率）
 global proc runYetiCache(string $yetiMayaNode,string $yetiCachePath,string $yetiFileName,int $yetiCacheStartTime,int $yetiCacheEndTime,int $yetiSamples)
 {
-        $yetiCachePath=$yetiCachePath+"/"+substituteAllString($yetiMayaNode, ":", "_") ;
+        $yetiCachePath=$yetiCachePath;//+"/"+substituteAllString($yetiMayaNode, ":", "_") ;
         if(!`file -q -ex $yetiCachePath`)
         {sysFile -makeDir $yetiCachePath;}
-        //print ($yetiCachePath+"aaaaa\n");
         select $yetiMayaNode;
         setAttr ($yetiMayaNode+".fileMode") 0;
         string $temp=$yetiCachePath+"/"+$yetiFileName+"_%04d.fur";
@@ -218,7 +217,7 @@ global proc runYetiCachePlugs(string $yetiMayaNode[],string $yetiCachePath,strin
     }
     ///////////////////////////////
     select $yetiMayaNode;
-    string $yetiCacheName=$yetiCachePath+"/"+substituteAllString($yetiFileName, ":", "_")+"_<NAME>.%04d.fur";
+    string $yetiCacheName=$yetiCachePath+"/"+substituteAllString($yetiFileName, ":", "_")+"_<NAME>_%04d.fur";
     //print ($yetiCacheName+"    ccaaaa\n");
     pgYetiCommand -writeCache $yetiCacheName -range $yetiCacheStartTime $yetiCacheEndTime -samples $yetiSamples   ;
 
@@ -231,7 +230,7 @@ global proc runYetiCachePlugs(string $yetiMayaNode[],string $yetiCachePath,strin
         {
             $tempA+="_"+$ix;
         }
-        string $finalCacheName=$yetiCachePath+"/"+$yetiFileName+$tempA+".%04d.fur";
+        string $finalCacheName=$yetiCachePath+"/"+$yetiFileName+$tempA+"_%04d.fur";
         setAttr -type "string" ($i+".cacheFileName") $finalCacheName;
         setAttr ($i+".fileMode") 1;
     }
@@ -240,7 +239,8 @@ global proc J_runYetiCacheSaveLog()
 {
     string $allYeti[]=`ls -type pgYetiMaya`;
     string $logPath=`textField  -q -text  pathText`+"/yetiLog.txt";
-    //print $logPath;
+    python("JpyModules.vfx.J_yetiPlug.J_yetiCache(\""+$logPath+"\",False)");
+    /*
     $fileId=fopen($logPath,"w");
     string $strToWrite="";
     for ($item in $allYeti)
@@ -249,9 +249,12 @@ global proc J_runYetiCacheSaveLog()
         }
     fwrite($fileId,$strToWrite);
     fclose($fileId);
+    */
 }
 global proc J_runYetiCacheImportCache()
 {
+    python("JpyModules.vfx.J_yetiPlug.J_yetiCache(\"\",True)");
+    /*
     string $fileName[0]=`fileDialog2 -fileFilter "*.txt"`;
     $fileId=fopen($fileName[0],"r");
     string $temp=fgetword($fileId);
@@ -269,4 +272,5 @@ global proc J_runYetiCacheImportCache()
         $temp=fgetword($fileId);
     }
     fclose($fileId);
+    */
 }
