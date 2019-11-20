@@ -6,16 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>739</width>
-    <height>734</height>
+    <width>651</width>
+    <height>637</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="cw">
-   <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
      <widget class="QTableView" name="tableView_fileList">
       <property name="autoScroll">
        <bool>false</bool>
@@ -31,76 +31,119 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QCheckBox" name="checkBox_ignoreEnd">
-        <property name="text">
-         <string>忽略未定义结尾的文件</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QCheckBox" name="checkBox_ignoreEnd">
+          <property name="text">
+           <string>忽略未定义结尾的文件</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_shutdown">
+          <property name="text">
+           <string>自动关机</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_gogogo">
+          <property name="text">
+           <string>直接运行</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox_shutdown">
-        <property name="text">
-         <string>自动关机</string>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="2" column="0">
+         <widget class="QLineEdit" name="lineEdit_inputField">
+          <property name="inputMask">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QPushButton" name="pushButton_inputField">
+          <property name="text">
+           <string>读取源目录</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox_gogogo">
-        <property name="text">
-         <string>直接运行</string>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pushButton_openList">
+          <property name="text">
+           <string>打开</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="pushButton_convert">
+          <property name="text">
+           <string>转换</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="pushButton_saveList">
+          <property name="text">
+           <string>保存</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="pushButton_connect">
+          <property name="text">
+           <string>连接视频</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
-    <item row="2" column="0">
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="0">
-       <widget class="QLineEdit" name="lineEdit_inputField">
-        <property name="inputMask">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QPushButton" name="pushButton_inputField">
-        <property name="text">
-         <string>读取源目录</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+    <item>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
     </item>
-    <item row="3" column="0">
-     <layout class="QGridLayout" name="gridLayout_2">
+    <item>
+     <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
-       <widget class="QPushButton" name="pushButton_openList">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>打开</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="pushButton_convert">
-        <property name="text">
-         <string>转换</string>
+         <string>批量改名</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QPushButton" name="pushButton_saveList">
+       <widget class="QLineEdit" name="lineEdit_oriName">
         <property name="text">
-         <string>保存</string>
+         <string>源字符</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QPushButton" name="pushButton_connect">
+       <widget class="QLineEdit" name="lineEdit_desName">
         <property name="text">
-         <string>连接视频</string>
+         <string>目标字符</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QPushButton" name="pushButton_rename">
+        <property name="text">
+         <string>改！</string>
         </property>
        </widget>
       </item>
@@ -113,7 +156,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>739</width>
+     <width>651</width>
      <height>23</height>
     </rect>
    </property>

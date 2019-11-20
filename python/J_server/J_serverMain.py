@@ -23,7 +23,6 @@ class J_serverMain(QtGui.QMainWindow, J_centerServerUi.Ui_MainWindow):
 
     #设置窗口
     def OpenSettingDialog(self):
-        self.wChild=settingUI.Ui_settingDialog()
         self.Dialog=QtGui.QDialog(self)
         self.wChild.setupUi(self.Dialog)
         if self.workModel==0:
