@@ -242,8 +242,60 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         writeFileAll.write(allFile)
         writeFileAll.close()
         return allFile
+################################################批量改名功能
+    def J_renameFileWithStr(self):
+        jKey={str(self.lineEdit_oriName.displayText()).decode('utf-8')}
+        jNewKey = str(self.lineEdit_desName.displayText()).decode('utf-8')
+        jpPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
 
+        if not os.path.exists(jpPath):
+            return
+        allch = os.listdir(jpPath)
+        for item in allch:
+            if (os.path.isfile(jpPath + "/" + item)):
+                newName = item
+                for itemKey in jKey:
+                    if item.find(itemKey) > -1 and not item == itemKey:
+                        newName = newName.replace(itemKey, jNewKey)
+                if item != newName:
+                    try:
+                        os.rename(jpPath + '/' + item, jpPath + '/' + newName)
+                        print  (item + "-->" + newName)
+                    except:
+                        print item
+            elif (os.path.isdir(jpPath + '/' + item)):
+                if (len(os.listdir(jpPath + '/' + item)) > 0):
+                    self.J_renameFileWithStr(jKey, jNewKey, jpPath + '/' + item)
+                newName = item
+                for itemKey in jKey:
+                    if item.find(itemKey) > -1 and not item == itemKey:
+                        newName = newName.replace(itemKey, jNewKey)
+                if item != newName:
+                    try:
+                        os.rename(jpPath + '/' + item, jpPath + '/' + newName)
+                        print  (item + "-->" + newName)
+                    except:
+                        print item
 
+    ######################################################################################
+    def J_renameFileWithParFolder(jpPath):
+        jpPath = jpPath.replace('\\', '/')
+        allch = os.listdir(jpPath)
+        count = 0
+        for item in allch:
+            if (os.path.isfile(jpPath + "/" + item)):
+                newName = jpPath.split('/')[-1] + '_x' + str(count + 1) + '.' + item.split('.')[-1]
+                print newName
+                count += 1
+                try:
+                    os.rename(jpPath + '/' + item, jpPath + '/' + newName)
+                    print  (item + "-->" + newName)
+                except:
+                    print item
+            elif (os.path.isdir(jpPath + '/' + item)):
+                if (len(os.listdir(jpPath + '/' + item)) > 0):
+                    self.J_renameFileWithParFolder(jpPath + '/' + item)
+#####################################################################批量改名功能
     def createBatFile(self):
         strtowrite=''
         for i in range(0,self.tableView_fileList.model().rowCount()):
@@ -296,7 +348,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.pushButton_connect.clicked.connect(self.connectVideo)
         self.pushButton_saveList.clicked.connect(self.saveListToJfile)
         self.pushButton_openList.clicked.connect(self.loadListFromJfile)
-
+        self.pushButton_rename.clicked.connect(self.J_renameFileWithStr)
 
     def saveSettings(self):
         file = open(self.settingFilePath, 'w')
