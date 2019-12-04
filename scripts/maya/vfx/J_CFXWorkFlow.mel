@@ -29,10 +29,11 @@ if (`window -ex J_CFXWorkFlow`)
         ///////////////////////////布料
         frameLayout -cll 1 -cl 0 -h 600-l "布料工具"  J_nClothFrameLayout;
             formLayout  -numberOfDivisions 100  J_nClothFormLayout;
-                textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnClothSystemNode\")"  -allowMultiSelection 1 -h 123 J_allnClothSystemNode;
+                textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnClothSystemNode\")"  -allowMultiSelection 1 -h 163 J_allnClothSystemNode;
                 button -l "选择布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"nCloth\")" J_buNClothMark;
                 button -l "导出变型布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outInBetweenGeo()" J_buNClothOut;
                 button -l "导出abc布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
+                button -l "独立abc布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
                 button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
     /////////////////////////////////////////////////////////编辑窗体   
     formLayout -e 
@@ -70,8 +71,12 @@ if (`window -ex J_CFXWorkFlow`)
         -ac J_buNClothOutAbc top  1 J_buNClothOut
         -ap J_buNClothOutAbc right 0 100
         
+        -ap J_buNClothOutAbcSep left 0 67
+        -ac J_buNClothOutAbcSep top  1 J_buNClothOutAbc
+        -ap J_buNClothOutAbcSep right 0 100
+        
         -ap J_buNClothIn left 0 67
-        -ac J_buNClothIn top  1 J_buNClothOutAbc
+        -ac J_buNClothIn top  1 J_buNClothOutAbcSep
         -ap J_buNClothIn right 0 100
         J_nClothFormLayout;
 showWindow J_CFXWorkFlow;
@@ -102,6 +107,10 @@ global proc J_CFXWorkFlow_outInBetweenGeo()
 global proc J_CFXWorkFlow_outAbcGeo()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_outAbcGeo()");
+}
+global proc J_CFXWorkFlow_outAbcGeoSep()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_outAbcGeo(\"\",1)");
 }
 global proc J_CFXWorkFlow_nClothIn()
 {
