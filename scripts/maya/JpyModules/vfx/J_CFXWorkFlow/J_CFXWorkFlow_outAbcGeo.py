@@ -52,3 +52,15 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
     fileId.write(json.dumps(logStr))
     fileId.close()        
     os.startfile(finalPath)
+    
+def J_CFXWorkFlow_outAbcOrgGeoWithMat():
+    filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
+    cacheFileName='noName'
+    if cacheFileName =='':
+        cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
+    selectNodes=cmds.ls(sl=True,long=True)
+    finalPath=filePath+cacheFileName+'_cache/'
+    selectNodes=cmds.ls(sl=True,long=True)
+    for item in selectNodes:
+        newobj=cmds.duplicate(item)
+    mel.eval('file -force -options "v=0;" -typ "mayaBinary" -pr -es "'+finalPath+cacheFileName+'.mb";')
