@@ -40,6 +40,6 @@ def J_playBlast_addHUD(user,onOff=1):
         cmds.headsUpDisplay( 'HUDFrameRate', section=9, block=0, label=cmds.currentUnit(query=True,t=True),labelFontSize='large',dataFontSize='large',dataAlignment='left')
         
 #打开hud显示        
-J_playBlast_addHUD('user',1)
+#J_playBlast_addHUD('user',1)
 #关闭
 #J_playBlast_addHUD('user',0)
