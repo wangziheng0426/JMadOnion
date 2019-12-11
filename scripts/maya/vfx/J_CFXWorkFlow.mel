@@ -35,6 +35,7 @@ if (`window -ex J_CFXWorkFlow`)
                 button -l "导出abc布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
                 button -l "导出独立abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
                 button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
+                button -l "融合blend" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_JoinBlend()" J_buCreateBlend;
     /////////////////////////////////////////////////////////编辑窗体   
     formLayout -e 
         -ap J_allHairSystemNode left 0 1
@@ -78,6 +79,11 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_buNClothIn left 0 67
         -ac J_buNClothIn top  1 J_buNClothOutAbcSep
         -ap J_buNClothIn right 0 100
+        
+        -ap J_buCreateBlend left 0 67
+        -ac J_buCreateBlend top  1 J_buNClothIn
+        -ap J_buCreateBlend right 0 100
+        
         J_nClothFormLayout;
 showWindow J_CFXWorkFlow;
 J_CFXWorkFlow_init();
@@ -115,6 +121,10 @@ global proc J_CFXWorkFlow_outAbcGeoSep()
 global proc J_CFXWorkFlow_nClothIn()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_nClothIn()");
+}
+global proc J_CFXWorkFlow_JoinBlend()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_blendToSelectGeo()");
 }
 //////////////////////////////////////////////////////////////
 ///根据场景中的选择,选择列表中的节点
