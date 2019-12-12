@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import J_centerServerUi,
+import J_slaveUi
 import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools
 import _winreg
 
@@ -10,7 +10,7 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 
 
-class J_serverMain(QtGui.QMainWindow, J_centerServerUi.Ui_MainWindow):
+class J_serverMain(QtGui.QMainWindow, J_slaveUi.Ui_MainWindow):
     def __init__(self):
         super(J_serverMain, self).__init__()
         self.setupUi(self)
@@ -281,68 +281,12 @@ class J_serverMain(QtGui.QMainWindow, J_centerServerUi.Ui_MainWindow):
         self.treeWidget_In.clearSelection();
 
     # 导出bat脚本并执行
-    def J_exportFbx(self, sourceFilePath, destinationFilePath, scriptPath):
-        batFile = str(self.lineEdit_outPath.displayText()).decode('utf-8') + '/temp.bat'
-        if not (sourceFilePath)[-4:].lower() == '.max':  # or not (destinationFilePath)[-4:].lower()=='.fbx':
-            return u'导出失败，可能选择的文件不是max文件。'
-        # 默认读取max最高版本
-        selectedMaxVersion = self.maxVersion[str(self.comboBox.currentText())]
-        runText = '\"' + selectedMaxVersion + '\"  -q -mi -mxs "loadMaxFile @\\"' + sourceFilePath.replace('\\', '/') + \
-                  '\\"   quiet:true;global inputPath=@\\"' + destinationFilePath.replace('\\', '/') + '\\"; ' + \
-                  'filein @\\"' + scriptPath.replace('\\', '/') + '\\""'
-        sctorun = str(runText).decode('utf-8').encode('gbk')
+    def doTheJob(self, sourceFilePath, destinationFilePath, scriptPath):
+        pass
 
-        file = open(batFile, 'w')
-        file.write(sctorun, )
-        file.close()
-        os.system(batFile)  # 运行bat
-        os.remove(batFile)
-        return u'导出完成'
-    # 导出贴图  动画
-    def J_exportTextureAndAnimation(self):
-        if self.workModel<1:
-            inPath = str(self.lineEdit_inPath.displayText()).replace('\n', '').decode('utf-8')
-            outPath = str(self.lineEdit_outPath.displayText()).replace('\n', '').decode('utf-8')
-            sourceFilePath=''
-            for item in self.treeWidget_In.selectedItems():
-                itemParent = item.parent()
-                while (itemParent.parent() is not None):
-                    itemParent = itemParent.parent()
-            sourceFilePath=str(itemParent.text(3)+'/'+itemParent.text(0)).decode('utf-8')
-            destinationFilePath = self.J_reMatchFilePath(sourceFilePath, inPath, outPath)
-            self.J_findFileAndCopy('.png',sourceFilePath, destinationFilePath+'/Texture');
-            self.J_findFileAndCopy('.tga',sourceFilePath, destinationFilePath+'/Texture');
-            self.J_findFileAndCopy('.fbx', sourceFilePath, destinationFilePath + '/Animation');
-        else:
-            for item in self.treeWidget_In.selectedItems():
-                self.downLoadFileFromSVN('.tga','Texture',item,4)
-                self.downLoadFileFromSVN('.png','Texture', item,4)
-                self.downLoadFileFromSVN('.fbx', 'Animation', item, 3)
-    def downLoadFileFromSVN(self,fileMask,subFolder,widgetItem,itemIndex):
-        fileSvnPath = str(widgetItem.text(itemIndex)).decode("utf-8")
-        fileList = self.J_getSvnListRes(fileMask, fileSvnPath, True)
-        itemParent = widgetItem.parent()
-        while (itemParent.parent() is not None):
-            itemParent = itemParent.parent()
-        textureFilePath = str(self.lineEdit_outPath.displayText()).decode('utf-8') + '/' \
-                          + str(itemParent.text(0)).decode('utf-8') + '/'+subFolder
-        if (not os.path.exists(textureFilePath)):
-            os.makedirs(textureFilePath)
-        for item1 in fileList:
-            if item1.lower().find('UnityShader')<0:
-                command = (u'svn export \"' + fileSvnPath + '/' + item1 + "\" \"" + textureFilePath + "\"").encode(
-                    'gbk')
-                print command
-                os.system(command)
+    def downLoadFileToLocal(self,filePath ):
+        pass
 
-    #按类型查询文件并拷贝到指定目录 参数：类型  搜索目录   目标目录
-    def J_findFileAndCopy(self,fileType,inPutPath,outPutPath):
-        for item in os.walk(inPutPath):
-            for file in item[2]:
-                if str(file[-4:]).lower() == fileType:
-                    if not os.path.exists(outPutPath):
-                        os.makedirs(outPutPath)
-                    shutil.copy(os.path.join(item[0], file), outPutPath + '/' + file)
 
 
     ################################ 链接按钮
@@ -358,16 +302,10 @@ class J_serverMain(QtGui.QMainWindow, J_centerServerUi.Ui_MainWindow):
 
     ################################ 链接按钮
     #全选，取消全选
-    def J_selectAllItem(self):
-        if self.selectState == 0:
-            self.treeWidget_In.selectAll()
-            self.selectState = 1
-        else:
-            self.treeWidget_In.clearSelection()
-            self.selectState = 0
+
 
     # 写max脚本
-    def J_writeMaxScript(self, scriptStr, toolName):
+    def J_writeScript(self, scriptStr, toolName):
         filPath = os.getcwd().replace('\\', '/') + '/' + toolName + '.ms'
         f = open(filPath, 'w')
         f.write(scriptStr)
