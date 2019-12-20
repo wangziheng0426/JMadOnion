@@ -30,6 +30,6 @@ def J_CFXWorkFlow_blendToSelectGeo():
     desList=cmds.listRelatives(selectNodes[1],children=True,fullPath=True)
     for i0 in sourceList:
         for i1 in desList:
-            if i0.split('|')[-1]==i1.split('|')[-1]:
+            if i0.split('|')[-1]==i1.split('|')[-1].split(':')[-1]:
                 temp=cmds.blendShape(i0,i1)
                 cmds.blendShape( temp,edit=True, weight=[(0,1.0)] )
