@@ -54,11 +54,13 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 u'svn checkout http://svn.babeltime.com/repos/warships/warships/美术资源/舰娘/TA组/roleImporterHelper/excel \"' + os.getcwd() + u'/dataFromSvn/excel\"').encode(
                 'gbk')
             os.system(tempStr)
+        os.system('svn update ' + os.getcwd() + '/dataFromSvn/excel/modelInfomation.xls')
         if not os.path.exists(os.getcwd() + '/dataFromSvn/maxScript'):
             tempStr = (
                 u' svn checkout http://svn.babeltime.com/repos/warships/warships/美术资源/舰娘/TA组/roleImporterHelper/maxScript \"' + os.getcwd() + u'/dataFromSvn/maxScript\"').encode(
                 'gbk')
             os.system(tempStr)
+        os.system(os.getcwd() + '/dataFromSvn/maxScript')
         # 加载max脚本。
         scriptFile = open(os.getcwd() + '/dataFromSvn/maxScript/J_convertMaxToFbx.ms','r')
         self.maxToFbxScript = scriptFile.read()
@@ -234,7 +236,9 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         for item in os.listdir(j_path):
             item=item.decode('gbk')
             if (os.path.isfile(j_path + "/" + item)):
-                if item.lower().endswith('.max') and item.lower().find("_001") > -1:
+                #不显示动画文件
+                #if item.lower().endswith('.max') and item.lower().find("_001") :
+                if item.lower().endswith('.max') :
                     itemWid0 = QtGui.QTreeWidgetItem(j_rootParent)
                     itemWid0.setText(0, item)
                     itemWid0.setText(3, j_path )
@@ -255,8 +259,9 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             if self.workModel>0 :
                 #获取svn 上的max文件
                 mask=''
-                if (unicode(item.text(3)).find(u'表情'))<0:
-                    mask=unicode(item.text(0))
+                #筛选文件
+                #if (unicode(item.text(3)).find(u'表情'))<0:
+                 #   mask=unicode(item.text(0))
                 childList=self.J_getSvnListRes(mask+'*.max',str(item.text(3)).decode('utf-8'))
                 for childItem in childList:
                     itemWid1 = QtGui.QTreeWidgetItem(item)
