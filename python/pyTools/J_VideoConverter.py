@@ -207,6 +207,8 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     mItem0.setEditable(False)
                     print item0[item1] + ":" + item0[item1].encode('utf-8')
                 mItem0.setText(item0[item1])
+                if item1=='path':
+                    mItem0.setText(str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/' + str(item0[item1]))
 
                 self.model.setItem(rowCount, colCount, mItem0)
                 colCount=colCount+1
@@ -219,37 +221,55 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.tableView_fileList.setColumnWidth(5, 40)
         self.tableView_fileList.setColumnWidth(6, 40)
         self.tableView_fileList.setColumnWidth(7, 360)
-    def connectVideo(self):
+    def connectVideo(self,state=False):
         inPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
         allFile = ''
         writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w')
-        for item in os.walk(inPath):
-            for items in item[2]:
-                if items.find('_jcA.mp4') > -1:
-                    combinFileListName = item[0].replace('\\', '/') + '/' + items.replace('_jcA.mp4', '_combinJ.Cbn')
-                    combinFileName = item[0].replace('\\', '/') + '/' + items.replace('_jcA.mp4', '_combinJ.mp4')
-                    stringToFind = items.replace('A.mp4', '')
+        if (state):
+            self.findSimilarFileInFolder(inPath)
+        else :
+            for item in os.walk(inPath):
+                for items in item[2]:
+                    if items.find('_A.mp4') > -1:
+                        combinFileListName = item[0].replace('\\', '/') + '/' + items.replace('_A.mp4', '_combinJ.Cbn')
+                        combinFileName = item[0].replace('\\', '/') + '/' + items.replace('_A.mp4', '_combinJ.mp4')
+                        stringToFind = items.replace('A.mp4', '')
 
-                    writeCombinFile = open(combinFileListName, 'w')
-                    videoToCombin = ''
-                    for itemx in os.listdir(item[0]):
-                        if itemx.find(stringToFind) > -1:
-                            videoToCombin += ('file \'' + itemx + '\'\n').encode('gbk')
+                        writeCombinFile = open(combinFileListName, 'w')
+                        videoToCombin = ''
+                        for itemx in os.listdir(item[0]):
+                            if itemx.find(stringToFind) > -1:
+                                videoToCombin += ('file \'' + itemx + '\'\n').encode('gbk')
 
-                    writeCombinFile.write(videoToCombin)
-                    writeCombinFile.close()
-                    allFile += ('c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n').encode('gbk') + "\n"
+                        writeCombinFile.write(videoToCombin)
+                        writeCombinFile.close()
+                        allFile += ('c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n').encode('gbk') + "\n"
         writeFileAll.write(allFile)
         writeFileAll.close()
         return allFile
+    ###########在文件夹中查询相似前缀文件
+    def findSimilarFileInFolder(self,inPath):
+        if not os.path.exists(inPath):
+            return
+        for item in os.walk(inPath):
+            for folder in item[1]:
+                subpath=item[0].replace('\\','/')+'/'+folder
+                print subpath
 ################################################批量改名功能
-    def J_renameFileWithStr(self):
-        jKey={str(self.lineEdit_oriName.displayText()).decode('utf-8')}
-        jNewKey = str(self.lineEdit_desName.displayText()).decode('utf-8')
-        jpPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
-
+    def J_renameFileWithStr(self,jKey,jNewKey,jpPath):
+        print 'aaaaa'
+        if len(jKey)==0:
+            temp=str(self.lineEdit_oriName.displayText()).decode('utf-8')
+            jKey=[]
+            for i in temp.split(','):
+                jKey.append(i)
+        if jNewKey=='':
+            jNewKey = str(self.lineEdit_desName.displayText()).decode('utf-8')
+        if jpPath=='':
+            jpPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
         if not os.path.exists(jpPath):
             return
+        #print jKey,jNewKey,jpPath
         allch = os.listdir(jpPath)
         for item in allch:
             if (os.path.isfile(jpPath + "/" + item)):
@@ -276,16 +296,20 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                         print  (item + "-->" + newName)
                     except:
                         print item
-
+        self.listAllVideoFiles()
     ######################################################################################
-    def J_renameFileWithParFolder(jpPath):
+    def J_renameFileWithParFolder(self,jpPath):
+        if jpPath=='':
+            jpPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
         jpPath = jpPath.replace('\\', '/')
         allch = os.listdir(jpPath)
         count = 0
         for item in allch:
             if (os.path.isfile(jpPath + "/" + item)):
-                newName = jpPath.split('/')[-1] + '_x' + str(count + 1) + '.' + item.split('.')[-1]
-                print newName
+                if (len(item.split('.')) > 1):
+                    newName = jpPath.split('/')[-1] + '_' + str(count + 1) + '.' + item.split('.')[-1]
+                else:
+                    newName = jpPath.split('/')[-1] + '_' + str(count + 1) + '.mp4'
                 count += 1
                 try:
                     os.rename(jpPath + '/' + item, jpPath + '/' + newName)
@@ -295,7 +319,9 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             elif (os.path.isdir(jpPath + '/' + item)):
                 if (len(os.listdir(jpPath + '/' + item)) > 0):
                     self.J_renameFileWithParFolder(jpPath + '/' + item)
-#####################################################################批量改名功能
+
+            self.listAllVideoFiles()
+                #####################################################################批量改名功能
     def createBatFile(self):
         strtowrite=''
         for i in range(0,self.tableView_fileList.model().rowCount()):
@@ -348,7 +374,9 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.pushButton_connect.clicked.connect(self.connectVideo)
         self.pushButton_saveList.clicked.connect(self.saveListToJfile)
         self.pushButton_openList.clicked.connect(self.loadListFromJfile)
-        self.pushButton_rename.clicked.connect(self.J_renameFileWithStr)
+        self.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr, [],'',''))
+        self.pushButton_rename_2.clicked.connect(functools.partial(self.J_renameFileWithParFolder, ''))
+
 
     def saveSettings(self):
         file = open(self.settingFilePath, 'w')

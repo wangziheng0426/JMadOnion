@@ -6,16 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>651</width>
-    <height>637</height>
+    <width>671</width>
+    <height>706</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="cw">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="0" column="0">
      <widget class="QTableView" name="tableView_fileList">
       <property name="autoScroll">
        <bool>false</bool>
@@ -31,7 +31,7 @@
       </property>
      </widget>
     </item>
-    <item>
+    <item row="1" column="0">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
@@ -110,14 +110,7 @@
       </item>
      </layout>
     </item>
-    <item>
-     <widget class="Line" name="line">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
+    <item row="2" column="0">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
@@ -126,21 +119,28 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="1" column="0" colspan="2">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QLineEdit" name="lineEdit_oriName">
         <property name="text">
          <string>源字符</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QLineEdit" name="lineEdit_desName">
         <property name="text">
          <string>目标字符</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="3" column="0" colspan="2">
        <widget class="QPushButton" name="pushButton_rename">
         <property name="text">
          <string>改！</string>
@@ -149,6 +149,13 @@
       </item>
      </layout>
     </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="pushButton_rename_2">
+      <property name="text">
+       <string>使用父文件夹名作为文件名</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -156,7 +163,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>651</width>
+     <width>671</width>
      <height>23</height>
     </rect>
    </property>
