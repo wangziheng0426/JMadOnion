@@ -180,11 +180,16 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 
     def saveListToJfile(self):
         writeFileAll = open((str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/' + 'saveJob.jm'), 'w')
+        inputPath=str(self.lineEdit_inputField.displayText()).decode('utf-8')
         allFile=[]
         for iRow in range(0,self.model.rowCount()):
             row={}
             for iCol in range(0,8):
-                row[str(self.model.headerData(iCol,1).toString()).decode('utf-8')]=str(self.model.item(iRow,iCol).text()).decode('utf-8')
+                row[str(self.model.headerData(iCol,1).toString()).decode('utf-8')]=\
+                    str(self.model.item(iRow,iCol).text()).decode('utf-8')
+                if str(self.model.headerData(iCol,1).toString()).decode('utf-8')=='path':
+                    row[str(self.model.headerData(iCol, 1).toString()).decode('utf-8')] =\
+                        str(self.model.item(iRow, iCol).text()).decode('utf-8').replace(inputPath,'')
             allFile.append(row)
         writeFileAll.write(json.dumps(allFile))
         writeFileAll.close()
@@ -205,11 +210,10 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 mItem0 = QtGui.QStandardItem()
                 if item1==u'name':
                     mItem0.setEditable(False)
-                    print item0[item1] + ":" + item0[item1].encode('utf-8')
+
                 mItem0.setText(item0[item1])
                 if item1=='path':
-                    mItem0.setText(str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/' + str(item0[item1]))
-
+                    mItem0.setText(str(self.lineEdit_inputField.displayText()).decode('utf-8')  + str(item0[item1]))
                 self.model.setItem(rowCount, colCount, mItem0)
                 colCount=colCount+1
             rowCount=rowCount+1
