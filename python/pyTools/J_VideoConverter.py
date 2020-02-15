@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import J_VideoConverterUI,J_VideoConverterCutUI
-import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json
+import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json,re
 import _winreg
 
 reload(sys)
@@ -83,13 +83,14 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         mItem0.setText(self.model.item(rt,0).text())
         mItem0.setEditable(False)
         self.model.insertRow(rt+1, mItem0)
-        if str(self.model.item(rt,6).text())=='_jc':
-            self.model.item(rt, 6).setText('_jcA')
+        #if str(self.model.item(rt,6).text())=='_jc':
+         #   self.model.item(rt, 6).setText('_jcA')
         for i in range(1,self.model.columnCount()):
             mItem1 = QtGui.QStandardItem()
             mItem1.setText(self.model.item(rt,i).text())
             self.model.setItem(rt+1,i,mItem1)
-        self.model.item(rt + 1, 6).setText(self.model.item(rt,6).text()+'A')
+        index=int(str(self.model.item(rt,6).text()).replace('_',''))
+        self.model.item(rt + 1, 6).setText("_%03d"% (index+1))
         self.model.item(rt + 1, 2).setText('0:0:0')
         self.saveSettingToTable(modelIndex,True)
         #保存参数
@@ -160,7 +161,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                         self.model.setItem(rowCount, 5, mItem3)
 
                         mItem4 = QtGui.QStandardItem()
-                        mItem4.setText('_jc')
+                        mItem4.setText('_001')
                         self.model.setItem(rowCount, 6, mItem4)
 
                         mItem3 = QtGui.QStandardItem()
@@ -225,29 +226,43 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.tableView_fileList.setColumnWidth(5, 40)
         self.tableView_fileList.setColumnWidth(6, 40)
         self.tableView_fileList.setColumnWidth(7, 360)
-    def connectVideo(self,state=False):
+    def connectVideo(self):
         inPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
         allFile = ''
         writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w')
-        if (state):
-            self.findSimilarFileInFolder(inPath)
-        else :
-            for item in os.walk(inPath):
-                for items in item[2]:
-                    if items.find('_A.mp4') > -1:
-                        combinFileListName = item[0].replace('\\', '/') + '/' + items.replace('_A.mp4', '_combinJ.Cbn')
-                        combinFileName = item[0].replace('\\', '/') + '/' + items.replace('_A.mp4', '_combinJ.mp4')
-                        stringToFind = items.replace('A.mp4', '')
+        '''
+        for item in os.walk(inPath):
+            for folder in item[1]:
+                fileDic=self.findSimilarFileInFolder(item[0].replace('\\', '/')+ '/'  +folder)
+                if fileDic:
+                    for key in fileDic:
+                        combinFileListName = item[0].replace('\\', '/') + '/' +folder+'/'+key+ '_combinJ.Cbn'
+                        combinFileName = item[0].replace('\\', '/') + '/'+folder+'/' + key + '_combinJ.mp4'
 
-                        writeCombinFile = open(combinFileListName, 'w')
-                        videoToCombin = ''
-                        for itemx in os.listdir(item[0]):
-                            if itemx.find(stringToFind) > -1:
-                                videoToCombin += ('file \'' + itemx + '\'\n').encode('gbk')
-
-                        writeCombinFile.write(videoToCombin)
-                        writeCombinFile.close()
-                        allFile += ('c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n').encode('gbk') + "\n"
+                        if len(fileDic[key])>1:
+                            videoToCombin = ''
+                            for fileItem in fileDic[key]:
+                                videoToCombin += ('file \'' + fileItem + '\'\n').encode('gbk')
+                            writeCombinFile = open(combinFileListName, 'w')
+                            writeCombinFile.write(videoToCombin)
+                            writeCombinFile.close()
+                            allFile += ('c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n').encode('gbk') + "\n"
+        '''
+        fileDic = self.findSimilarFileInList()
+        if fileDic:
+            for key in fileDic:
+                if len(fileDic[key]) > 2:
+                    combinFileListName = fileDic[key][0]+ '/' + key + '_combinJ.Cbn'
+                    combinFileName = fileDic[key][0] + '/' + key + '_combinJ.mp4'
+                    videoToCombin = ''
+                    for i in range(1,len(fileDic[key])):
+                        videoToCombin += ('file \'' + fileDic[key][i] + '\'\n').encode('gbk')
+                    writeCombinFile = open(combinFileListName, 'w')
+                    writeCombinFile.write(videoToCombin)
+                    writeCombinFile.close()
+                    allFile += (
+                               'c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n').encode(
+                        'gbk') + "\n"
         writeFileAll.write(allFile)
         writeFileAll.close()
         return allFile
@@ -255,13 +270,28 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     def findSimilarFileInFolder(self,inPath):
         if not os.path.exists(inPath):
             return
-        for item in os.walk(inPath):
-            for folder in item[1]:
-                subpath=item[0].replace('\\','/')+'/'+folder
-                print subpath
+        res={}
+
+        for  item1 in os.listdir(inPath):
+            print item1
+            if os.path.isfile(inPath+'/'+item1):
+                if re.match(r'_[0-9]*',item1) is not 'none':
+                    if not res.has_key('_'.join(item1.split('_')[0:-1])):
+                        res['_'.join(item1.split('_')[0:-1])]=[]
+                    res['_'.join(item1.split('_')[0:-1])].append(item1)
+        return res
+    def findSimilarFileInList(self):
+        res = {}
+        for iRow in range(0,self.model.rowCount()):
+            fileName=str(self.model.item(iRow, 0).text())
+            filePath = str(self.model.item(iRow, 7).text()).replace(fileName,'')
+            if re.match(r'_[0-9]*', fileName) is not 'none':
+                if not res.has_key('_'.join(fileName.split('_')[0:-1])):
+                    res['_'.join(fileName.split('_')[0:-1])] = [filePath]
+                res['_'.join(fileName.split('_')[0:-1])].append(fileName)
+        return res
 ################################################批量改名功能
     def J_renameFileWithStr(self,jKey,jNewKey,jpPath):
-        print 'aaaaa'
         if len(jKey)==0:
             temp=str(self.lineEdit_oriName.displayText()).decode('utf-8')
             jKey=[]
