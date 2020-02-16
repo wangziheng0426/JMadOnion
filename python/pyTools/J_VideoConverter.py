@@ -13,7 +13,7 @@ from PyQt4 import QtCore
 class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     settingFilePath=''
     model = QtGui.QStandardItemModel()
-    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov']
+    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','.m2ts']
     def __init__(self):
         super(J_VideoConverter, self).__init__()
         self.setupUi(self)
@@ -113,7 +113,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         row = modelIndex.row()
         self.model.removeRow(modelIndex.row())
         self.win.close()
-        if modelIndex.row()<self.model.rowCount()-1:
+        if row<self.model.rowCount()-1:
             self.OpenCutSettingDialog(self.model.item(row,0).index())
     #主窗口功能
     def getDirectory(self):
