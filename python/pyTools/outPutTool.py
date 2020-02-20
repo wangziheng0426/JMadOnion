@@ -308,7 +308,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             destinationFilePath = destinationFilePath[0:-1]
         if destinationFileName.endswith('_'):
             destinationFileName = destinationFileName[0:-1]
-        return destinationFilePath + '/' + destinationFileName
+        return destinationFilePath  + destinationFileName
 
     #############################################################################################
     # 转换max文件到fbx按钮命令
