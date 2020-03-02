@@ -252,17 +252,17 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         if fileDic:
             for key in fileDic:
                 if len(fileDic[key]) > 2:
-                    combinFileListName = fileDic[key][0]+ '/' + key + '_combinJ.Cbn'
-                    combinFileName = fileDic[key][0] + '/' + key + '_combinJ.mp4'
+                    combinFileListName = fileDic[key][0] + key + '_combinJ.Cbn'
+                    combinFileName = fileDic[key][0]  + key + '_combinJ.mp4'
                     videoToCombin = ''
                     for i in range(1,len(fileDic[key])):
-                        videoToCombin += ('file \'' + fileDic[key][i] + '\'\n').encode('gbk')
-                    writeCombinFile = open(combinFileListName, 'w')
+                        videoToCombin += ('file \'' + fileDic[key][i] + '\'\n').encode('utf-8')
+                    writeCombinFile = open(combinFileListName.encode('gbk'), 'w')
                     writeCombinFile.write(videoToCombin)
                     writeCombinFile.close()
-                    allFile += (
-                               'c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n').encode(
-                        'gbk') + "\n"
+                    allFile +=('c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n").encode('gbk')
+                    print allFile
+                    print type(allFile)
         writeFileAll.write(allFile)
         writeFileAll.close()
         return allFile
@@ -344,6 +344,8 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     newName = jpPath.split('/')[-1] + '_' + str(count + 1) + '.' + item.split('.')[-1]
                 else:
                     newName = jpPath.split('/')[-1] + '_' + str(count + 1) + '.mp4'
+                if len(allch)==1:
+                    newName = jpPath.split('/')[-1]   + '.mp4'
                 count += 1
                 try:
                     os.rename(jpPath + '/' + item, jpPath + '/' + newName)
