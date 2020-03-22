@@ -230,24 +230,6 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         inPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
         allFile = ''
         writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w')
-        '''
-        for item in os.walk(inPath):
-            for folder in item[1]:
-                fileDic=self.findSimilarFileInFolder(item[0].replace('\\', '/')+ '/'  +folder)
-                if fileDic:
-                    for key in fileDic:
-                        combinFileListName = item[0].replace('\\', '/') + '/' +folder+'/'+key+ '_combinJ.Cbn'
-                        combinFileName = item[0].replace('\\', '/') + '/'+folder+'/' + key + '_combinJ.mp4'
-
-                        if len(fileDic[key])>1:
-                            videoToCombin = ''
-                            for fileItem in fileDic[key]:
-                                videoToCombin += ('file \'' + fileItem + '\'\n').encode('gbk')
-                            writeCombinFile = open(combinFileListName, 'w')
-                            writeCombinFile.write(videoToCombin)
-                            writeCombinFile.close()
-                            allFile += ('c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n').encode('gbk') + "\n"
-        '''
         fileDic = self.findSimilarFileInList()
         if fileDic:
             for key in fileDic:
@@ -285,7 +267,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         for iRow in range(0,self.model.rowCount()):
             fileName=str(self.model.item(iRow, 0).text())
             filePath = str(self.model.item(iRow, 7).text()).replace(fileName,'')
-            if re.match(r'_[0-9]*', fileName) is not 'none':
+            if re.match(r'_[0-9]*', fileName) is not None:
                 if not res.has_key('_'.join(fileName.split('_')[0:-1])):
                     res['_'.join(fileName.split('_')[0:-1])] = [filePath]
                 res['_'.join(fileName.split('_')[0:-1])].append(fileName)
