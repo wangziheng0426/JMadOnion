@@ -266,7 +266,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         res = {}
         for iRow in range(0,self.model.rowCount()):
             fileName=str(self.model.item(iRow, 0).text())
-            filePath = str(self.model.item(iRow, 7).text()).replace(fileName,'')
+            filePath = str(self.model.item(iRow, 7).text()).replace(fileName,'')[0:-1]
             if re.match(r'_[0-9]*', fileName) is not None:
                 if not res.has_key('_'.join(fileName.split('_')[0:-1])):
                     res['_'.join(fileName.split('_')[0:-1])] = [filePath]
@@ -312,6 +312,23 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                         print  (item + "-->" + newName)
                     except:
                         print item
+        self.listAllVideoFiles()
+    def J_renameFileNameFromList(self):
+        inPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
+        jKey=str(self.lineEdit_oriName.displayText()).decode('utf-8').split(',')
+        jNewKey = str(self.lineEdit_desName.displayText()).decode('utf-8')
+        for iRow in range(0, self.model.rowCount()):
+            fileName=str(self.model.item(iRow, 0).text())
+            jpPath=str(self.model.item(iRow, 7).text()).replace(fileName,'')
+            newFileName = fileName
+            for itemKey in jKey:
+                if fileName.find(itemKey) > -1 and not fileName == itemKey:
+                    newFileName = fileName.replace(itemKey, jNewKey)
+                if newFileName != fileName:
+                    try:
+                        os.rename(jpPath + fileName, jpPath  + newFileName)
+                    except:
+                        print (fileName + "rename failed")
         self.listAllVideoFiles()
     ######################################################################################
     def J_renameFileWithParFolder(self,jpPath):
@@ -393,6 +410,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.pushButton_saveList.clicked.connect(self.saveListToJfile)
         self.pushButton_openList.clicked.connect(self.loadListFromJfile)
         self.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr, [],'',''))
+        self.pushButton_renameL.clicked.connect(self.J_renameFileNameFromList)
         self.pushButton_rename_2.clicked.connect(functools.partial(self.J_renameFileWithParFolder, ''))
 
 

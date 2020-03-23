@@ -140,10 +140,17 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="3" column="0">
        <widget class="QPushButton" name="pushButton_rename">
         <property name="text">
-         <string>改！</string>
+         <string>搜索目录修改</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="pushButton_renameL">
+        <property name="text">
+         <string>搜索列表修改</string>
         </property>
        </widget>
       </item>
