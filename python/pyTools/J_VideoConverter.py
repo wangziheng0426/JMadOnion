@@ -257,7 +257,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         for  item1 in os.listdir(inPath):
             print item1
             if os.path.isfile(inPath+'/'+item1):
-                if re.match(r'_[0-9]*',item1) is not 'none':
+                if re.match(r'\S*_[0-9]*',item1) is not None:
                     if not res.has_key('_'.join(item1.split('_')[0:-1])):
                         res['_'.join(item1.split('_')[0:-1])]=[]
                     res['_'.join(item1.split('_')[0:-1])].append(item1)
@@ -266,8 +266,8 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         res = {}
         for iRow in range(0,self.model.rowCount()):
             fileName=str(self.model.item(iRow, 0).text())
-            filePath = str(self.model.item(iRow, 7).text()).replace(fileName,'')[0:-1]
-            if re.match(r'_[0-9]*', fileName) is not None:
+            filePath = str(self.model.item(iRow, 7).text()).replace(fileName,'')
+            if re.match(r'\S*_[0-9]*', fileName) is not None:
                 if not res.has_key('_'.join(fileName.split('_')[0:-1])):
                     res['_'.join(fileName.split('_')[0:-1])] = [filePath]
                 res['_'.join(fileName.split('_')[0:-1])].append(fileName)
