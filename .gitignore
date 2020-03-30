@@ -1,6 +1,7 @@
 *.pyc
 /J_Living/J_LivingSlave/.vs
-
+/J_Living/J_LivingSlave/bin/Debug
+/J_Living/J_LivingSlave/obj/Debug
 /scripts/*.exe
 /scripts/*.pk
 /python/pyTools/build
