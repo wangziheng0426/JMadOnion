@@ -296,7 +296,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 if item != newName:
                     try:
                         os.rename(jpPath + '/' + item, jpPath + '/' + newName)
-                        print  (item + "-->" + newName)
+                        print  (jpPath + '/' + item+"----"+jpPath + '/' + newName)
                     except:
                         print item
             elif (os.path.isdir(jpPath + '/' + item)):
@@ -318,14 +318,15 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         jKey=str(self.lineEdit_oriName.displayText()).decode('utf-8').split(',')
         jNewKey = str(self.lineEdit_desName.displayText()).decode('utf-8')
         for iRow in range(0, self.model.rowCount()):
-            fileName=str(self.model.item(iRow, 0).text())
-            jpPath=str(self.model.item(iRow, 7).text()).replace(fileName,'')
+            fileName=str(self.model.item(iRow, 0).text()).decode('utf-8')
+            jpPath=str(self.model.item(iRow, 7).text()).replace(fileName,'').decode('utf-8')
             newFileName = fileName
             for itemKey in jKey:
                 if fileName.find(itemKey) > -1 and not fileName == itemKey:
                     newFileName = fileName.replace(itemKey, jNewKey)
                 if newFileName != fileName:
                     try:
+                        print  (jpPath + fileName + "----" + jpPath + newFileName)
                         os.rename(jpPath + fileName, jpPath  + newFileName)
                     except:
                         print (fileName + "rename failed")
