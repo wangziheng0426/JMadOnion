@@ -10,4 +10,5 @@ namespace J_LivingSlave
     class J_JobManage
     {
     }
+
 }

@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="J_JobManage.cs" />
+    <Compile Include="J_JsonData.cs" />
     <Compile Include="J_NetWork.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
