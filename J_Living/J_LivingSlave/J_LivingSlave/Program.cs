@@ -19,9 +19,9 @@ namespace J_LivingSlave
 
             Console.WriteLine("Read setting file");
             
-            if (File.Exists(System.IO.Directory.GetCurrentDirectory() + @"/serverSetting.txt"))
+            if (File.Exists(Directory.GetCurrentDirectory() + @"/slaveSetting.txt"))
             {
-                string readSetting = File.ReadAllText(System.IO.Directory.GetCurrentDirectory() + @"/serverSetting.txt");
+                string readSetting = File.ReadAllText(Directory.GetCurrentDirectory() + @"/slaveSetting.txt");
                 try
                 { slave = JsonConvert.DeserializeObject<J_SlaveSetting>(readSetting); }
                 catch
@@ -29,9 +29,10 @@ namespace J_LivingSlave
                 }
                 
             }
-            if (File.Exists(System.IO.Directory.GetCurrentDirectory() + @"/softWareSetting.txt"))
+            slave.saveData(Directory.GetCurrentDirectory() + @"/slaveSetting.txt");
+            if (File.Exists(Directory.GetCurrentDirectory() + @"/softWareSetting.txt"))
             {
-                string readSetting = File.ReadAllText(System.IO.Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
+                string readSetting = File.ReadAllText(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
                 try
                 { softWares = JsonConvert.DeserializeObject<J_SoftWareSetting>(readSetting); }
                 catch
@@ -41,17 +42,18 @@ namespace J_LivingSlave
             }
             softWares.soft.Add(new J_softWareData("maya", "c:", "2018"));
             softWares.soft.Add(new J_softWareData("max", "c:x", "201x"));
-            softWares.saveData();
-            slave.saveData();
+            softWares.saveData(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
+            
             //test
 
             //test
 
             Console.WriteLine("ip:"+slave.slaveIp);
             Console.WriteLine("port:" + slave.slavePort);
+            Console.WriteLine("slave:" + slave.slaveName);
             Console.WriteLine("Start slave");
-
-            Console.ReadKey();
+            J_NetWork SlaveServer = new J_NetWork(slave.slaveIp, slave.slavePort);
+            //Console.ReadKey();
         }
     }
     

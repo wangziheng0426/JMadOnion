@@ -44,19 +44,19 @@ namespace J_LivingSlave
             password = "admin";
             
         }
-        public void saveData()
+        public void saveData(string path)
         {
             string lines= JsonConvert.SerializeObject(this);
-            File.WriteAllLines(System.IO.Directory.GetCurrentDirectory() + @"/serverSetting.txt", new string[]{ lines,""});
+            File.WriteAllLines(path, new string[]{ lines,""});
         }
     }
     class J_SoftWareSetting
     {
         public List<J_softWareData> soft = new List<J_softWareData>();
-        public void saveData()
+        public void saveData(string path)
         {
             string lines = JsonConvert.SerializeObject(this);
-            File.WriteAllLines(System.IO.Directory.GetCurrentDirectory() + @"/softWareSetting.txt", new string[] { lines, "" });
+            File.WriteAllLines(path, new string[] { lines, "" });
         }
     }
     class J_softWareData
