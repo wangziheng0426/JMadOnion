@@ -5,10 +5,10 @@ import _winreg,socket
 class J_ConnectSlave:
     def test(self):
         client=socket.socket()
-        client.connect(("192.168.53.3",6666))
+        client.connect(("1.4.26.2",6666))
         client.send("ffffff")
         print (client.recv(1024)).decode('utf-8').encode('gbk')
-        time.sleep(13)
+        time.sleep(1)
         client.send("ttt")
         time.sleep(13)
         client.send("jjj")

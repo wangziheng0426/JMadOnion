@@ -14,6 +14,7 @@ namespace J_LivingSlave
         public Socket socketSlave;
         public IPAddress ip;
         public int port = 0;
+        //读取ip和端口
         public J_NetWork(string _ip, string _port)
         {
             socketSlave = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -31,6 +32,7 @@ namespace J_LivingSlave
             socketSlave.Bind(new IPEndPoint(ip, port));
             socketSlave.Listen(10);
             Console.WriteLine("start listening.");
+            //开始监听
             while (true)
             {
                 Socket _clientSocket = socketSlave.Accept();
@@ -39,17 +41,21 @@ namespace J_LivingSlave
             }
 
         }
+        //执行任务操作
         void ListenClient(object _clientSocket)
         {            
 
             Console.WriteLine(socketSlave.LocalEndPoint.ToString());
+            //客户端通信
             J_Client client = new J_Client(_clientSocket as Socket);
+            
         }
     }
+    //客户端
     class J_Client
     {
         Socket listenClient;
-        private static byte[] result = new byte[1024];
+        private static byte[] result = new byte[4096];
         public J_Client(Socket _socket)
         {
             listenClient = _socket;
@@ -59,6 +65,7 @@ namespace J_LivingSlave
                 try
                 {
                     int dataLength = listenClient.Receive(result);
+                    Console.WriteLine("shuju:"+ dataLength);
                     if (dataLength > 0)
                     {
                         Console.WriteLine(Encoding.ASCII.GetString(result, 0, dataLength) + "\n");
