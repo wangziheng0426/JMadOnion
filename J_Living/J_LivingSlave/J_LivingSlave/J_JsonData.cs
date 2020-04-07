@@ -62,18 +62,25 @@ namespace J_LivingSlave
         }
     }
     //任务设置
-    class J_JsonData
+    class J_JsonJobData
     {
-        int job_Id;
-        string job_Name;
-        string job_workFilePath;
-        string job_workFile;
-        string job_scriptFile;
-        List<string> job_args;
-        public J_JsonData(int _job_Id,string _job_Name,string _job_workFilePath, string _job_workFile, string _job_scriptFile, List<string> _job_args)
+        public int job_Id;
+        public string job_name;
+        public string job_workFilePath;
+        public string job_workFile;
+        public string job_scriptFile;
+        public string job_state;
+        public List<string> job_args;
+        public J_JsonJobData()
+        { }
+        public string ToString()
         {
-            job_Id = _job_Id; job_Name = _job_Name; job_workFilePath = _job_workFilePath; job_workFile = _job_workFile;
-            job_scriptFile = _job_scriptFile; job_args = _job_args;
+           return JsonConvert.SerializeObject(this);
         }
+        //public J_JsonJobData(int _job_Id,string _job_name,string _job_workFilePath, string _job_workFile, string _job_scriptFile, List<string> _job_args)
+        //{
+        //    job_Id = _job_Id; job_name = _job_name; job_workFilePath = _job_workFilePath; job_workFile = _job_workFile;
+        //    job_scriptFile = _job_scriptFile; job_args = _job_args;
+        //}
     }
 }
