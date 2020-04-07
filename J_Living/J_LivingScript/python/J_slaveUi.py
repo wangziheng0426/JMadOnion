@@ -98,5 +98,5 @@ class Ui_J_slaveWin(object):
         self.pushButton_startJob.setText(_translate("J_slaveWin", "StartJobs", None))
         self.pushButton_stopJob.setText(_translate("J_slaveWin", "stopJobs", None))
         self.pushButton_startWorker.setText(_translate("J_slaveWin", "StartWorker", None))
-        self.pushButton_stopWorker.setText(_translate("J_slaveWin", "StopWorkwe", None))
+        self.pushButton_stopWorker.setText(_translate("J_slaveWin", "StopWorker", None))
 
