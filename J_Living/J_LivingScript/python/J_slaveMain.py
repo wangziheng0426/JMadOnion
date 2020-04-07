@@ -61,15 +61,7 @@ class J_slaveMain(QtGui.QMainWindow, J_slaveUi.Ui_J_slaveWin):
 
 
     def saveSettings(self):
-        file = open(self.settingFilePath, 'w')
-        #保存选择的目录
-        strToSave = str(self.lineEdit_inPath.displayText()) + '\n'
-        strToSave = strToSave+ str(self.lineEdit_outPath.displayText()) + '\n'
-        strToSave = strToSave+str(self.unityPath)+'\n'
-        strToSave = strToSave +'workModel:'+str(self.workModel)+'\n'
-
-        file.writelines(str(strToSave).encode('utf-8'), )
-        file.close()
+        pass
     def closeEvent(self, *args, **kwargs):
         self.saveSettings()
 def main():
