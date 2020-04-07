@@ -14,6 +14,9 @@ namespace J_LivingSlave
     {
         static void Main(string[] args)
         {
+
+            //设置信息
+            J_JobManage j_JobManage = J_JobManage.GetJ_JobManage();
             J_SlaveSetting slave = new J_SlaveSetting();
             J_SoftWareSetting softWares = new J_SoftWareSetting();
 
@@ -37,6 +40,7 @@ namespace J_LivingSlave
                 { softWares = JsonConvert.DeserializeObject<J_SoftWareSetting>(readSetting); }
                 catch
                 {
+                    Console.WriteLine("read soft fff");
                 }
 
             }
