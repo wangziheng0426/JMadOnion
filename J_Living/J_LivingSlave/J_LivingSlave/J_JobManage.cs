@@ -28,8 +28,27 @@ namespace J_LivingSlave
             string res = operation;
             if (operation == "add_job")
             {
-                jobList.Add(json_JobData);
-                res = json_JobData.job_name + "add_job to list";
+                bool notInList = true;
+                foreach (var i in jobList)
+                {
+                    if (i.job_Id == json_JobData.job_Id) { notInList = false; res = "job id:"+ json_JobData.job_Id + " already in list";break; }
+                }
+                if (notInList)
+                {
+                    jobList.Add(json_JobData);
+                    res = json_JobData.job_Id + "->" + json_JobData.job_name + ":" + "job added to list";                    
+                }
+            }
+            if(operation=="remove_job")
+            {
+                foreach (var i in jobList)
+                {
+                    if (i.job_Id == json_JobData.job_Id && i.job_name== json_JobData.job_name)
+                    {
+                        jobList.Remove(i);
+                        res = json_JobData.job_Id+"->"+ json_JobData.job_name +":"+ "job_removed";
+                    }
+                }
             }
             return res;
         }
