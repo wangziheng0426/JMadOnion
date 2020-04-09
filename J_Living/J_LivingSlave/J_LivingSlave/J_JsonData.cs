@@ -66,14 +66,20 @@ namespace J_LivingSlave
     {
         public int job_Id;
         public string job_name;
+        public string job_softWare;
         public string job_workFilePath;
         public string job_workFile;
         public string job_scriptFile;
         public string job_state;
         public List<string> job_args;
+        public List<string> job_log;
         public J_JsonJobData()
-        { }
-        public string ToString()
+        {
+            job_Id = 0; job_name = ""; job_softWare = "";
+            job_workFilePath = ""; job_workFile = ""; job_scriptFile = ""; job_state = "";
+            job_args = new List<string>(); job_log = new List<string>();
+        }
+        public override string ToString()
         {
            return JsonConvert.SerializeObject(this);
         }

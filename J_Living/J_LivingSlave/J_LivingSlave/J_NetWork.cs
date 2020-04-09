@@ -34,7 +34,7 @@ namespace J_LivingSlave
             }
             socketSlave.Bind(new IPEndPoint(ip, port));
             socketSlave.Listen(10);
-            Console.WriteLine("start listening.");
+            Console.WriteLine("runing.......");
             //开始监听
             while (true)
             {
@@ -48,10 +48,9 @@ namespace J_LivingSlave
         void ListenClient(object _clientSocket)
         {            
 
-            Console.WriteLine(socketSlave.LocalEndPoint.ToString());
+            Console.WriteLine((_clientSocket as Socket).RemoteEndPoint.ToString()+ " connected");
             //客户端通信
             J_Client client = new J_Client(_clientSocket as Socket);
-            
         }
     }
     //网络通信
@@ -59,14 +58,14 @@ namespace J_LivingSlave
     {
         Socket listenClient;
         J_JobManage j_JobManage = J_JobManage.GetJ_JobManage();
-        private static byte[] result = new byte[4096];
+        private static byte[] result = new byte[4096];        
         public J_Client(Socket _socket)
         {
             listenClient = _socket;
             //string reciveStr = "";
-            Console.WriteLine("client created");
+            //Console.WriteLine("client connected");
             while (listenClient.Connected)
-            {
+            {                
                 try
                 {
                     int dataLength = listenClient.Receive(result);
@@ -83,13 +82,14 @@ namespace J_LivingSlave
                                     listenClient.Send(Encoding.UTF8.GetBytes(temp.ToString()));
                                     dataLength = listenClient.Receive(result);
                                 }
+                                listenClient.Send(Encoding.UTF8.GetBytes("list_ended"));
+                                Console.WriteLine("send_job_list");
                                 break;
                             }
                             else
                             {
                                 //string res=j_JobManage.J_JobOperation(job_type);
-                                listenClient.Send(Encoding.UTF8.GetBytes("operation :" + job_type));
-                                
+                                listenClient.Send(Encoding.UTF8.GetBytes("operation :" + job_type));                                
                                 dataLength = listenClient.Receive(result);
                                 string job_data = Encoding.ASCII.GetString(result, 0, dataLength);
                                 try
@@ -97,10 +97,12 @@ namespace J_LivingSlave
                                     J_JsonJobData tempData = JsonConvert.DeserializeObject<J_JsonJobData>(job_data);
                                     string res = j_JobManage.J_JobOperation(job_type, tempData);
                                     listenClient.Send(Encoding.UTF8.GetBytes(res));
+                                    Console.WriteLine(res);
                                 }
                                 catch
                                 {
                                     listenClient.Send(Encoding.UTF8.GetBytes(job_type + " failed"));
+                                    Console.WriteLine(job_type + " failed");
                                 }
                             }
                         }
@@ -108,23 +110,12 @@ namespace J_LivingSlave
                         {
                             listenClient.Send(Encoding.UTF8.GetBytes("operation not defiend"));break;
                         }
-                        /*
-                        else
-                        {                            
-                            try
-                            {                                
-                                J_JsonJobData tempData = JsonConvert.DeserializeObject<J_JsonJobData>(reciveStr);
-                                Console.WriteLine(tempData.job_name);
-                            }
-                            catch
-                            {
-                                Console.WriteLine("json failed");
-                            }
-                            Console.WriteLine(Encoding.ASCII.GetString(result, 0, dataLength) + "\n");
-                            listenClient.Send(Encoding.UTF8.GetBytes("测试"));
-                        }*/
                     }
-                    //listenClient.Connected;
+                    else
+                    {
+                        //listenClient.Close();
+                        break; 
+                    }
                 }
                 catch
                 {
@@ -132,6 +123,9 @@ namespace J_LivingSlave
 
                     break;
                 }
+                Console.WriteLine(listenClient.Connected.ToString());
+                listenClient.Shutdown(SocketShutdown.Both);
+                listenClient.Close();
             }
         }
     }

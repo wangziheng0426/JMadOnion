@@ -44,8 +44,11 @@ namespace J_LivingSlave
                 }
 
             }
-            softWares.soft.Add(new J_softWareData("maya", "c:", "2018"));
-            softWares.soft.Add(new J_softWareData("max", "c:x", "201x"));
+            else
+            {
+                softWares.soft.Add(new J_softWareData("ffmpeg", "c:/ffmpeg.exe", "2018"));
+                //softWares.soft.Add(new J_softWareData("max", "c:x", "201x"));
+            }
             softWares.saveData(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
             
             //test
@@ -57,7 +60,7 @@ namespace J_LivingSlave
             Console.WriteLine("slave:" + slave.slaveName);
             Console.WriteLine("Start slave");
             J_NetWork SlaveServer = new J_NetWork(slave.slaveIp, slave.slavePort);
-            //Console.ReadKey();
+            //Console.ReadKey();这里不会运行
         }
     }
     
