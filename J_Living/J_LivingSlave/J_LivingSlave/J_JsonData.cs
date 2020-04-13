@@ -19,7 +19,8 @@ namespace J_LivingSlave
 
         public string slaveName = "";
         public string slaveIp = "";
-        public string slavePort = "";               
+        public string slavePort = "";
+        public string slaveTaskNum = "";
 
         public string userName = "";
         public string password = "";
@@ -31,6 +32,7 @@ namespace J_LivingSlave
             slaveName = Dns.GetHostName();            
             slaveIp = Dns.GetHostByName(slaveName).AddressList[0].ToString();
             slavePort = "6666";
+            slaveTaskNum = "1";
             userName = "admin";
             password = "admin";
             
@@ -72,12 +74,12 @@ namespace J_LivingSlave
         public string job_scriptFile;
         public string job_state;
         public List<string> job_args;
-        public List<string> job_log;
+        public string job_logPath;
         public J_JsonJobData()
         {
             job_Id = 0; job_name = ""; job_softWare = "";
             job_workFilePath = ""; job_workFile = ""; job_scriptFile = ""; job_state = "";
-            job_args = new List<string>(); job_log = new List<string>();
+            job_args = new List<string>(); job_logPath ="";
         }
         public override string ToString()
         {

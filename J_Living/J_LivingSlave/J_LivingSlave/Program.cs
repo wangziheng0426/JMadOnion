@@ -40,7 +40,7 @@ namespace J_LivingSlave
                 { softWares = JsonConvert.DeserializeObject<J_SoftWareSetting>(readSetting); }
                 catch
                 {
-                    Console.WriteLine("read soft fff");
+                    Console.WriteLine("read soft setting");
                 }
 
             }
