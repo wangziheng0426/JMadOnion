@@ -9,19 +9,24 @@ namespace J_LivingSlave
 {
     class J_JobManage
     {//任务列表
-        public List<J_JsonJobData> jobList = new List<J_JsonJobData>();
+        List<J_JsonJobData> jobList = new List<J_JsonJobData>();
 
-        private static J_JobManage instance = null;
+        private static readonly J_JobManage instance = new J_JobManage();
         private  J_JobManage()
         {
         }
         public static J_JobManage GetJ_JobManage()
         {
-            if (instance==null)
+           return instance;
+        }
+        public List<string> J_GetJobList()
+        {
+            List<string> res = new List<string>();
+            foreach (J_JsonJobData temp in jobList)
             {
-                instance = new J_JobManage();
+                res.Add(temp.ToString());
             }
-            return instance;
+            return res;
         }
         public string J_JobOperation(string operation, J_JsonJobData json_JobData)
         {
@@ -43,10 +48,30 @@ namespace J_LivingSlave
             {
                 foreach (var i in jobList)
                 {
-                    if (i.job_Id == json_JobData.job_Id && i.job_name== json_JobData.job_name)
+                    if (i.job_Id == json_JobData.job_Id && i.job_name == json_JobData.job_name)
                     {
                         jobList.Remove(i);
-                        res = json_JobData.job_Id+"->"+ json_JobData.job_name +":"+ "job_removed";
+                        res = json_JobData.job_Id + "->" + json_JobData.job_name + ":" + "job_removed";
+                    }
+                }
+            }
+            if (operation == "start_job")
+            {
+                foreach (var i in jobList)
+                {
+                    if (i.job_Id == json_JobData.job_Id && i.job_name == json_JobData.job_name)
+                    {
+                        i.job_state = "waiting";
+                    }
+                }
+            }
+            if (operation == "stop_job")
+            {
+                foreach (var i in jobList)
+                {
+                    if (i.job_Id == json_JobData.job_Id && i.job_name == json_JobData.job_name)
+                    {
+                        i.job_state = "stop";
                     }
                 }
             }
