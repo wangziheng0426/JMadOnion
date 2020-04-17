@@ -77,9 +77,9 @@ namespace J_LivingSlave
                         {
                             if (job_type == "get_job_list")
                             {
-                                foreach (J_JsonJobData temp in j_JobManage.jobList)
+                                foreach (string temp in j_JobManage.J_GetJobList())
                                 {
-                                    listenClient.Send(Encoding.UTF8.GetBytes(temp.ToString()));
+                                    listenClient.Send(Encoding.UTF8.GetBytes(temp));
                                     dataLength = listenClient.Receive(result);
                                 }
                                 listenClient.Send(Encoding.UTF8.GetBytes("list_ended"));
