@@ -19,10 +19,10 @@ global proc J_copySkinWeight()
         string $chs[]=`listRelatives -c -shapes  $sel[0]`;
         string $skinClusters[]= `listConnections  -type skinCluster $chs[0]`;
         if (size($skinClusters)==0)
-        {
-            for ($index =1;$index<size($chs);$inedx++)
+        {int $i=1;
+            for ( $i=1;$i<size($chs);$i++)
             {
-                $skinClusters= `listConnections  -type skinCluster $chs[$index]`;
+                $skinClusters= `listConnections  -type skinCluster $chs[$i]`;
                 if (size($skinClusters)>0){break;}
             }   
         }
