@@ -46,7 +46,7 @@ namespace J_LivingSlave
     //软件设置相关
     class J_SoftWareSetting
     {
-        public List<J_softWareData> soft = new List<J_softWareData>();
+        public List<J_softWareData> softList = new List<J_softWareData>();
         public void saveData(string path)
         {
             string lines = JsonConvert.SerializeObject(this);

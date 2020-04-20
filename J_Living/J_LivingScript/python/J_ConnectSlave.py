@@ -4,12 +4,12 @@ import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json,re
 import _winreg,socket
 class J_ConnectSlave:
     def test(self):
-        self.job_operation(("192.168.53.3", 6666), "add_job", 1,"test","maya.exe","path","file","script","state",[])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 2, "test","maya.exe", "path", "file", "script", "state", [])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 4, "test","maya.exe", "path", "file", "script", "state", [])
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 1,"test","maya.exe","path","file","script","state",[])
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 2, "test","maya.exe", "path", "file", "script", "state", [])
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 4, "test","maya.exe", "path", "file", "script", "state", [])
         self.job_operation(("192.168.53.3", 6666), "add_job", 5, "test","maya.exe", "path", "file", "script", "state", [])
         self.job_operation(("192.168.53.3", 6666), "add_job", 6, "test", "maya.exe","path", "file", "script", "state", [])
-
+        self.job_operation(("192.168.53.3", 6666), "remove_job", 6, "test", "maya.exe", "path", "file", "script", "state", [])
         time.sleep(5)
         self.get_JobList()
 
@@ -39,10 +39,14 @@ class J_ConnectSlave:
         client = socket.socket()
         client.connect(ip_port)
 
-        client.send("add_job")
+        client.send(job_type)
         temp = (client.recv(4096)).decode('utf-8').encode('gbk')
+        print "----------"
+        print temp
+        print "----------"
         client.send(json.dumps(j))
-        print (client.recv(4096)).decode('utf-8').encode('gbk')
+        res= (client.recv(4096)).decode('utf-8').encode('gbk')
+        print res
         client.shutdown(socket.SHUT_RDWR)
         client.close()
 
