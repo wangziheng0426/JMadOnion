@@ -46,9 +46,9 @@ namespace J_LivingSlave
         }
         //执行任务操作
         void ListenClient(object _clientSocket)
-        {            
+        {
 
-            Console.WriteLine((_clientSocket as Socket).RemoteEndPoint.ToString()+ " connected");
+            Console.WriteLine((_clientSocket as Socket).RemoteEndPoint.ToString() + " connected");
             //客户端通信
             J_Client client = new J_Client(_clientSocket as Socket);
         }
@@ -58,14 +58,14 @@ namespace J_LivingSlave
     {
         Socket listenClient;
         J_JobManage j_JobManage = J_JobManage.GetJ_JobManage();
-        private static byte[] result = new byte[4096];        
+        private static byte[] result = new byte[4096];
         public J_Client(Socket _socket)
         {
             listenClient = _socket;
             //string reciveStr = "";
             //Console.WriteLine("client connected");
             while (listenClient.Connected)
-            {                
+            {
                 try
                 {
                     int dataLength = listenClient.Receive(result);
@@ -89,7 +89,7 @@ namespace J_LivingSlave
                             else
                             {
                                 //string res=j_JobManage.J_JobOperation(job_type);
-                                listenClient.Send(Encoding.UTF8.GetBytes("operation :" + job_type));                                
+                                listenClient.Send(Encoding.UTF8.GetBytes("operation :" + job_type));
                                 dataLength = listenClient.Receive(result);
                                 string job_data = Encoding.ASCII.GetString(result, 0, dataLength);
                                 try
@@ -97,36 +97,34 @@ namespace J_LivingSlave
                                     J_JsonJobData tempData = JsonConvert.DeserializeObject<J_JsonJobData>(job_data);
                                     string res = j_JobManage.J_JobOperation(job_type, tempData);
                                     listenClient.Send(Encoding.UTF8.GetBytes(res));
-                                    Console.WriteLine(res);
+                                    Console.WriteLine(res); break;
                                 }
                                 catch
                                 {
                                     listenClient.Send(Encoding.UTF8.GetBytes(job_type + " failed"));
-                                    Console.WriteLine(job_type + " failed");
+                                    Console.WriteLine(job_type + " failed"); break;
                                 }
                             }
                         }
                         else
                         {
-                            listenClient.Send(Encoding.UTF8.GetBytes("operation not defiend"));break;
+                            listenClient.Send(Encoding.UTF8.GetBytes("operation not defiend")); break;
                         }
                     }
                     else
                     {
                         //listenClient.Close();
-                        break; 
+                        break;
                     }
                 }
                 catch
                 {
-                    //listenClient.Close(); 
-
                     break;
                 }
-                Console.WriteLine(listenClient.Connected.ToString());
-                listenClient.Shutdown(SocketShutdown.Both);
-                listenClient.Close();
             }
+            Console.WriteLine(listenClient.RemoteEndPoint.ToString() + "子循环结束");
+            listenClient.Shutdown(SocketShutdown.Both);
+            listenClient.Close();
         }
     }
 }
