@@ -48,13 +48,8 @@ namespace J_LivingSlave
                 //softWares.soft.Add(new J_softWareData("max", "c:x", "201x"));
                 softWares.saveData(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
             }
-            while (true)
-            {
-                if (jobList.Count > 0)
-                {
-                    J_CreateJob();
-                }
-            }
+            J_CreateJob();
+
         }
         public static J_JobManage GetJ_JobManage()
         {
@@ -149,8 +144,12 @@ namespace J_LivingSlave
         {
             foreach (J_JsonJobData item in jobList)
             {
-                if (item.job_state=="waiting")
+                if (item.job_state == "waiting")
                 {
+                    foreach (J_softWareData itemSoft in softWares.softList)
+                    {
+
+                    }
                     System.Diagnostics.Process p = new System.Diagnostics.Process();
                     p.StartInfo = new System.Diagnostics.ProcessStartInfo(@"c:\ffmpeg.exe");
                     p.StartInfo.Arguments = "/c dir";
@@ -172,6 +171,7 @@ namespace J_LivingSlave
                             break;
                         }
                     }
+                }
             }
      
         }

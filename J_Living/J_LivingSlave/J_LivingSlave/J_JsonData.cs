@@ -69,6 +69,7 @@ namespace J_LivingSlave
         public int job_Id;
         public string job_name;
         public string job_softWare;
+        public string job_softWareVersion;
         public string job_workFilePath;
         public string job_workFile;
         public string job_scriptFile;
