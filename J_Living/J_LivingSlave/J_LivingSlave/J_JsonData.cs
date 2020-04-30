@@ -73,6 +73,7 @@ namespace J_LivingSlave
         public string job_workFilePath;
         public string job_workFile;
         public string job_scriptFile;
+        //"waiting" 等待执行  "error" 执行崩溃或者出错 "stop" 未执行，或停止 "running" 运行中,"finished" 已完成
         public string job_state;
         public List<string> job_args;
         public string job_logPath;

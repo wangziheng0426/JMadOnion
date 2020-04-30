@@ -122,7 +122,7 @@ namespace J_LivingSlave
                     break;
                 }
             }
-            Console.WriteLine(listenClient.RemoteEndPoint.ToString() + "子循环结束");
+            Console.WriteLine(listenClient.RemoteEndPoint.ToString() + "通讯结束");
             listenClient.Shutdown(SocketShutdown.Both);
             listenClient.Close();
         }
