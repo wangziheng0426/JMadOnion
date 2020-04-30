@@ -11,11 +11,11 @@ namespace J_LivingSlave
 {
     class J_JobManage
     {//任务列表
-        List<J_JsonJobData> jobList = new List<J_JsonJobData>();
+        public List<J_JsonJobData> jobList = new List<J_JsonJobData>();
+        List<J_JobCompute> jobComputeList = new List<J_JobCompute>();
         bool slaveState = false;
-        int runningJob =0;
         public J_SlaveSetting slave = new J_SlaveSetting();
-        J_SoftWareSetting softWares = new J_SoftWareSetting();
+        public J_SoftWareSetting softWares = new J_SoftWareSetting();
         private static readonly J_JobManage instance = new J_JobManage();
         private J_JobManage()
         {
@@ -48,8 +48,8 @@ namespace J_LivingSlave
                 //softWares.soft.Add(new J_softWareData("max", "c:x", "201x"));
                 softWares.saveData(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
             }
-            J_CreateJob();
-
+            Thread slaveThread = new Thread(J_CreateJob);
+            slaveThread.Start();
         }
         public static J_JobManage GetJ_JobManage()
         {
@@ -115,7 +115,7 @@ namespace J_LivingSlave
                     }
                 }
             }
-            if(operation == "start_slave")
+            if (operation == "start_slave")
             {
                 slaveState = true;
                 res = "slave started";
@@ -129,52 +129,45 @@ namespace J_LivingSlave
         }
         void J_CreateJob()
         {
-            Thread slaveThread = new Thread(J_JobRuning);
-            if (slaveState)
+            while (true)
             {
-                slaveThread.Start();
-            }
-            else
-            {
-                slaveThread.Abort();
-            }
-        }
-
-        public void J_JobRuning()
-        {
-            foreach (J_JsonJobData item in jobList)
-            {
-                if (item.job_state == "waiting")
+                if (slaveState)
                 {
-                    foreach (J_softWareData itemSoft in softWares.softList)
+                    int taskCountSetting = int.Parse(slave.slaveTaskNum);
+                    Console.WriteLine("running");
+                    if (jobList.Count == 0|| jobComputeList.Count >= taskCountSetting)
                     {
-
+                        continue;
                     }
-                    System.Diagnostics.Process p = new System.Diagnostics.Process();
-                    p.StartInfo = new System.Diagnostics.ProcessStartInfo(@"c:\ffmpeg.exe");
-                    p.StartInfo.Arguments = "/c dir";
-                    p.StartInfo.RedirectStandardOutput = true;
-                    p.StartInfo.UseShellExecute = false;
-                    p.Start();
-                    //p.WaitForExit();
-                    string line = string.Empty;
-                    while (true)
+                    foreach (J_JsonJobData item in jobList)
                     {
-                        System.Threading.Thread.Sleep(1000);
-                        line = p.StandardOutput.ReadLine();
-                        if (line != null && line.Length > 0)
+                        J_softWareData job_softData = null;                        
+                        if (item.job_state != "waiting")
                         {
-                            Console.WriteLine(line);
+                            continue;
+                        }
+                        foreach (J_softWareData itemSoft in softWares.softList)
+                        {
+                            if (item.job_softWare == itemSoft.name && item.job_softWareVersion == itemSoft.version)
+                            {
+                                job_softData = itemSoft;
+                            }
+                        }
+                        if (job_softData == null)
+                        {
+                            string running_Result = "job soft ware:" + item.job_softWare
+                                + "or version:" + item.job_softWareVersion + " not exists";
+                            item.job_state = "stop";
+                            Console.WriteLine(running_Result);
                         }
                         else
                         {
-                            break;
+                            jobComputeList.Add(new J_JobCompute(item, job_softData));
                         }
                     }
+                    Thread.Sleep(5000);
                 }
             }
-     
         }
     }
-
 }

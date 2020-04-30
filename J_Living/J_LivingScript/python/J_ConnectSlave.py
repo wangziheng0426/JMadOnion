@@ -7,9 +7,10 @@ class J_ConnectSlave:
         #self.job_operation(("192.168.53.3", 6666), "add_job", 1,"test","maya.exe","path","file","script","state",[])
         #self.job_operation(("192.168.53.3", 6666), "add_job", 2, "test","maya.exe", "path", "file", "script", "state", [])
         #self.job_operation(("192.168.53.3", 6666), "add_job", 4, "test","maya.exe", "path", "file", "script", "state", [])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 5, "test","maya.exe","2018", "path", "file", "script", "state", [])
+        self.job_operation(("192.168.53.3", 6666), "add_job", 5, "test","maya.exe","2018", "path", "file", "script", "waiting", [])
         self.job_operation(("192.168.53.3", 6666), "add_job", 6, "test", "maya.exe","2018","path", "file", "script", "state", [])
         self.job_operation(("192.168.53.3", 6666), "remove_job", 6, "test", "maya.exe","2018", "path", "file", "script", "state", [])
+        self.job_operation(("192.168.53.3", 6666), "start_slave", 6, "test", "maya.exe", "2018", "path", "file","script", "state", [])
         time.sleep(5)
         self.get_JobList()
 
