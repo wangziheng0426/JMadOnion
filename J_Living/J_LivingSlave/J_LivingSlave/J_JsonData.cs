@@ -46,7 +46,7 @@ namespace J_LivingSlave
     //软件设置相关
     class J_SoftWareSetting
     {
-        public List<J_softWareData> soft = new List<J_softWareData>();
+        public List<J_softWareData> softList = new List<J_softWareData>();
         public void saveData(string path)
         {
             string lines = JsonConvert.SerializeObject(this);
@@ -69,9 +69,11 @@ namespace J_LivingSlave
         public int job_Id;
         public string job_name;
         public string job_softWare;
+        public string job_softWareVersion;
         public string job_workFilePath;
         public string job_workFile;
         public string job_scriptFile;
+        //"waiting" 等待执行  "error" 执行崩溃或者出错 "stop" 未执行，或停止 "running" 运行中,"finished" 已完成
         public string job_state;
         public List<string> job_args;
         public string job_logPath;

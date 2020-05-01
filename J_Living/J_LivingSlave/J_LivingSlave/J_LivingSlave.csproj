@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="J_JobCompute.cs" />
     <Compile Include="J_JobLog.cs" />
     <Compile Include="J_JobManage.cs" />
     <Compile Include="J_JsonData.cs" />

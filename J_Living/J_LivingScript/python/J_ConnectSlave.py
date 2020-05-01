@@ -4,12 +4,13 @@ import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json,re
 import _winreg,socket
 class J_ConnectSlave:
     def test(self):
-        self.job_operation(("192.168.53.3", 6666), "add_job", 1,"test","maya.exe","path","file","script","state",[])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 2, "test","maya.exe", "path", "file", "script", "state", [])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 4, "test","maya.exe", "path", "file", "script", "state", [])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 5, "test","maya.exe", "path", "file", "script", "state", [])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 6, "test", "maya.exe","path", "file", "script", "state", [])
-
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 1,"test","maya.exe","path","file","script","state",[])
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 2, "test","maya.exe", "path", "file", "script", "state", [])
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 4, "test","maya.exe", "path", "file", "script", "state", [])
+        self.job_operation(("192.168.53.3", 6666), "add_job", 5, "test","maya.exe","2018", "path", "file", "script", "waiting", [])
+        self.job_operation(("192.168.53.3", 6666), "add_job", 6, "test", "maya.exe","2018","path", "file", "script", "state", [])
+        self.job_operation(("192.168.53.3", 6666), "remove_job", 6, "test", "maya.exe","2018", "path", "file", "script", "state", [])
+        self.job_operation(("192.168.53.3", 6666), "start_slave", 6, "test", "maya.exe", "2018", "path", "file","script", "state", [])
         time.sleep(5)
         self.get_JobList()
 
@@ -25,11 +26,12 @@ class J_ConnectSlave:
             temp = (client.recv(4096)).decode('utf-8').encode('gbk')
         client.shutdown(socket.SHUT_RDWR)
         client.close()
-    def job_operation(self,ip_port,job_type,job_Id,job_name,job_softWare,job_workFilePath,job_workFile,job_scriptFile,job_state,job_args):
+    def job_operation(self,ip_port,job_type,job_Id,job_name,job_softWare,job_softWareVersion,job_workFilePath,job_workFile,job_scriptFile,job_state,job_args):
         j = {}
         j["job_Id"] = job_Id
         j['job_name'] = job_name
         j['job_softWare']=job_softWare
+        j['job_softWareVersion'] = job_softWareVersion
         j['job_workFilePath'] = job_workFilePath
         j['job_workFile'] = job_workFile
         j['job_scriptFile'] = job_scriptFile
@@ -39,10 +41,14 @@ class J_ConnectSlave:
         client = socket.socket()
         client.connect(ip_port)
 
-        client.send("add_job")
+        client.send(job_type)
         temp = (client.recv(4096)).decode('utf-8').encode('gbk')
+        print "----------"
+        print temp
+        print "----------"
         client.send(json.dumps(j))
-        print (client.recv(4096)).decode('utf-8').encode('gbk')
+        res= (client.recv(4096)).decode('utf-8').encode('gbk')
+        print res
         client.shutdown(socket.SHUT_RDWR)
         client.close()
 
