@@ -20,6 +20,7 @@ namespace J_LivingSlave
         public J_JobCompute(J_JsonJobData _job, J_softWareData _soft)
         {
             _job.job_state = "running";
+            Console.WriteLine(_job.job_name+"start");
             System.Diagnostics.ProcessStartInfo jobInfo = new System.Diagnostics.ProcessStartInfo();
             jobInfo.Arguments = "";
             jobInfo.RedirectStandardOutput = true;
