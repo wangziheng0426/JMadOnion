@@ -43,6 +43,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="checkBox_combinVideo">
+          <property name="text">
+           <string>合并切割的视频</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="checkBox_shutdown">
           <property name="text">
            <string>自动关机</string>

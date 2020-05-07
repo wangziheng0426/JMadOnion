@@ -93,6 +93,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.model.item(rt + 1, 6).setText("_%03d"% (index+1))
         self.model.item(rt + 1, 2).setText('0:0:0')
         self.saveSettingToTable(modelIndex,True)
+        self.saveListToJfile()
         #保存参数
     def saveSettingToTable(self,modelIndex,goNext):
         st = self.wChild.lineEdit_st1.displayText() + ':' + self.wChild.lineEdit_st2.displayText() + ':' + self.wChild.lineEdit_st3.displayText()
@@ -109,6 +110,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 
         if modelIndex.row()<self.model.rowCount()-1 and goNext:
             self.OpenCutSettingDialog(self.model.item(modelIndex.row()+1,0).index())
+        self.saveListToJfile()
     def deleteLine(self,modelIndex):
         row = modelIndex.row()
         self.model.removeRow(modelIndex.row())
@@ -358,8 +360,10 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 
             self.listAllVideoFiles()
                 #####################################################################批量改名功能
+######创建执行文件，同时输出Jliving 任务列表
     def createBatFile(self):
         strtowrite=''
+        combinId=[0,0]
         for i in range(0,self.tableView_fileList.model().rowCount()):
             startTime=self.convertStrToTime(str(self.model.item(i,1).text()).decode('utf-8'))
             startSec=startTime[0]*3600+startTime[1]*60+startTime[2]
@@ -375,7 +379,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 encodeSeconds='null'
             if str(self.model.item(i,3).text())!='':
                 resolusion=' -s ' +str(self.model.item(i,3).text())+' '
-
+            ####加入新行
             if encodeSeconds!='null':
                 strtowrite+='c:/ffmpeg.exe -i \"'+str(self.model.item(i,7).text())+'\"'\
                             + ' -ss '+str(startTime[0])+':'+str(startTime[1])+':'+str(startTime[2])+ ' '\
@@ -385,6 +389,33 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                             + ' -crf ' +str(self.model.item(i,5).text())+' '\
                             + ' -y \"'+'.'.join(str(self.model.item(i,7).text()).split('.')[0:-1]) \
                             + str(self.model.item(i,6).text())+'.mp4\"\n\n'
+            ####判断是否需要合并文件
+            if str(self.model.item(i,6).text())=='_001':
+                combinId[0]=i;
+            if str(self.model.item(i,6).text())!='_001':
+                combinId[1] = i;
+            getEnd=False
+            if i==self.tableView_fileList.model().rowCount()-1:
+                getEnd=True
+            elif str(self.model.item(i,7).text())!=str(self.model.item(i+1,7).text()):
+                getEnd = True
+            if getEnd and combinId[1] >combinId[0] and self.checkBox_combinVideo:
+                combinFileListName = '.'.join(str(self.model.item(i,7).text()).split('.')[0:-1])+ '_combinJ.Cbn'
+                combinFileName = '.'.join(str(self.model.item(i,7).text()).split('.')[0:-1])+  '_newJ.mp4'
+                videoToCombin = ''
+                for j in range(combinId[0], combinId[1]+1):
+                    videoToCombin += ('file \'' +
+                                      '.'.join(str(self.model.item(j,0).text()).split('.')[0:-1]) +
+                                      str(self.model.item(j, 6).text())+'.mp4'+
+                                      '\'\n').encode('utf-8')
+                writeCombinFile = open(combinFileListName.encode('gbk'), 'w')
+                writeCombinFile.write(videoToCombin)
+                writeCombinFile.close()
+                strtowrite += ('c:/ffmpeg.exe -safe 0 -f concat -i \"' +
+                               combinFileListName + '\" -c copy \"' +
+                               combinFileName + '\"\n' + "\n")
+
+
         if self.checkBox_shutdown.checkState()==2:
             strtowrite+='shutdown -f -s -t 60 \n  -t 0:0:0  '
 
@@ -400,7 +431,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 try:
                     res[i] = int(strlist[i])
                 except ValueError:
-                    print 'xxx'
+                    pass
         return res
 
     ################################ 链接按钮

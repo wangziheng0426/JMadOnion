@@ -44,6 +44,9 @@ class Ui_MainWindow(object):
         self.checkBox_ignoreEnd = QtGui.QCheckBox(self.cw)
         self.checkBox_ignoreEnd.setObjectName(_fromUtf8("checkBox_ignoreEnd"))
         self.horizontalLayout.addWidget(self.checkBox_ignoreEnd)
+        self.checkBox_combinVideo = QtGui.QCheckBox(self.cw)
+        self.checkBox_combinVideo.setObjectName(_fromUtf8("checkBox_combinVideo"))
+        self.horizontalLayout.addWidget(self.checkBox_combinVideo)
         self.checkBox_shutdown = QtGui.QCheckBox(self.cw)
         self.checkBox_shutdown.setObjectName(_fromUtf8("checkBox_shutdown"))
         self.horizontalLayout.addWidget(self.checkBox_shutdown)
@@ -118,6 +121,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.checkBox_ignoreEnd.setText(_translate("MainWindow", "忽略未定义结尾的文件", None))
+        self.checkBox_combinVideo.setText(_translate("MainWindow", "合并切割的视频", None))
         self.checkBox_shutdown.setText(_translate("MainWindow", "自动关机", None))
         self.checkBox_gogogo.setText(_translate("MainWindow", "直接运行", None))
         self.pushButton_inputField.setText(_translate("MainWindow", "读取源目录", None))
