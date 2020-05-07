@@ -7,12 +7,12 @@ class J_ConnectSlave:
         #self.job_operation(("192.168.53.3", 6666), "add_job", 1,"test","maya.exe","path","file","script","state",[])
         #self.job_operation(("192.168.53.3", 6666), "add_job", 2, "test","maya.exe", "path", "file", "script", "state", [])
         #self.job_operation(("192.168.53.3", 6666), "add_job", 4, "test","maya.exe", "path", "file", "script", "state", [])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 1, "a1","ffmpeg","2018", "C:/test", "a1.avi", "", "waiting", ['-i "C:/test/a1.avi" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a1_jc.mp4"'])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 2, "a2", "ffmpeg","2018","C:/test", "a2.avi", "", "waiting", ['-i "C:/test/a2.avi" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a2_jc.mp4"'])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 3, "a3", "ffmpeg","2018", "C:/test", "a3.mp4", "", "waiting", ['-i "C:/test/a3.mp4" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a3_jc.mp4"'])
-        self.job_operation(("192.168.53.3", 6666), "add_job", 4, "a4", "ffmpeg", "2018", "C:/test", "a4.mp4","", "waiting", ['-i "C:/test/a4.mp4" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a4_jc.mp4"'])
+        self.job_operation(("192.168.53.3", 6666), "add_job", 5, "a1","ffmpeg","2018", "C:/test", "a1.avi", "", "waiting", ['-i "C:/test/a1.avi" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a1_jc.mp4"'])
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 6, "a2", "ffmpeg","2018","C:/test", "a2.avi", "", "waiting", ['-i "C:/test/a2.avi" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a2_jc.mp4"'])
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 7, "a3", "ffmpeg","2018", "C:/test", "a3.mp4", "", "waiting", ['-i "C:/test/a3.mp4" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a3_jc.mp4"'])
+        #self.job_operation(("192.168.53.3", 6666), "add_job", 8, "a4", "ffmpeg", "2018", "C:/test", "a4.mp4","", "waiting", ['-i "C:/test/a4.mp4" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a4_jc.mp4"'])
         self.job_operation(("192.168.53.3", 6666),'start_slave','0','0','0','0','0','0','0','0',[])
-        time.sleep(5)
+        #time.sleep(5)
         self.get_JobList()
 
     def get_JobList(self):
