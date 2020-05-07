@@ -17,7 +17,7 @@ namespace J_LivingSlave
 
             //设置信息
             J_JobManage j_JobManage = J_JobManage.GetJ_JobManage();
-            
+            j_JobManage.Job_start();
 
             Console.WriteLine("ip:"+ j_JobManage.slave.slaveIp);
             Console.WriteLine("port:" + j_JobManage.slave.slavePort);

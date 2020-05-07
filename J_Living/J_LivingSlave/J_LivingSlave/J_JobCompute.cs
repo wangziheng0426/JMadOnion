@@ -10,26 +10,22 @@ namespace J_LivingSlave
 
     class J_JobCompute
     {
-        class JobInfo
-        {
-            public J_JsonJobData jobData;
-            public System.Diagnostics.ProcessStartInfo startInfo;
-        }
-
-        bool jobDone = false;
+        public bool jobDone = false;
+        J_JsonJobData jobData;
         public J_JobCompute(J_JsonJobData _job, J_softWareData _soft)
         {
+            jobData = _job;
             _job.job_state = "running";
-            Console.WriteLine(_job.job_name+"start");
+            Console.WriteLine(_job.job_name+"start-----------------");
             System.Diagnostics.ProcessStartInfo jobInfo = new System.Diagnostics.ProcessStartInfo();
-            jobInfo.Arguments = "";
+            jobInfo.FileName = _soft.path;
+            jobInfo.Arguments =string.Join(" ",_job.job_args) ;
             jobInfo.RedirectStandardOutput = true;
             jobInfo.UseShellExecute = false;
-            jobInfo.CreateNoWindow = true;
+            jobInfo.CreateNoWindow = false;
             Thread slaveThread = new Thread(J_JobRuning);
-            slaveThread.Start(jobInfo);
+            slaveThread.Start(jobInfo);     
 
-            _job.job_state = "finished";
         }
         
 
@@ -40,6 +36,12 @@ namespace J_LivingSlave
             p.StartInfo = _jobInfo as System.Diagnostics.ProcessStartInfo;
 
             p.Start();
+            p.WaitForExit();
+            if (p.HasExited)
+            {
+                jobData.job_state = "finished";
+                jobDone = true;
+            }            
         }
     }
 }
