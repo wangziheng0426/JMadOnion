@@ -15,7 +15,7 @@ namespace J_LivingSlave
         List<J_JobCompute> jobComputeList = new List<J_JobCompute>();
         bool slaveState = false;
         public J_SlaveSetting slave = new J_SlaveSetting();
-        public J_SoftWareSetting softWares = new J_SoftWareSetting();
+       public J_SoftWareSetting softWares = new J_SoftWareSetting();
         private static readonly J_JobManage instance = new J_JobManage();
         private J_JobManage()
         {
@@ -48,9 +48,13 @@ namespace J_LivingSlave
                 //softWares.soft.Add(new J_softWareData("max", "c:x", "201x"));
                 softWares.saveData(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
             }
+        }
+        public void Job_start()
+        {
             Thread slaveThread = new Thread(J_CreateJob);
             slaveThread.Start();
         }
+
         public static J_JobManage GetJ_JobManage()
         {
             return instance;
@@ -134,13 +138,14 @@ namespace J_LivingSlave
                 if (slaveState)
                 {
                     int taskCountSetting = int.Parse(slave.slaveTaskNum);
-                    Console.WriteLine("running");
-                    if (jobList.Count == 0|| jobComputeList.Count >= taskCountSetting)
+                    Thread.Sleep(5000);
+                    if (jobList.Count == 0)
                     {
                         continue;
                     }
                     foreach (J_JsonJobData item in jobList)
                     {
+                        if( jobComputeList.Count >= taskCountSetting) continue;
                         J_softWareData job_softData = null;                        
                         if (item.job_state != "waiting")
                         {
@@ -156,7 +161,7 @@ namespace J_LivingSlave
                         if (job_softData == null)
                         {
                             string running_Result = "job soft ware:" + item.job_softWare
-                                + "or version:" + item.job_softWareVersion + " not exists";
+                                + " or version:" + item.job_softWareVersion + " not exists";
                             item.job_state = "stop";
                             Console.WriteLine(running_Result);
                         }
@@ -165,7 +170,16 @@ namespace J_LivingSlave
                             jobComputeList.Add(new J_JobCompute(item, job_softData));
                         }
                     }
-                    Thread.Sleep(5000);
+                    foreach (var item in jobComputeList)
+                    {
+                        if (item.jobDone)
+                        {
+                            Console.WriteLine("xxxx\n\n");
+                            jobComputeList.Remove(item);
+                            break;
+                        }
+                    }
+                    
                 }
             }
         }
