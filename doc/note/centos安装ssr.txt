@@ -1,8 +1,3 @@
-1 安装pip
-有的centos缺少资源，需要运行epel包
-yum --enablerepo=extras install epel-release
-
-
 1. 安装配置Shadowsocks客户端
 1.1 安装Shadowsocks客户端
 安装epel扩展源
@@ -11,9 +6,13 @@ sudo yum -y install epel-release
 
 如果出错了，将/etc/yum.repos.d/epel.repo中 去掉baseurl前面的#
 
-sudo yum -y install python-pip
+yum install python-pip -y
+yum install python-setuptools 
+easy_install pip
+pip install --upgrade pip
+
 安装Shadowsocks客户端
-sudo pip install shadowsocks
+pip install shadowsocks
 
 
 1.2 配置Shadowsocks客户端

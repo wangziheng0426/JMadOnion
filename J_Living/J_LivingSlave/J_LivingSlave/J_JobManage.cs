@@ -15,7 +15,7 @@ namespace J_LivingSlave
         List<J_JobCompute> jobComputeList = new List<J_JobCompute>();
         bool slaveState = false;
         public J_SlaveSetting slave = new J_SlaveSetting();
-       public J_SoftWareSetting softWares = new J_SoftWareSetting();
+        public J_SoftWareSetting softWares = new J_SoftWareSetting();
         private static readonly J_JobManage instance = new J_JobManage();
         private J_JobManage()
         {
