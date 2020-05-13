@@ -1,0 +1,30 @@
+/////////////////////////////////////////////////////////////
+///\file  J_copyTransform.mel
+///\brief  øΩ±¥Œª÷√
+///
+///\author Ω€
+///\version 1.0
+///\date   16:29 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+
+global proc J_copyTransform()//øΩ±¥Œª÷√
+{
+	string $sel[]=`ls -sl`;
+    vector $p=`getAttr ($sel[0]+".translate")`;
+    vector $r=`getAttr ($sel[0]+".rotate")`;
+    vector $s=`getAttr ($sel[0]+".scale")`;
+    setAttr ($sel[1]+".translateX") ($p.x);
+    setAttr ($sel[1]+".translateY") ($p.y);
+    setAttr ($sel[1]+".translateZ") ($p.z);
+    setAttr ($sel[1]+".rotateX") ($r.x);
+    setAttr ($sel[1]+".rotateY") ($r.y);
+    setAttr ($sel[1]+".rotateZ") ($r.z);
+    setAttr ($sel[1]+".scaleX") ($s.x);
+    setAttr ($sel[1]+".scaleY") ($s.y);
+    setAttr ($sel[1]+".scaleZ") ($s.z);
+    
+    
+}
