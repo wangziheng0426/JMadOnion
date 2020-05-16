@@ -30,12 +30,14 @@ if (`window -ex J_CFXWorkFlow`)
         frameLayout -cll 1 -cl 0 -h 600-l "布料工具"  J_nClothFrameLayout;
             formLayout  -numberOfDivisions 100  J_nClothFormLayout;
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnClothSystemNode\")"  -allowMultiSelection 1 -h 163 J_allnClothSystemNode;
+                textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnNucleusNode\")"  -allowMultiSelection 1 -h 100 J_allnNucleusNode;
                 button -l "选择布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"nCloth\")" J_buNClothMark;
                 button -l "导出变型布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outInBetweenGeo()" J_buNClothOut;
                 button -l "导出abc布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
                 button -l "导出独立abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
                 button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
                 button -l "融合blend" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_JoinBlend()" J_buCreateBlend;
+                button -l "添加随机颜色" -w $ButtonW  -h $ButtonH -c  "J_randomColor()" J_buCreateColor;
     /////////////////////////////////////////////////////////编辑窗体   
     formLayout -e 
         -ap J_allHairSystemNode left 0 1
@@ -60,6 +62,10 @@ if (`window -ex J_CFXWorkFlow`)
         -af J_allnClothSystemNode top 0
         -ap J_allnClothSystemNode right 0 66
         
+        -ap J_allnNucleusNode left 0 1
+        -ac J_allnNucleusNode top 1 J_allnClothSystemNode
+        -ap J_allnNucleusNode right 0 66
+        
         -ap J_buNClothMark left 0 67
         -af J_buNClothMark top 0
         -ap J_buNClothMark right 0 100
@@ -83,6 +89,10 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_buCreateBlend left 0 67
         -ac J_buCreateBlend top  1 J_buNClothIn
         -ap J_buCreateBlend right 0 100
+        
+        -ap J_buCreateColor left 0 67
+        -ac J_buCreateColor top  1 J_buCreateBlend
+        -ap J_buCreateColor right 0 100
         
         J_nClothFormLayout;
 showWindow J_CFXWorkFlow;
@@ -130,11 +140,14 @@ global proc J_CFXWorkFlow_JoinBlend()
 ///根据场景中的选择,选择列表中的节点
 global proc J_CFXWorkFlow_selectNode()
 {
+
     textScrollList -e -deselectAll  J_allHairSystemNode;
     textScrollList -e -deselectAll  J_allnClothSystemNode;
+    textScrollList -e -deselectAll  J_allnNucleusNode;
     string $sel[]=`ls -sl`;
     string $listHair[]=`textScrollList -q -ai J_allHairSystemNode`;
     string $listCloth[]=`textScrollList -q -ai J_allnClothSystemNode`;
+    string $listNucleus[]=`textScrollList -q -ai J_allnNucleusNode`;
     J_CFXWorkFlow_init();
     
     //根据选择节点，选中列表节点
@@ -145,10 +158,14 @@ global proc J_CFXWorkFlow_selectNode()
         textScrollList -e -si $i J_allHairSystemNode;
     if(stringArrayContains( $i, $listCloth))
         textScrollList -e -si $i J_allnClothSystemNode;
+    if(stringArrayContains( $i, $listNucleus))
+        textScrollList -e -si $i J_allnNucleusNode;
     if(stringArrayContains( $chTemp[0], $listHair))
         textScrollList -e -si $chTemp[0] J_allHairSystemNode;
     if(stringArrayContains( $chTemp[0], $listCloth))
         textScrollList -e -si $chTemp[0] J_allnClothSystemNode;
+    if(stringArrayContains( $chTemp[0], $listNucleus))
+        textScrollList -e -si $chTemp[0] J_allnNucleusNode;
     }
 }
 ///启动后台跟踪程序,同步插件中和场景中的选择对象
@@ -169,14 +186,20 @@ global proc J_CFXWorkFlow_init()
 {
     textScrollList -e -ra  J_allHairSystemNode;
     textScrollList -e -ra  J_allnClothSystemNode;
+    textScrollList -e -ra  J_allnNucleusNode;
     string $allHair[]=`ls -type hairSystem`;
     for ($i in $allHair)
     {
         textScrollList -e -a $i J_allHairSystemNode;
     }
-    string $allHair[]=`ls -type nCloth`;
-    for ($i in $allHair)
+    string $allCloth[]=`ls -type nCloth`;
+    for ($i in $allCloth)
     {
         textScrollList -e -a $i J_allnClothSystemNode;
     }   
+    string $allNuclues[]=`ls -type nucleus`;
+    for ($i in $allNuclues)
+    {
+        textScrollList -e -a $i J_allnNucleusNode;
+    }  
 }
