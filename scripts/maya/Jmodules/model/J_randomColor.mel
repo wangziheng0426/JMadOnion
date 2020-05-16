@@ -24,9 +24,7 @@ global proc J_randomColor()//
         float $a=$color.r;
         float $b=$color.g;
         float $c=$color.b;
-        for ($i=0;$i<$PointCount[0];$i++)
-        {
-            polyColorPerVertex -rgb $a $b $c ($item+".vtx["+$i+"]") ;
-        }
+        polyColorPerVertex -rgb $a $b $c $item  ;
+
     }
 };
