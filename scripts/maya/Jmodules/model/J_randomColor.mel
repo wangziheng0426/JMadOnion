@@ -17,14 +17,28 @@ global proc J_randomColor()//
     for ($item in $sel)
     {
         int $PointCount[]=`polyEvaluate -v $item`;
-        setAttr ($item+".displayColors") 1;
+        //setAttr ($item+".displayColors") 1;
         int $i=0;
         vector $color=sphrand(0.7)+0.3;
-        print $color;
+        //print $color;
         float $a=$color.r;
         float $b=$color.g;
         float $c=$color.b;
-        polyColorPerVertex -rgb $a $b $c $item  ;
+        select $item ;
+        polyColorPerVertex -r $a -g $b -b $c -a 1  ;
+        string $chs[]=`listRelatives -c -type "mesh"`;
+        for ($item1 in $chs)
+        {
+            int $tempx=`getAttr ($item1+".displayColors")`;
+            if ($tempx==0)
+            {
+                setAttr ($item1+".displayColors") 1;
+            }
+            else
+            {
+            setAttr ($item1+".displayColors") 0;
+            }
+        }
 
     }
 };
