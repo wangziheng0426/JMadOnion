@@ -1,0 +1,19 @@
+但是设置了始终还是没有开机启动网络服务，最好只好去改配置文件
+vi /etc/sysconfig/network-scrips/ifcfg-ens33
+
+TYPE=Ethernet
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=ens33
+UUID=3c881316-6e92-40c1-9f99-7820a4e27ae6
+DEVICE=ens33
+ONBOOT=yes
+————————————————
+版权声明：本文为CSDN博主「python5915」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/chuan_day/java/article/details/70828859

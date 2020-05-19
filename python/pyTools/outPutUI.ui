@@ -121,7 +121,7 @@
          <bool>true</bool>
         </property>
         <property name="text">
-         <string>exportToUnity</string>
+         <string>ExportToUnity</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -151,6 +151,13 @@
        <widget class="QCheckBox" name="createMorpher">
         <property name="text">
          <string>CreateMorpher</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="exportBip_checkBox">
+        <property name="text">
+         <string>ExportBip</string>
         </property>
        </widget>
       </item>
@@ -204,7 +211,7 @@
        </size>
       </property>
       <property name="text">
-       <string>导出max绑定到fbx</string>
+       <string>导出max文件</string>
       </property>
      </widget>
     </item>

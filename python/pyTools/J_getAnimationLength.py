@@ -19,9 +19,9 @@ def readLength(_animFile):
 
     file.close()
     return animLength
-def readExcel(AssetsPath):
+def readExcel(excelFile):
     #excelFile = AssetsPath + '/DevResources/ExcelConfig/FacialAnim.xls'
-    excelFile = AssetsPath + '/DevResources/ExcelConfig/ModelAnim.xls'
+    #excelFile = AssetsPath + '/DevResources/ExcelConfig/ModelAnim.xls'
     excelDic = {}
     book = xlrd.open_workbook(excelFile)
     sheet1 = book.sheets()[0]
@@ -34,29 +34,36 @@ def readExcel(AssetsPath):
         # print sheet1.row_values(i)[1]
     return excelDic
 def findFileInDesk(AssetsPath,state=2):
-    excelDic=readExcel(AssetsPath)
+    #excelDic=readExcel(AssetsPath)
     modelPath=AssetsPath+"/GameResources/models"
+    logStr=""
     count=0
     if state == 0 or state==2:
+        excelDic=readExcel(AssetsPath + '/DevResources/ExcelConfig/ModelAnim.xls')
         for key in excelDic:
             rolePath=modelPath+'/'+key.encode('gbk')
             roleAnimationPath = rolePath + "/animation"
             for info in excelDic[key]:
-                animFile=roleAnimationPath+'/'+info.keys()[0].encode('gbk')+'.anim'
+                animFile=roleAnimationPath+'/'+info.keys()[0]+'.anim'
                 if not os.path.exists(animFile):
                     print animFile+":not exists"
+                    logStr += animFile+"\n"
                     count+=1
     if state==1 or state==2:
+        excelDic = readExcel(AssetsPath + '/DevResources/ExcelConfig/FacialAnim.xls')
         for key in excelDic:
             rolePath=modelPath+'/'+key.encode('gbk')
             roleAnimationPath=rolePath+"/facial"
             for info in excelDic[key]:
-                animFile=roleAnimationPath+'/'+info.keys()[0].encode('gbk')+'.anim'
+                animFile=roleAnimationPath+'/'+info.keys()[0]+'.anim'
                 if not os.path.exists(animFile):
                     print animFile+":not exists"
-                    count+=1
+                    logStr+=animFile+"\n"
     print (str(count)+"files lost")
+    logfile=open(AssetsPath+"/animationLog.log",'w' )
 
+    logfile.write(logStr.encode('utf-8'))
+    logfile.close()
 
 def fillExcel(AssetsPath,state=2):
     gameModelPath=AssetsPath+"/GameResources/models"
@@ -87,7 +94,7 @@ def fillExcel(AssetsPath,state=2):
             if os.path.isdir(gameModelPath + "/" + m):
                 print m
                 newExcelDic[m.lower()] = []
-                animationPath = gameModelPath + '/' + m + "/animation"
+                animationPath = gameModelPath + '/' + m + "/facial"
                 if not os.path.exists(animationPath):
                     os.makedirs(animationPath)
                 animationFiles = os.listdir(animationPath)
@@ -96,7 +103,7 @@ def fillExcel(AssetsPath,state=2):
                         aniDic = {}
                         aniDic[ani] = readLength(animationPath + '/' + ani)
                         newExcelDic[m.lower()].append(aniDic)
-        writeToAnimationExcel(newExcelDic, excelFile)
+        writeToFacialExcel(newExcelDic, excelFile)
         print (u'用时：' + str(time.time() - tt) + u"秒")
 def writeToAnimationExcel(dic,filePath):
     index=3
@@ -145,8 +152,8 @@ def writeToFacialExcel(dic, filePath):
                 index = index + 1
 #readInfo(ur"C:/main/Assets/GameResources/models/c_cl_pinghai/facial/retreat.anim")
     book.save(filePath)
-#assetsPath=ur'D:/project/国内主干/Client/Assets'
-assetsPath=os.getcwd().lower()
+assetsPath=ur'D:/project/日本主干/Client/Assets'
+#assetsPath=os.getcwd().lower()
 state=2
 
 if len(sys.argv)>1:
