@@ -18,6 +18,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     maxToFbxScript=''
     createNewMorpher=''
     facialRepair=''
+    exportBip=''
     maxVersion = {'max2015': r'Software\autodesk\3dsmax\17.0', \
                   'max2016': r'Software\autodesk\3dsmax\18.0', \
                   'max2017': r'Software\autodesk\3dsmax\19.0', \
@@ -39,8 +40,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         self.treeWidget_In.setColumnWidth(3, 550)
         self.treeWidget_In.setColumnWidth(4, 550)
         self.setWindowTitle( "AssetManager1.2")
-        headerLabelItem = [u'名称', u'中文名', u'和谐名',u'Model URL',u'Texture URL']
-        self.treeWidget_In.setHeaderLabels(headerLabelItem)
+        #headerLabelItem = [u'名称', u'中文名', u'和谐名',u'Model URL',u'Texture URL']
+        #self.treeWidget_In.setHeaderLabels(headerLabelItem)
 
         # 读取设置文件目录
         key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
@@ -70,6 +71,9 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
         scriptFile.close()
         scriptFile = open(os.getcwd() + '/dataFromSvn/maxScript/J_facialReparent.ms', 'r')
         self.facialRepair = scriptFile.read()
+        scriptFile.close()
+        scriptFile = open(os.getcwd() + '/dataFromSvn/maxScript/J_export_bip_fn.ms', 'r')
+        self.exportBip = scriptFile.read()
         scriptFile.close()
         #读取注册表查询max安装目录，并添加max到选择列表
         for k,v in self.maxVersion.items():
@@ -299,6 +303,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
     # 整理目录###############################################################################
     def J_reMatchFilePath(self, inPath, inTextField, outTextField):
         outFile = inPath.replace(inTextField, outTextField).replace('.max', '.fbx')
+        if self.exportBip_checkBox.isChecked():
+            outFile=outFile.replace('.fbx','.bip')
         filePath = '/'.join(outFile.split('/')[0:-2])
         characterName = outFile.split('/')[-2]
         fileName = outFile.split('/')[-1]
@@ -308,7 +314,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             destinationFilePath = destinationFilePath[0:-1]
         if destinationFileName.endswith('_'):
             destinationFileName = destinationFileName[0:-1]
-        return destinationFilePath  + destinationFileName
+        return destinationFilePath +'/' + destinationFileName
 
     #############################################################################################
     # 转换max文件到fbx按钮命令
@@ -322,9 +328,15 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             runMaxScript=self.createNewMorpher+runMaxScript
         if self.repairFacial.isChecked()==True:
             runMaxScript= self.facialRepair + runMaxScript
-
+        if self.exportBip_checkBox.isChecked():
+            runMaxScript=self.exportBip
         scriptPath = self.J_writeMaxScript( runMaxScript, 'J_convertMaxToFbx')
         # scriptPath = self.J_writeMaxScript(self.maxToFbxScript+self.outPutMaterialAttrs, 'J_convertMaxToFbx')
+        for item in range(0,self.treeWidget_In.topLevelItemCount()):
+            currentItem=self.treeWidget_In.topLevelItem(item)
+            if currentItem.checkState(1)==2:
+                for itemX in range(0,currentItem.childCount() ):
+                    itemsSelected.append(currentItem.child(itemX))
 
         for item in itemsSelected:
             # 拼装输出路径，在指定目录后面添加源文件夹，不存在就创建
@@ -335,6 +347,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                 if not os.path.exists(os.path.dirname(destinationFilePath)):
                     os.makedirs(os.path.dirname(destinationFilePath))
                 res = self.J_exportFbx(sourceFilePath, destinationFilePath, scriptPath)
+                print sourceFilePath
             else:
                 itemParent=item.parent()
                 destinationFilePath = outTextField
@@ -354,10 +367,8 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
                     res = self.J_exportFbx(destinationFilePath+"/"+str(item.text(0)),
                                            destinationFilePath+"/"+str(item.text(0).toLower().replace('.max','.fbx')),
                                            scriptPath)
-        os.remove(scriptPath)
+        #os.remove(scriptPath)
         msgBox = QtGui.QMessageBox.about(self, u'提示', u"转换完成")
-        msgBox.setWindowFlags(QtCore.Qt.CustomizeWindowHint)
-        msgBox.exec_()  # 模态对话框
         # 转换文件为fbx并返回执行结果，存入右侧列表，修改文件转换状态
         # 清除所有选择
         self.treeWidget_In.clearSelection();
@@ -369,16 +380,18 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
             return u'导出失败，可能选择的文件不是max文件。'
         # 默认读取max最高版本
         selectedMaxVersion = self.maxVersion[str(self.comboBox.currentText())]
-        runText = '\"' + selectedMaxVersion + '\"  -q -mi -mxs "loadMaxFile @\\"' + sourceFilePath.replace('\\', '/') + \
+        runText = '\"\"' + selectedMaxVersion + '\"  -q -mi -mxs "loadMaxFile @\\"' + sourceFilePath.replace('\\', '/') + \
                   '\\"   quiet:true;global inputPath=@\\"' + destinationFilePath.replace('\\', '/') + '\\"; ' + \
                   'filein @\\"' + scriptPath.replace('\\', '/') + '\\""'
+
         sctorun = str(runText).decode('utf-8').encode('gbk')
 
-        file = open(batFile, 'w')
-        file.write(sctorun, )
-        file.close()
-        os.system(batFile)  # 运行bat
-        os.remove(batFile)
+        #file = open(batFile, 'w')
+        #file.write(sctorun, )
+        #file.close()
+        #os.system(batFile)  # 运行bat
+        os.popen(sctorun)
+        #os.remove(batFile)
         return u'导出完成'
     # 导出贴图  动画
     def J_exportTextureAndAnimation(self):
@@ -450,7 +463,7 @@ class J_outPutTool(QtGui.QMainWindow, outPutUI.Ui_MainWindow):
 
     # 写max脚本
     def J_writeMaxScript(self, scriptStr, toolName):
-        filPath = os.getcwd().replace('\\', '/') + '/' + toolName + '.ms'
+        filPath = (os.getcwd().replace('\\', '/') + '/' + toolName + '.ms').replace('//','/')
         f = open(filPath, 'w')
         f.write(scriptStr)
         f.close()

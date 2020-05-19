@@ -16,7 +16,7 @@ rpm -q tigervnc tigervnc-server
 
 cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:1.service      #复制并被重命名为vncserver@:1.service
 
-
+\rm -R /tmp/.X11-unix/
 4、修改vncserver@:1.service文件
 # grep -n "^[^#]" /etc/systemd/system/vncserver@\:1.service 
 [Unit]
