@@ -31,6 +31,10 @@ def J_CFXWorkFlow_outInBetweenGeo(sample=1,sourceGeo=[],startTime=-1,endTime=0):
                 if cmds.getAttr((item1+'.intermediateObject')):
                     print item1
                     cmds.delete(item1)
+            dupGeo=cmds.rename(dupGeo,dupGeo+str(i))        
+            #dupGeo='|'+cmds.parent( dupGeo, world=True )[0]
+            #cmds.select(dupGeo)
+            #mel.eval("FreezeTransformations")
             gemoDupList[item].append(dupGeo)
     for item in gemoDupList:
         blendNode=cmds.blendShape(item[1:],item[0],inBetween=True)
@@ -39,5 +43,4 @@ def J_CFXWorkFlow_outInBetweenGeo(sample=1,sourceGeo=[],startTime=-1,endTime=0):
         cmds.setKeyframe( blendNode, attribute='w[0]', value=0 ,outTangentType="linear",inTangentType="linear")
         cmds.currentTime(endTime)
         cmds.setKeyframe( blendNode, attribute='w[0]', value=1 ,outTangentType="linear",inTangentType="linear")
-        cmds.parent(item[0],world=True)
-        
+        cmds.parent(item[0],world=True)        
