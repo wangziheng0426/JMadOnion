@@ -3,6 +3,8 @@
 import J_slaveUi
 import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools
 import _winreg
+import socket
+
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -11,12 +13,14 @@ from PyQt4 import QtCore
 
 
 class J_slaveMain(QtGui.QMainWindow, J_slaveUi.Ui_J_slaveWin):
+    localIp='127.0.0.1'
     def __init__(self):
         super(J_slaveMain, self).__init__()
         self.setupUi(self)
         self.mainUiInit()
         self.J_createSlots()
-
+        self.localIp =self.get_host_ip()
+        print self.localIp
     def mainUiInit(self):
         #配置表格属性
         pass
@@ -32,6 +36,17 @@ class J_slaveMain(QtGui.QMainWindow, J_slaveUi.Ui_J_slaveWin):
     def downLoadFileToLocal(self,filePath ):
         pass
 
+    import socket
+
+    def get_host_ip(self):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(('1.1.1.1', 666))
+            ip = s.getsockname()[0]
+        finally:
+            s.close()
+
+        return ip
 
 
     ################################ 链接按钮
