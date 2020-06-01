@@ -18,8 +18,12 @@ def J_CFXWorkFlow_hairOut():
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
     if os.path.exists(filePath+cacheFileName+'_cache'):
-        shutil.rmtree(filePath+cacheFileName+'_cache')
-    os.makedirs(filePath+cacheFileName+'_cache')
+        shutil.rmtree(filePath+cacheFileName+'_cache/presets/')
+        shutil.rmtree(filePath+cacheFileName+'_cache/shaders/')
+        os.remove(filePath+cacheFileName+'_cache/'+cacheFileName+'.jHair')
+    else:
+        os.makedirs(filePath+cacheFileName+'_cache')
+        
     os.makedirs(filePath+cacheFileName+'_cache/presets/')
     os.makedirs(filePath+cacheFileName+'_cache/shaders/')
     
