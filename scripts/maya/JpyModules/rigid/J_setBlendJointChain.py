@@ -40,6 +40,8 @@ def J_setBlendJointChain():
         chsA=cmds.listRelatives(chsA[0],children=True)
         chsB=cmds.listRelatives(chsB[0],children=True)
         chsC=cmds.listRelatives(chsC[0],children=True)
+        if chsA==None or chsB==None or chsC==None:
+            break;
     
 
 if __name__ == '__main__':
