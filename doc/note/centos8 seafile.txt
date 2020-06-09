@@ -1,0 +1,31 @@
+1 下载服务端
+
+
+2建立文件夹  \home\seafile
+    将压缩包拷贝到此目录 
+    tar -xzf 解压
+    
+3 安装支持
+    yum install python3 python3-setuptools python3-pip python3-ldap -y
+    pip3 install --timeout=3600 Pillow pylibmc captcha jinja2 sqlalchemy psd-tools \
+
+    django-pylibmc django-simple-captcha
+    
+    yum install mysql-server
+    启动 mysql 服务
+    systemctl start mysqld
+    systemctl enable mysqld
+    systemctl status mysqld
+
+    设置mysql密码
+    mysql_secure_installation
+
+4 安装seafile 
+    ./setup-seafile-mysql.sh
+    
+5启动
+    ./seafile.sh start
+    ./seahub.sh start  # 启动 Seahub 网站 （默认运行在127.0.0.1:8000端口上）
+
+
+你第一次启动 seahub 时，seahub.sh 脚本会提示你创建一个 seafile 管理员帐号。
