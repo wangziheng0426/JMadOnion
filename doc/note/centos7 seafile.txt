@@ -1,0 +1,24 @@
+1下载服务端
+
+
+2建立文件夹  \home\seafile
+    将压缩包拷贝到此目录 
+    tar -xzf 解压
+    yum install python python-setuptools MySQL-python python-urllib3 python-ldap -y
+    yum install python python-setuptools MySQL-python python-urllib3 python-ldap -y
+    yum install python python-setuptools MySQL-python python-urllib3 python-ldap -y
+    
+3安装mysql
+    wget -i -c http://dev.mysql.com/get/mysql57-community-release-el7-10.noarch.rpm  下载
+    yum -y install mysql57-community-release-el7-10.noarch.rpm 安装仓库
+    yum -y install mysql-community-server
+    systemctl start  mysqld.service
+    
+    查密码
+    grep "password" /var/log/mysqld.log
+    进入数据库
+    mysql -uroot -p
+    设置mysql密码
+    mysql_secure_installation
+4 安装seafile
+    ./setup-seafile-mysql.sh
