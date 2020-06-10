@@ -37,7 +37,7 @@ firewall-cmd --permanent --zone=public --add-port=3306/tcp  开端口
  
 那怎么开启一个端口呢
 添加
-firewall-cmd --zone=public --add-port=80/tcp --permanent    （--permanent永久生效，没有此参数重启后失效）
+firewall-cmd --zone=public --add-port=8000/tcp --permanent    （--permanent永久生效，没有此参数重启后失效）
 重新载入
 firewall-cmd --reload
 查看
