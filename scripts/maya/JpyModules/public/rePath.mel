@@ -1,8 +1,0 @@
-string $sourceFile="//192.168.20.30/rddata/WorkingData/大头儿子小头爸爸3/DaTouErZi3_Project";
-string $destinationFile="//11.10.9.9/Share/renderFiles/Ju_test";
-python("import os");
-python("import sys");
-python("sys.path.append('//11.10.9.9/Share/renderFiles/Ju_test')");
-python("import rePath");
-string $temp="\"rePath.rePath("+"'"+$sourceFile+"'"+","+"'"+$destinationFile+"')\"";
-python($temp);
