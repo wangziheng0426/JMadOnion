@@ -1,0 +1,31 @@
+1 安装autossh
+
+$ sudo yum install wget gcc make
+$ wget http://www.harding.motd.ca/autossh/autossh-1.4e.tgz
+$ tar -xf autossh-1.4e.tgz
+$ cd autossh-1.4e
+$ ./configure
+$ make
+$ sudo make install
+
+
+2开启ssh反向隧道
+
+在内网服务器(A)操作：
+    ssh -fCNR [B机器IP或省略]:[B机器端口]:[A机器的IP]:[A机器端口] [登陆B机器的用户名@服务器IP]
+
+    ssh  -fCNR 10001:localhost:22 root@114.67.213.228
+    
+    检验是否已经启动了可以使用ps aux | grep ssh指令来查看
+    
+在外网服务端(B)操作：
+    建立 正向代理
+    ssh -fCNL [A机器IP或省略]:[A机器端口]:[B机器的IP]:[B机器端口] [登陆B机器的用户名@B机器的IP]
+    ssh -fCNL *:10002:localhost:10001  localhost
+    
+    
+3 autossh 反向隧道
+               ssh 监听端口
+      autossh -M 30000 -o "StrictHostKeyChecking=false" -o "ServerAliveInterval 10" -o "ServerAliveCountMax 3" 
+       外网端口：内网主机：内网端口- 外网用户@外网地址
+    -NR 20000:localhost:22 root@114.67.213.228
