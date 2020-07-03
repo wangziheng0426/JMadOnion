@@ -44,7 +44,7 @@ def findFileInDesk(AssetsPath,state=2):
             rolePath=modelPath+'/'+key.encode('gbk')
             roleAnimationPath = rolePath + "/animation"
             for info in excelDic[key]:
-                animFile=roleAnimationPath+'/'+info.keys()[0]+'.anim'
+                animFile=roleAnimationPath+'/'+info.keys()[0].encode('gbk')+'.anim'
                 if not os.path.exists(animFile):
                     print animFile+":not exists"
                     logStr += animFile+"\n"
@@ -55,7 +55,7 @@ def findFileInDesk(AssetsPath,state=2):
             rolePath=modelPath+'/'+key.encode('gbk')
             roleAnimationPath=rolePath+"/facial"
             for info in excelDic[key]:
-                animFile=roleAnimationPath+'/'+info.keys()[0]+'.anim'
+                animFile=roleAnimationPath+'/'+info.keys()[0].encode('gbk')+'.anim'
                 if not os.path.exists(animFile):
                     print animFile+":not exists"
                     logStr+=animFile+"\n"
@@ -153,7 +153,7 @@ def writeToFacialExcel(dic, filePath):
 #readInfo(ur"C:/main/Assets/GameResources/models/c_cl_pinghai/facial/retreat.anim")
     book.save(filePath)
 assetsPath=ur'D:/project/日本主干/Client/Assets'
-#assetsPath=os.getcwd().lower()
+assetsPath=os.getcwd().lower()
 state=2
 
 if len(sys.argv)>1:
@@ -165,7 +165,7 @@ if len(sys.argv)>2:
 
 print u"Excel中找不到对应动画文件："
 
-#findFileInDesk(assetsPath)
+
 findFileInDesk(assetsPath, state)
 print u'---------------------------------------割-------------------------------------------------------'
 print u'开始倒表：'
