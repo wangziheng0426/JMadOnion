@@ -14,34 +14,33 @@ import shutil
 import maya.cmds as cmds
 import maya.mel as mel
 def J_CFXWorkFlow_hairIn():
-    cacheFileName = cmds.fileDialog2(fileMode=1, caption="Import hair")
-    if cacheFileName is None:
+    j_hairFile = cmds.fileDialog2(fileMode=1, caption="Import hair")
+    if j_hairFile is None:
         return
-    readCacheFile=open(cacheFileName[0],'r')
+    readJHairFile=open(j_hairFile[0],'r')
     hairData={}
     abcNode=''
     #毛发节点组
     if cmds.objExists('J_importHair_grp'):
         cmds.delete('J_importHair_grp')
     groupNode=cmds.createNode('transform',name='J_importHair_grp')
-    if cacheFileName[0][-5:]=='jHair':
-        hairData=json.load(readCacheFile)
+    if j_hairFile[0][-5:]=='jHair':
+        hairData=json.load(readJHairFile)
     else: 
         cmds.confirmDialog(title=u'错误',message=u'   请选择jhair文件    ',button='666')  
         return
-    readCacheFile.close()
+    readJHairFile.close()
     #设置帧速率
     if len(cmds.ls(type='mesh'))==0:
         cmds.currentUnit(time=hairData['currentUnit'])
     #导入abc
-    if os.path.exists(cacheFileName[0][0:-6]+'_Hair.abc') :
-        abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0][0:-6]+'_Hair.abc'+'";')
-    elif os.path.exists(cacheFileName[0][0:-6]+'_Hair.ABC'):
-        abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0][0:-6]+'_Hair.ABC'+'";')
+    if os.path.exists(os.path.dirname(j_hairFile[0])+"/"+hairData['abcFile']) :
+        abcNode=mel.eval('AbcImport -mode import "'+os.path.dirname(j_hairFile[0])+"/"+hairData['abcFile']+'";')
+        print abcNode
     else :
         cmds.confirmDialog(title=u'错误',message=u'    abc文件丢失    ',button='666')  
         return
-    J_CFXWorkFlow_parentGrp('AlembicNode')
+    J_CFXWorkFlow_parentGrp(abcNode)
     #去除重名曲线
     #allAbcCurve=cmds.listConnections(abcNode,type='nurbsCurve',source=False)
     #count=0
@@ -51,10 +50,10 @@ def J_CFXWorkFlow_hairIn():
     
 
     #建立毛发
-    J_CFXWorkFlow_createHairNode(hairData,cacheFileName[0],groupNode)
+    J_CFXWorkFlow_createHairNode(abcNode,hairData,j_hairFile[0],groupNode)
 
     
-def J_CFXWorkFlow_createHairNode(hairData,JhairFile,groupNode):
+def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
     for hairNodeItem in hairData['hairInfo']:
         hairState=0
         hairSysNode=hairNodeItem['hairNode']
@@ -97,15 +96,13 @@ def J_CFXWorkFlow_createHairNode(hairData,JhairFile,groupNode):
             cmds.setAttr((hairSysNodeName+'.simulationMethod'),1)
             cmds.setAttr((hairSysNodeName+'.active'),0)
 
-def J_CFXWorkFlow_parentGrp(nodeTypt):
-    allAbcNodes=cmds.ls(type=nodeTypt)
+def J_CFXWorkFlow_parentGrp(abcNode):
     allGrpNodes=[]
-    for item in allAbcNodes:
-        curveNodes=cmds.listConnections(item,type='nurbsCurve')
-        for item1 in curveNodes:
-            par=cmds.listRelatives(item1,parent=True)
-            if par[0] not in allGrpNodes:
-                allGrpNodes.append(par[0])
+    curveNodes=cmds.listConnections(abcNode,type='nurbsCurve')
+    for item1 in curveNodes:
+        par=cmds.listRelatives(item1,parent=True)
+        if par[0] not in allGrpNodes:
+            allGrpNodes.append(par[0])
     for item2 in allGrpNodes:
         try:
             cmds.parent(item2,'J_importHair_grp')
@@ -178,7 +175,8 @@ def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPl
                 except:
                     pass
 
-
+if __name__=='__main__':
+    J_CFXWorkFlow_hairIn()
             
             
             

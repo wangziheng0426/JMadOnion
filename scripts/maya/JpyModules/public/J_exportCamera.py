@@ -1,12 +1,13 @@
 # -*- coding:utf-8 -*-
 ##  @package public
 #
-##  @brief  å¯¼å‡ºæ‘„åƒæœº
-##  @author æ¡”
+##  @brief  µ¼³öÉãÏñ»ú
+##  @author ½Û
 ##  @version 1.0
 ##  @date  12:13 2020/7/3
 #  History:  
-
+#µ¼³öËùÓĞÑ¡ÔñÄ¿Â¼ÏÂma mbÎÄ¼şÖĞµÄÉãÏñ»ú£¬¿ÉÒÔÑ¡ÔñÊÇ·ñbakeÉãÏñ»ú¶¯»­¡£Èç¹ûÓĞ¶à¸öÉãÏñ»ú£¬Ã¿¸öÉãÏñ»ú»áÉú³É¶ÀÁ¢fbxÎÄ¼ş¡£Ä¬ÈÏÉãÏñ»ú²»»á±»µ¼³ö
+import os
 import maya.OpenMaya as om
 import maya.cmds as cmds
 #edo_renameDefualtRenderLayerName()
@@ -19,7 +20,7 @@ def J_exportCamera(outType='fbx'):
     res=''
     message=''
     bakeFrame=False
-    if cmds.confirmDialog( title='åˆ°æ‘„åƒæœºè¦çƒ˜ç„™å…³é”®å¸§ä¹ˆï¼Ÿ', message='åˆ°æ‘„åƒæœºè¦çƒ˜ç„™å…³é”®å¸§ä¹ˆï¼Ÿ', button=['è¦','é›…è ›è¶'], dismissString='No' ) ==u'\u8981':
+    if cmds.confirmDialog( title='µ½ÉãÏñ»úÒªºæ±º¹Ø¼üÖ¡Ã´£¿', message='µ½ÉãÏñ»úÒªºæ±º¹Ø¼üÖ¡Ã´£¿', button=['Òª','ÑÅóºµû'], dismissString='No' ) ==u'\u8981':
         bakeFrame=True
         
     count = 0
@@ -41,11 +42,11 @@ def J_exportCamera(outType='fbx'):
             cmds.pause( seconds=3 )
             if i.lower().endswith(".mb") or i.lower().endswith(".ma"):    
                 mayaFile=(item[0].replace('\\','/')+'/'+i)
-                cmds.file(mayaFile,open=True , force=True,ignoreVersion=True,executeScriptNodes=False,o=1, prompt=0)    
+                cmds.file(mayaFile,open=True , force=True,ignoreVersion=True,executeScriptNodes=True,o=1, prompt=0)    
                 J_excuteExport(mayaFile,outType,bakeFrame)
 
     cmds.progressWindow(endProgress=1)   
-    cmds.confirmDialog( title='æ‰§è¡Œç»“æœ', message="å¯¼å‡ºå®Œæˆ", button=['å¥½'], dismissString='No' )
+    cmds.confirmDialog( title='Ö´ĞĞ½á¹û', message="µ¼³öÍê³É", button=['ºÃ'], dismissString='No' )
 def J_excuteExport(fileName,outType,bakeFrame):
     cmds.loadPlugin ( "fbxmaya")
     allCam=cmds.ls(type='camera')
@@ -58,6 +59,7 @@ def J_excuteExport(fileName,outType,bakeFrame):
             camTransform=cmds.listRelatives(cam,p=True)
             start=cmds.playbackOptions(query=True,minTime=True)
             end=cmds.playbackOptions(query=True,maxTime=True)
+            cmds.bakeSimulation( cam, t=(start,end), sb=1, at=["focalLength"], hi="below" )
             cmds.bakeSimulation( camTransform[0], t=(start,end), sb=1, at=["rx","ry","rz","tx","ty","tz"], hi="below" )
         cmds.select(cam)
         cmds.file((fileName[0:-3]+"_"+cam.replace(':','_')+'.fbx'), force=True ,options= "fbx" ,type ="FBX export" ,es=True )
