@@ -87,15 +87,18 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
             findFollicles=cmds.listConnections(hairSysNode,type='follicle',shapes=True)
             if (None!= findFollicles):
                 for item2 in findFollicles :
-                    findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,destination=False)
-                    if findConnections is not None:
-                        if cmds.isConnected(findConnections[0],findConnections[1]):
-                            cmds.disconnectAttr(findConnections[0],findConnections[1])
-                    findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,source=False)
-                    if findConnections is not None:
-                        if cmds.isConnected(findConnections[0],findConnections[1]):
-                            cmds.disconnectAttr(findConnections[0],findConnections[1])
-            cmds.select(hairNodeItem['curveGroup'])
+                    # findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,destination=False)
+                    # if findConnections is not None:
+                        # if cmds.isConnected(findConnections[0],findConnections[1]):
+                            # cmds.disconnectAttr(findConnections[0],findConnections[1])
+                    # findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,source=False)
+                    # if findConnections is not None:
+                        # if cmds.isConnected(findConnections[0],findConnections[1]):
+                            # cmds.disconnectAttr(findConnections[0],findConnections[1])
+                    cmds.setAttr((item2+'.nodeState'),2)
+            for groupItem in allCurveGroup:
+                if groupItem.find(hairNodeItem['curveGroup'])>-1:
+                    cmds.select(groupItem)
             mel.eval('assignHairSystem '+hairSysNode+';')
             cmds.setAttr((hairSysNodeName+'.simulationMethod'),1)
             cmds.setAttr((hairSysNodeName+'.active'),0)
@@ -103,16 +106,19 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
 def J_CFXWorkFlow_getCurveGroup(abcNode):
     allGrpNodes=[]
     curveNodes=cmds.listConnections(abcNode,type='nurbsCurve')
-    endPrfx=""
+    endPrfx="iMcache"
     for item1 in curveNodes:        
         par=cmds.listRelatives(item1,fullPath=True,parent=True)
         if par[0] not in allGrpNodes:            
             allGrpNodes.append(par[0])
+    print allGrpNodes
     for item2 in allGrpNodes:
         try:
+            item2=cmds.rename(item2,item2+endPrfx)
             cmds.parent(item2,'J_importHair_grp')
         except:
             pass
+    print cmds.listRelatives('J_importHair_grp',fullPath=True,c=True)
     return cmds.listRelatives('J_importHair_grp',fullPath=True,c=True)
 def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPlug):
     allShader=cmds.ls(materials=True)
