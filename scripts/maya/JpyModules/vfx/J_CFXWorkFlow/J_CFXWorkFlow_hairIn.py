@@ -40,7 +40,7 @@ def J_CFXWorkFlow_hairIn():
     else :
         cmds.confirmDialog(title=u'错误',message=u'    abc文件丢失    ',button='666')  
         return
-    J_CFXWorkFlow_parentGrp(abcNode)
+    
     #去除重名曲线
     #allAbcCurve=cmds.listConnections(abcNode,type='nurbsCurve',source=False)
     #count=0
@@ -54,6 +54,7 @@ def J_CFXWorkFlow_hairIn():
 
     
 def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
+    allCurveGroup=J_CFXWorkFlow_getCurveGroup(abcNode)
     for hairNodeItem in hairData['hairInfo']:
         hairState=0
         hairSysNode=hairNodeItem['hairNode']
@@ -65,7 +66,9 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
         if hairState==0:
             trNode=cmds.createNode('transform',name=hairTranformName,parent=groupNode)
             hairSysNode=cmds.createNode('hairSystem',name=hairSysNodeName,parent=trNode)
-            cmds.select(hairNodeItem['curveGroup'])
+            for groupItem in allCurveGroup:
+                if groupItem.find(hairNodeItem['curveGroup'])>-1:
+                    cmds.select(groupItem)
             mel.eval('assignHairSystem '+hairSysNode+';')
             cmds.connectAttr('time1.outTime',hairSysNode+'.currentTime')
             cmds.select(hairSysNodeName)
@@ -82,32 +85,35 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
             J_CFXWorkFlow_importShader(hairNodeItem,JhairFile,'vray','vrayHairShader')
         if hairState==1:
             findFollicles=cmds.listConnections(hairSysNode,type='follicle',shapes=True)
-            for item2 in findFollicles :
-                findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,destination=False)
-                if findConnections is not None:
-                    if cmds.isConnected(findConnections[0],findConnections[1]):
-                        cmds.disconnectAttr(findConnections[0],findConnections[1])
-                findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,source=False)
-                if findConnections is not None:
-                    if cmds.isConnected(findConnections[0],findConnections[1]):
-                        cmds.disconnectAttr(findConnections[0],findConnections[1])
+            if (None!= findFollicles):
+                for item2 in findFollicles :
+                    findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,destination=False)
+                    if findConnections is not None:
+                        if cmds.isConnected(findConnections[0],findConnections[1]):
+                            cmds.disconnectAttr(findConnections[0],findConnections[1])
+                    findConnections=cmds.listConnections(item2,plugs=True,type='hairSystem',connections=True,source=False)
+                    if findConnections is not None:
+                        if cmds.isConnected(findConnections[0],findConnections[1]):
+                            cmds.disconnectAttr(findConnections[0],findConnections[1])
             cmds.select(hairNodeItem['curveGroup'])
             mel.eval('assignHairSystem '+hairSysNode+';')
             cmds.setAttr((hairSysNodeName+'.simulationMethod'),1)
             cmds.setAttr((hairSysNodeName+'.active'),0)
 
-def J_CFXWorkFlow_parentGrp(abcNode):
+def J_CFXWorkFlow_getCurveGroup(abcNode):
     allGrpNodes=[]
     curveNodes=cmds.listConnections(abcNode,type='nurbsCurve')
-    for item1 in curveNodes:
-        par=cmds.listRelatives(item1,parent=True)
-        if par[0] not in allGrpNodes:
+    endPrfx=""
+    for item1 in curveNodes:        
+        par=cmds.listRelatives(item1,fullPath=True,parent=True)
+        if par[0] not in allGrpNodes:            
             allGrpNodes.append(par[0])
     for item2 in allGrpNodes:
         try:
             cmds.parent(item2,'J_importHair_grp')
         except:
             pass
+    return cmds.listRelatives('J_importHair_grp',fullPath=True,c=True)
 def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPlug):
     allShader=cmds.ls(materials=True)
     shaderFilePath=os.path.dirname(jHairFile)+'/shaders/'
