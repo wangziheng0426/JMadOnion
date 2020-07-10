@@ -1,5 +1,5 @@
 netstat -an 查端口链接状况
-
+netstat -ntlp 列出所有端口
 
 passwd 改密码
 
