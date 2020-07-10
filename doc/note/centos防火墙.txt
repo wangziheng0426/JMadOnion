@@ -4,6 +4,8 @@ systemctl status firewalld查状态
 
 firewall-cmd --permanent --zone=public --add-port=3306/tcp  开端口
 
+firewall-cmd --list-ports  CentOS7查看开放端口命令
+
 1、firewalld的基本使用
 启动： systemctl start firewalld
 关闭： systemctl stop firewalld
