@@ -27,10 +27,10 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
     logStr[cacheFileName]={}
     logStr[cacheFileName]['geoInfo']=[]
     #建立导出模型组
-    if cmds.objExists('J_exportCloth_grp'):
-        cmds.delete('J_exportCloth_grp')
-    exportGroupNode=cmds.createNode('transform',name='J_exportCloth_grp')
-    
+    #if cmds.objExists('J_exportCloth_grp'):
+    #    cmds.delete('J_exportCloth_grp')
+    #exportGroupNode=cmds.createNode('transform',name='J_exportCloth_grp')
+    exportGeo=[]
     if os.path.exists(logFile):
         fileId=open(logFile,'r')
         #logStr=json.load(fileId)
@@ -43,20 +43,23 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
         exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
         for item in selectedNodes:
             #复制模型，以备导出
-            duGeo=cmds.parent(cmds.duplicate(item, smartTransform=True ),exportGroupNode)[0]
-            duGeo=cmds.listRelatives(duGeo,fullPath=True,parent=True)[0]+'|'+duGeo
+            #duGeo=cmds.parent(cmds.duplicate(item, smartTransform=True ),exportGroupNode)[0]
+            #duGeo=cmds.listRelatives(duGeo,fullPath=True,parent=True)[0]+'|'+duGeo
+            duGeo=cmds.duplicate(item, smartTransform=True )[0]
+            exportGeo.append(duGeo)
             exportString+=' -root '+item
             temp={}
             temp['abcGeo']=item
             temp['dupGeo']=duGeo
             logStr[cacheFileName]['geoInfo'].append (temp)
         exportString+=' -file '+j_clothCachePath+cacheFileName+'.abc"'
-        mel.eval(exportString)
+        
         geoFileName=j_clothCachePath+cacheFileName+'_Geo.ma'
-        cmds.select(exportGroupNode)
+        cmds.select(exportGeo)
         if os.path.exists(geoFileName):
             os.remove(geoFileName)
         cmds.file(geoFileName,op='v=0;',typ="mayaAscii", es=True)
+        mel.eval(exportString)
     if model==1:
         for item in selectedNodes:
             exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
@@ -68,6 +71,7 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
     fileId=open(logFile,'w')
     fileId.write(json.dumps(logStr))
     fileId.close()        
+    cmds.delete(exportGeo)
     os.startfile(j_clothCachePath)
 def J_CFXWorkFlow_getAllMeshUnderSelections(selectedNodes):
     allMesh=[]
@@ -83,7 +87,8 @@ def J_CFXWorkFlow_getChildNodes(currentNode,meshList):
     childNodes=cmds.listRelatives(currentNode,fullPath=True,children=True)
     for item in childNodes:
         if cmds.objectType( item, isType='mesh' ):
-            meshList.append(item)
+            if cmds.getAttr((item+".intermediateObject"))==0:
+                meshList.append(item)
         if cmds.objectType( item, isType='transform' ):
             J_CFXWorkFlow_getChildNodes(item,meshList)
             

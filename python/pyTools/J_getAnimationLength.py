@@ -144,16 +144,22 @@ def writeToFacialExcel(dic, filePath):
                 sheet.write(index, 1, key)
                 sheet.write(index, 2, keyAni.split('.')[0])
                 sheet.write(index, 3, aniDic[keyAni])
-                sheet.write(index, 4, 0)
-                sheet.write(index, 5, 0)
-                sheet.write(index, 6, 0)
+
+                if (keyAni.lower().find('loop') > -1):
+                    sheet.write(index, 4, 1)
+                    sheet.write(index, 5, 5)
+                    sheet.write(index, 6, 3)
+                else:
+                    sheet.write(index, 4, 0)
+                    sheet.write(index, 5, 0)
+                    sheet.write(index, 6, 0)
                 sheet.write(index, 7, 0)
                 sheet.write(index, 8, 0)
                 index = index + 1
 #readInfo(ur"C:/main/Assets/GameResources/models/c_cl_pinghai/facial/retreat.anim")
     book.save(filePath)
-assetsPath=ur'D:/project/日本主干/Client/Assets'
-assetsPath=os.getcwd().lower()
+assetsPath=ur'D:/project/国内线上/Client/Assets'
+#assetsPath=os.getcwd().lower()
 state=2
 
 if len(sys.argv)>1:
