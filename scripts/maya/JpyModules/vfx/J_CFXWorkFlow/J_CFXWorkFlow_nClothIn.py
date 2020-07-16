@@ -14,10 +14,12 @@ def J_CFXWorkFlow_nClothIn():
     abcLog = cmds.fileDialog2(fileMode=1, caption="Import abcLog")
     #导入abc
     fileId=open(abcLog,'r')
-    info=json.load(fileId)
-    
+    clothInfo=json.load(fileId)
+    if cmds.objExists('J_importCloth_grp'):
+        cmds.delete('J_importCloth_grp')
+    groupNode=cmds.createNode('transform',name='J_importCloth_grp')
     if  cacheFileName  is not None:
-        abcNode=mel.eval('AbcImport -mode import "'+cacheFileName[0] +'";')
+        abcNode=mel.eval('AbcImport -mode import -reparent '+groupNode+cacheFileName[0] +'";')
 
         
 #选择两个组进行操作，组内不可以有子物体，脚本会讲第一个组内的模型作为源物体，寻找第二个组中同名模型制作blendshape
