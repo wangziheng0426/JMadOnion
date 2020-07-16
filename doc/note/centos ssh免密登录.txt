@@ -1,0 +1,22 @@
+1. 在ssh客户端，生成公钥和私钥
+
+    cd ~/.ssh
+    $ ssh-keygen -t rsa 
+    
+    
+    
+2. 在ssh服务端修改配置文件
+    vi /etc/ssh/sshd_config 
+    找到以下内容，去掉注释符“#”
+    RSAAuthentication yes 
+    PubkeyAuthentication yes 
+    AuthorizedKeysFile .ssh/authorized_keys 
+    
+    重启sshd服务
+    service sshd restart 
+    
+    在ssh服务端，导入公钥到服务器端认证文件，更改权限
+    
+    $ ssh-copy-id user@host
+    或者手动把公钥复制到远程主机，添加到authorized_keys
+    cat id_rsa.pub >> ~/.ssh/authorized_keys 

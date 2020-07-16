@@ -119,7 +119,7 @@ def J_CFXWorkFlow_getCurveGroup(abcNode):
             cmds.parent(item2,'J_importHair_grp')
         except:
             pass
-    print cmds.listRelatives('J_importHair_grp',fullPath=True,c=True)
+    #print cmds.listRelatives('J_importHair_grp',fullPath=True,c=True)
     return cmds.listRelatives('J_importHair_grp',fullPath=True,c=True)
 def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPlug):
     allShader=cmds.ls(materials=True)
