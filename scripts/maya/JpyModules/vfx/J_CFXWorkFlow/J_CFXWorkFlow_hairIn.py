@@ -20,6 +20,7 @@ def J_CFXWorkFlow_hairIn():
     readJHairFile=open(j_hairFile[0],'r')
     hairData={}
     abcNode=''
+    J_CFXWorkFlow_upDataAttachCurvesToHairSystem()
     #毛发节点组
     if cmds.objExists('J_importHair_grp'):
         cmds.delete('J_importHair_grp')
@@ -74,7 +75,7 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
             cmds.select(hairSysNodeName)
             mel.eval('addPfxToHairSystem;')
             presetsPath=cmds.internalVar(userPresetsDir=True)+'/attrPresets/hairSystem/'
-            shutil.copy(os.path.dirname(JhairFile)+'/presets/'+hairSysNodeName.replace(':','_')+'.mel',presetsPath)
+            shutil.copy(os.path.dirname(JhairFile)+'/hairPresets/'+hairSysNodeName.replace(':','_')+'.mel',presetsPath)
             mel.eval('applyAttrPreset '+hairSysNodeName+' '+hairSysNodeName.replace(':','_')+' 1')
             cmds.setAttr((hairSysNodeName+'.simulationMethod'),1)
             cmds.setAttr((hairSysNodeName+'.active'),0)
@@ -122,7 +123,7 @@ def J_CFXWorkFlow_getCurveGroup(abcNode):
     return cmds.listRelatives('J_importHair_grp',fullPath=True,c=True)
 def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPlug):
     allShader=cmds.ls(materials=True)
-    shaderFilePath=os.path.dirname(jHairFile)+'/shaders/'
+    shaderFilePath=os.path.dirname(jHairFile)+'/hairShaders/'
 
     if len(hairNodeItem['shader'][currentRenderer])>0:
         shaderNameExists=0
@@ -186,7 +187,19 @@ def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPl
                     cmds.connectAttr( (shaderNode+'.outColor'),(hairNodeItem['hairNode']+'.'+rendererPlug))
                 except:
                     pass
-
+    #maya自带mel会报错，升级一下
+def J_CFXWorkFlow_upDataAttachCurvesToHairSystem():
+    melPath=mel.eval('getenv MAYA_LOCATION')+"/scripts/others/attachCurvesToHairSystem.mel"
+    fileO=open(melPath,'r')
+    fileData=fileO.read()
+    if (fileData.find('listRelatives -ap -p ')<0):
+        return
+    fileData=fileData.replace('listRelatives -ap -p ','listRelatives -fullPath -ap -p ')
+    fileO.close()
+    fileO=open(melPath,'w')
+    fileO.writelines(fileData)
+    fileO.close()
+    mel.eval('source \"' +melPath+'\"')
 if __name__=='__main__':
     J_CFXWorkFlow_hairIn()
             
