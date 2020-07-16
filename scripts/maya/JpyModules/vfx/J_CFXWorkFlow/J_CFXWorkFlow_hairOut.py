@@ -16,22 +16,26 @@ import maya.cmds as cmds
 def J_CFXWorkFlow_hairOut():
     #创建缓存路径
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
-    
+    if cmds.file(query=True,sceneName=True,shortName=True)=='':
+        cmds.confirmDialog(title=u'错误',message=u'文件未保存，或者需要另存为mb格式',button='好吧')
+        return
     cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
     j_hairCachePath=filePath+cacheFileName+'_cache/'
     j_hairFile=j_hairCachePath+cacheFileName+'.jHair'
+    j_hairPresetsPath=j_hairCachePath+'hairPresets/'
+    j_hairShadersPath=j_hairCachePath+'hairShaders/'
     if os.path.exists(j_hairCachePath):
         try:
-            shutil.rmtree(j_hairCachePath+'presets/')
-            shutil.rmtree(j_hairCachePath+'shaders/')
+            shutil.rmtree(j_hairPresetsPath)
+            shutil.rmtree(j_hairShadersPath)
             os.remove(j_hairFile)
         except:
             pass
     else:
         os.makedirs(j_hairCachePath)
         
-    os.makedirs(j_hairCachePath+'presets/')
-    os.makedirs(j_hairCachePath+'shaders/')
+    os.makedirs(j_hairPresetsPath)
+    os.makedirs(j_hairShadersPath)
     
     #创建缓存路径
     #创建json文件记录节点信息
@@ -69,16 +73,16 @@ def J_CFXWorkFlow_hairOut():
             if os.path.exists(userPreFile):
                 os.remove(userPreFile)
             presetsPath=mel.eval('saveAttrPreset("'+item+'","'+item.replace(':','_')+'",0)')
-            if os.path.exists(j_hairCachePath+'presets/'+item.replace(':','_')+'.mel'):
-                os.remove(j_hairCachePath+'presets/'+item.replace(':','_')+'.mel')
-            shutil.move(presetsPath,(j_hairCachePath+'presets/'))
+            if os.path.exists(j_hairPresetsPath+item.replace(':','_')+'.mel'):
+                os.remove(j_hairPresetsPath+item.replace(':','_')+'.mel')
+            shutil.move(presetsPath,(j_hairPresetsPath))
             #输出abc
             if follicleNodes.count>0:
                 currentHairMessage['hairNode']=item
                 currentHairMessage['curveGroup']=newOutCurveGroup
                 curveGroups.append(newOutCurveGroup)
                 #导出材质
-                currentHairMessage['shader']=J_exportHairShader(j_hairCachePath+'shaders/',item)
+                currentHairMessage['shader']=J_exportHairShader(j_hairShadersPath,item)
                 #导出材质
                 hairData['hairInfo'].append(currentHairMessage)
                 runAbcString+=' -root '+newOutCurveGroup
@@ -89,6 +93,7 @@ def J_CFXWorkFlow_hairOut():
     runAbcString+=' -file \\"'+j_hairCachePath+cacheFileName+'_Hair.abc\\""'
     print runAbcString
     mel.eval(runAbcString)
+    os.startfile(j_hairCachePath)
     
 def J_exportHairShader(shaderFilePath,currentHairNode):
     rendererAttrs={'mtoa':'.aiHairShader','redShift':'.rsHairShader','vray':'.vrayHairShader'}
