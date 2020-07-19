@@ -104,8 +104,10 @@ def J_CFXWorkFlow_outAbcOrgGeoWithMat():
         newobj=cmds.duplicate(item)
     mel.eval('file -force -options "v=0;" -typ "mayaBinary" -pr -es "'+j_clothCachePath+cacheFileName+'.mb";')
 
-
-    
+########################################################################################################################################
+#敬平非要用mc
+def J_CFXWorkFlow_outMcCache():
+    pass
     
     
 if __name__ == '__main__':

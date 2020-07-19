@@ -76,5 +76,13 @@ def J_CFXWorkFlow_getMeshsFromAbc(abcNode,allMeshParent):
         par=cmds.listRelatives(item,fullPath=True,parent=True)
         if par[0]!=None:
             allMeshParent.append(par[0]+"|"+item)
+########################################################################################################################################
+#敬平非要用mc
+def J_CFXWorkFlow_importMcCache()
+    pass
+
+
+
+
 if __name__ == '__main__':
     J_CFXWorkFlow_nClothIn()
