@@ -78,7 +78,7 @@ def J_CFXWorkFlow_getMeshsFromAbc(abcNode,allMeshParent):
             allMeshParent.append(par[0]+"|"+item)
 ########################################################################################################################################
 #敬平非要用mc
-def J_CFXWorkFlow_importMcCache()
+def J_CFXWorkFlow_importMcCache():
     pass
 
 
