@@ -158,7 +158,7 @@ def writeToFacialExcel(dic, filePath):
                 index = index + 1
 #readInfo(ur"C:/main/Assets/GameResources/models/c_cl_pinghai/facial/retreat.anim")
     book.save(filePath)
-assetsPath=ur'D:/project/国内线上/Client/Assets'
+assetsPath=ur'D:/project/国内主干/Client/Assets'
 #assetsPath=os.getcwd().lower()
 state=2
 
