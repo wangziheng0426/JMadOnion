@@ -39,13 +39,12 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
     if len(selectedNodes)<1:
         cmds.confirmDialog(title=u'错误',message=u'   未选中任何节点   ',button='666')
         return
+    J_deleteUnknownNode()
     if model==0:
         exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
         for item in selectedNodes:
             #复制模型，以备导出
-            #duGeo=cmds.parent(cmds.duplicate(item, smartTransform=True ),exportGroupNode)[0]
-            #duGeo=cmds.listRelatives(duGeo,fullPath=True,parent=True)[0]+'|'+duGeo
-            duGeo=cmds.duplicate(item, smartTransform=True )[0]
+            duGeo=J_CFXWorkFlow_duplicateObj(item)
             exportGeo.append(duGeo)
             exportString+=' -root '+item
             temp={}
@@ -53,7 +52,7 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
             temp['dupGeo']=duGeo
             logStr[cacheFileName]['geoInfo'].append (temp)
         exportString+=' -file '+j_clothCachePath+cacheFileName+'.abc"'
-        
+        #导出模型
         geoFileName=j_clothCachePath+cacheFileName+'_Geo.ma'
         cmds.select(exportGeo)
         if os.path.exists(geoFileName):
@@ -65,9 +64,20 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
             exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
             exportString+=' -root '+item
             exportString+=' -file '+j_clothCachePath+item.split('|')[-1].replace(':','@')+'.abc"'
-            logStr[item.split('|')[-1].replace(':','@')]=[]
-            logStr[item.split('|')[-1].replace(':','@')].append (item)
+            #复制模型，以备导出
+            duGeo=J_CFXWorkFlow_duplicateObj(item)
+            exportGeo.append(duGeo)
+            temp={}
+            temp['abcGeo']=item
+            temp['dupGeo']=duGeo
+            logStr[cacheFileName]['geoInfo'].append (temp)
             mel.eval(exportString)
+        #导出模型
+        geoFileName=j_clothCachePath+cacheFileName+'_Geo.ma'
+        cmds.select(exportGeo)
+        if os.path.exists(geoFileName):
+            os.remove(geoFileName)
+        cmds.file(geoFileName,op='v=0;',typ="mayaAscii", es=True)
     fileId=open(logFile,'w')
     fileId.write(json.dumps(logStr))
     fileId.close()        
@@ -103,7 +113,21 @@ def J_CFXWorkFlow_outAbcOrgGeoWithMat():
     for item in selectedNodes:
         newobj=cmds.duplicate(item)
     mel.eval('file -force -options "v=0;" -typ "mayaBinary" -pr -es "'+j_clothCachePath+cacheFileName+'.mb";')
+def J_CFXWorkFlow_duplicateObj(inGeo):
+    cmds.select(inGeo)
+    cmds.duplicate(rr=True, smartTransform=True )
+    uuid=cmds.ls( sl=True, uuid=True )
+    fullNodePath=cmds.ls(uuid[0])
+    
+    return cmds.parent(fullNodePath,world=True)[0]
 
+def J_deleteUnknownNode():
+    cmds.delete(cmds.ls(type="unknown"))
+    cmds.delete(cmds.ls(type="unknownDag"))
+    if not cmds.unknownPlugin( q=True, l=True )==None:
+        for item in cmds.unknownPlugin( q=True, l=True ):
+            print item
+            cmds.unknownPlugin(item,r=True)
 ########################################################################################################################################
 #敬平非要用mc
 def J_CFXWorkFlow_outMcCache():

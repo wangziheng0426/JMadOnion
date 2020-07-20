@@ -51,6 +51,8 @@ def J_CFXWorkFlow_hairOut():
     if len(allHairNodes)<1:
         cmds.confirmDialog(title=u'错误',message=u'   未选中毛发节点        ',button='666')
         return 'noHair';
+    #清理辣鸡
+    J_deleteUnknownNode()
     #场控帧速率
     hairData['currentUnit']=cmds.currentUnit(query=True,time=True)
 
@@ -67,7 +69,7 @@ def J_CFXWorkFlow_hairOut():
         if follicleNodes is not None:
             #生成输出曲线
             for follicleItem in follicleNodes:
-                createOutCurveNode(item,follicleItem,newOutCurveGroup)
+                J_CFXWorkFlow_createOutCurveNode(item,follicleItem,newOutCurveGroup)
             #保存预设
             userPreFile=cmds.internalVar(userPresetsDir=True)+'attrPresets/hairSystem/'+item.replace(':','_')+'.mel' #栓出原有预设
             if os.path.exists(userPreFile):
@@ -112,7 +114,7 @@ def J_exportHairShader(shaderFilePath,currentHairNode):
                 shaderMessage[key].append(fileName)
     return shaderMessage
     
-def createOutCurveNode(inputHairSys,inputFollicle,outCurveGroup):
+def J_CFXWorkFlow_createOutCurveNode(inputHairSys,inputFollicle,outCurveGroup):
     index=0
     curveTranNodeName=inputHairSys.replace(':','_')+'_outCurve'
     while cmds.objExists(curveTranNodeName+str(index)):
@@ -127,6 +129,14 @@ def createOutCurveNode(inputHairSys,inputFollicle,outCurveGroup):
     except:
         pass
     cmds.parent(curveTranNodeName+str(index),outCurveGroup)
-
+def J_deleteUnknownNode():
+    cmds.delete(cmds.ls(type="unknown"))
+    cmds.delete(cmds.ls(type="unknownDag"))
+    if not cmds.unknownPlugin( q=True, l=True )==None:
+        for item in cmds.unknownPlugin( q=True, l=True ):
+            print item
+            cmds.unknownPlugin(item,r=True)
+            
+            
 if __name__ == '__main__':
     J_CFXWorkFlow_hairOut()
