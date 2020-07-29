@@ -18,7 +18,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1):
     cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
     j_CachePath=''
     j_PbPath=''
-    if (cmds.ls(sl=True)==None):
+    if (len(cmds.ls(sl=True))<1):
         return
     if (filePath!=''):
         j_CachePath=filePath+cacheFileName+'_cache/'
