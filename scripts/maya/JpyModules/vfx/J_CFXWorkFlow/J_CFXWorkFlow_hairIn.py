@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 ##  @package J_CFXWorkFlow
 #
-##  @brief  ����ë��
-##  @author ��
+##  @brief  导入毛发
+##  @author 桔
 ##  @version 1.0
 ##  @date  16:46 2018/1/15
 #  History:  
-##����ë��
+##导入毛发
 import json
 import os
 import sys
@@ -21,28 +21,28 @@ def J_CFXWorkFlow_hairIn():
     hairData={}
     abcNode=''
     J_CFXWorkFlow_upDataAttachCurvesToHairSystem()
-    #ë���ڵ���
+    #毛发节点组
     if cmds.objExists('J_importHair_grp'):
         cmds.delete('J_importHair_grp')
     groupNode=cmds.createNode('transform',name='J_importHair_grp')
     if j_hairFile[0][-5:]=='jHair':
         hairData=json.load(readJHairFile)
     else: 
-        cmds.confirmDialog(title=u'����',message=u'   ��ѡ��jhair�ļ�    ',button='666')  
+        cmds.confirmDialog(title=u'错误',message=u'   请选择jhair文件    ',button='666')  
         return
     readJHairFile.close()
-    #����֡����
+    #设置帧速率
     if len(cmds.ls(type='mesh'))==0:
         cmds.currentUnit(time=hairData['currentUnit'])
-    #����abc
+    #导入abc
     if os.path.exists(os.path.dirname(j_hairFile[0])+"/"+hairData['abcFile']) :
         abcNode=mel.eval('AbcImport -mode import "'+os.path.dirname(j_hairFile[0])+"/"+hairData['abcFile']+'";')
         print abcNode
     else :
-        cmds.confirmDialog(title=u'����',message=u'    abc�ļ���ʧ    ',button='666')  
+        cmds.confirmDialog(title=u'错误',message=u'    abc文件丢失    ',button='666')  
         return
     
-    #ȥ����������
+    #去除重名曲线
     #allAbcCurve=cmds.listConnections(abcNode,type='nurbsCurve',source=False)
     #count=0
     #for curveItem in allAbcCurve:
@@ -50,7 +50,7 @@ def J_CFXWorkFlow_hairIn():
     #    count+=1
     
 
-    #����ë��
+    #建立毛发
     J_CFXWorkFlow_createHairNode(abcNode,hairData,j_hairFile[0],groupNode)
 
     
@@ -80,7 +80,7 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
             cmds.setAttr((hairSysNodeName+'.simulationMethod'),1)
             cmds.setAttr((hairSysNodeName+'.active'),0)
             os.remove(presetsPath+hairSysNodeName.replace(':','_')+'.mel')
-            #�������
+            #导入材质
             J_CFXWorkFlow_importShader(hairNodeItem,JhairFile,'mtoa','aiHairShader')
             J_CFXWorkFlow_importShader(hairNodeItem,JhairFile,'redShift','rsHairShader')
             J_CFXWorkFlow_importShader(hairNodeItem,JhairFile,'vray','vrayHairShader')
@@ -155,7 +155,7 @@ def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPl
                     +hairNodeItem['hairNode']+' vraySeparator_vray_hair_shader; vrayAddAttr '\
                     +hairNodeItem['hairNode']+' vrayHairShader;')
                 except:
-                    print 'vray ��Ⱦ������'
+                    print 'vray 渲染器出错'
         if cmds.objExists(shaderNode):
             shaderNameExists=1
             if cmds.objectType(shaderNode) in allShader:
@@ -164,7 +164,7 @@ def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPl
             if cmds.attributeQuery(rendererPlug,node=hairNodeItem['hairNode'],exists=True):
                 cmds.connectAttr( (shaderNode+'.outColor'),(hairNodeItem['hairNode']+'.'+rendererPlug))
         if shaderNodeExists==0:
-            #��������ļ�
+            #导入材质文件
             shaderFile=shaderFilePath+hairNodeItem['shader'][currentRenderer][1].split('/')[-1]
             shaderFileStr=open(shaderFile,'r')
             itemInLines=shaderFileStr.readlines()
@@ -181,13 +181,13 @@ def J_CFXWorkFlow_importShader(hairNodeItem,jHairFile,currentRenderer,rendererPl
                     mel.eval(itemInLines[lineId])
                 except:
                     pass
-            #��������ļ�
+            #导入材质文件
             if cmds.attributeQuery(rendererPlug,node=hairNodeItem['hairNode'],exists=True):
                 try:
                     cmds.connectAttr( (shaderNode+'.outColor'),(hairNodeItem['hairNode']+'.'+rendererPlug))
                 except:
                     pass
-    #maya�Դ�mel�ᱨ�������һ��
+    #maya自带mel会报错，升级一下
 def J_CFXWorkFlow_upDataAttachCurvesToHairSystem():
     melPath=mel.eval('getenv MAYA_LOCATION')+"/scripts/others/attachCurvesToHairSystem.mel"
     fileO=open(melPath,'r')
@@ -202,11 +202,3 @@ def J_CFXWorkFlow_upDataAttachCurvesToHairSystem():
     mel.eval('source \"' +melPath+'\"')
 if __name__=='__main__':
     J_CFXWorkFlow_hairIn()
-            
-            
-            
-            
-            
-            
-            
-            
