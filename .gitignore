@@ -1,7 +1,7 @@
 *.pyc
 /J_Living/J_LivingSlave/.vs
-/J_Living/J_LivingSlave/J_LivingSlave/bin/Debug
-/J_Living/J_LivingSlave/J_LivingSlave/obj/Debug
+/J_Living/J_LivingSlave/J_LivingWorker/bin/Debug
+/J_Living/J_LivingSlave/J_LivingWorker/obj/Debug
 /J_Living/J_LivingScript/python/.idea
 /J_Living/J_LivingScript/.idea
 /scripts/*.exe
