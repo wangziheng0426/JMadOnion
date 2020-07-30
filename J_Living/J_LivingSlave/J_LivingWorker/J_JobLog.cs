@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace J_LivingSlave
+namespace J_LivingWorker
 {
     class J_JobLogger
     {

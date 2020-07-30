@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "J_LivingSlave", "J_LivingSlave\J_LivingSlave.csproj", "{121BD19C-DB68-4028-AE5E-301D65ABC30E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "J_LivingWorker", "J_LivingWorker.csproj", "{121BD19C-DB68-4028-AE5E-301D65ABC30E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +20,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2C9588C6-03DA-4DF2-B1A8-C04CC5B985B8}
+		SolutionGuid = {D3F77115-638E-4A8A-ABEA-29F9562E0A72}
 	EndGlobalSection
 EndGlobal

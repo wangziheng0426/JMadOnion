@@ -7,30 +7,30 @@ using Newtonsoft.Json;
 using System.Threading;
 using System.IO;
 
-namespace J_LivingSlave
+namespace J_LivingWorker
 {
     class J_JobManage
     {//任务列表
         public List<J_JsonJobData> jobList = new List<J_JsonJobData>();
         List<J_JobCompute> jobComputeList = new List<J_JobCompute>();
-        bool slaveState = false;
-        public J_SlaveSetting slave = new J_SlaveSetting();
+        bool workerState = false;
+        public J_WorkerSetting worker = new J_WorkerSetting();
         public J_SoftWareSetting softWares = new J_SoftWareSetting();
         private static readonly J_JobManage instance = new J_JobManage();
         private J_JobManage()
         {
-            //读取设置
+            //读取设置初始化服务器
             Console.WriteLine("Read setting file");
-            if (File.Exists(Directory.GetCurrentDirectory() + @"/slaveSetting.txt"))
+            if (File.Exists(Directory.GetCurrentDirectory() + @"/workerSetting.txt"))
             {
-                string readSetting = File.ReadAllText(Directory.GetCurrentDirectory() + @"/slaveSetting.txt");
+                string readSetting = File.ReadAllText(Directory.GetCurrentDirectory() + @"/workerSetting.txt");
                 try
-                { slave = JsonConvert.DeserializeObject<J_SlaveSetting>(readSetting); }
+                { worker = JsonConvert.DeserializeObject<J_WorkerSetting>(readSetting); }
                 catch { }
             }
             else
             {
-                slave.saveData(Directory.GetCurrentDirectory() + @"/slaveSetting.txt");
+                worker.saveData(Directory.GetCurrentDirectory() + @"/workerSetting.txt");
             }
             if (File.Exists(Directory.GetCurrentDirectory() + @"/softWareSetting.txt"))
             {
@@ -51,8 +51,8 @@ namespace J_LivingSlave
         }
         public void Job_start()
         {
-            Thread slaveThread = new Thread(J_CreateJob);
-            slaveThread.Start();
+            Thread workerThread = new Thread(J_CreateJob);
+            workerThread.Start();
         }
 
         public static J_JobManage GetJ_JobManage()
@@ -119,15 +119,15 @@ namespace J_LivingSlave
                     }
                 }
             }
-            if (operation == "start_slave")
+            if (operation == "start_worker")
             {
-                slaveState = true;
-                res = "slave started";
+                workerState = true;
+                res = "worker started";
             }
-            if (operation == "stop_slave")
+            if (operation == "stop_worker")
             {
-                slaveState = false;
-                res = "slave stoped";
+                workerState = false;
+                res = "worker stoped";
             }
             return res;
         }
@@ -135,9 +135,9 @@ namespace J_LivingSlave
         {
             while (true)
             {
-                if (slaveState)
+                if (workerState)
                 {
-                    int taskCountSetting = int.Parse(slave.slaveTaskNum);
+                    int taskCountSetting = int.Parse(worker.workerTaskNum);
                     Thread.Sleep(5000);
                     if (jobList.Count == 0)
                     {
