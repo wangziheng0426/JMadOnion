@@ -1,0 +1,2 @@
+{"serverIp":"192.168.1.250","serverPort":"6666","serverName":"J_server","slaveName":"evenWork","slaveIp":"192.168.53.3","slavePort":"6666","slaveTaskNum":"2","userName":"admin","password":"admin"}
+

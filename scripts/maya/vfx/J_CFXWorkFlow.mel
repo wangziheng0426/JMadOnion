@@ -15,19 +15,20 @@ global proc J_CFXWorkFlow()//主程序
 string $checkBoxs[];
 if (`window -ex J_CFXWorkFlow`)
     deleteUI -window J_CFXWorkFlow;
-    window -w 300 -h 400 -title "CFX工具" J_CFXWorkFlow;
+    window -w 300 -h 360 -title "CFX工具" J_CFXWorkFlow;
         int $ButtonW=80;
         int $ButtonH=30;
-        frameLayout -cll 1 -cl 0 -h 400-l "毛发工具"  J_hairFrameLayout;
+        formLayout  -numberOfDivisions 100  J_cfxWorkFlowMain;
+        frameLayout -cll 1 -cl 0 -h 140-l "毛发工具"  J_hairFrameLayout;
             formLayout  -numberOfDivisions 100  J_hairFormLayout;
-                textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allHairSystemNode\")"  -allowMultiSelection 1 -h 123 J_allHairSystemNode;
+                textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allHairSystemNode\")"  -allowMultiSelection 1 -h 110 J_allHairSystemNode;
                 button -l "选择毛发" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"hairSystem\")" J_buHairMark;
                 button -l "导出毛发" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_hairOut()" J_buHairOut;
                 button -l "导入毛发" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_hairIn()" J_buHairIn;
             setParent ..;
         setParent ..;
         ///////////////////////////布料
-        frameLayout -cll 1 -cl 0 -h 600-l "布料工具"  J_nClothFrameLayout;
+        frameLayout -cll 1 -cl 0 -h 300-l "布料工具"  J_nClothFrameLayout;
             formLayout  -numberOfDivisions 100  J_nClothFormLayout;
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnClothSystemNode\")"  -allowMultiSelection 1 -h 163 J_allnClothSystemNode;
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnNucleusNode\")"  -allowMultiSelection 1 -h 100 J_allnNucleusNode;
@@ -36,9 +37,25 @@ if (`window -ex J_CFXWorkFlow`)
                 button -l "导出abc布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
                 button -l "导出独立abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
                 button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
+            setParent ..;
+        setParent ..;
+        frameLayout -cll 1 -cl 0 -h 100-l "缓存工具"  J_nCacheFrameLayout;
+            formLayout  -numberOfDivisions 100  J_nCacheFormLayout;
                 button -l "融合blend" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_JoinBlend()" J_buCreateBlend;
                 button -l "添加随机颜色" -w $ButtonW  -h $ButtonH -c  "J_randomColor()" J_buCreateColor;
-    /////////////////////////////////////////////////////////编辑窗体   
+                button -l "一键缓存拍屏" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_CreateCachePlayBlast()" J_buCachePB;
+    /////////////////////////////////////////////////////////编辑窗体  
+    formLayout -e 
+        -ap J_hairFrameLayout left 0 1
+        -af J_hairFrameLayout top 0
+        
+        -ap J_nClothFrameLayout left 0 1
+        -ac J_nClothFrameLayout top  1 J_hairFrameLayout
+        
+        -ap J_nCacheFrameLayout left 0 1
+        -ac J_nCacheFrameLayout top  1 J_nClothFrameLayout
+        
+    J_cfxWorkFlowMain;
     formLayout -e 
         -ap J_allHairSystemNode left 0 1
         -af J_allHairSystemNode top 0
@@ -84,17 +101,22 @@ if (`window -ex J_CFXWorkFlow`)
         
         -ap J_buNClothIn left 0 67
         -ac J_buNClothIn top  1 J_buNClothOutAbcSep
-        -ap J_buNClothIn right 0 100
-        
-        -ap J_buCreateBlend left 0 67
-        -ac J_buCreateBlend top  1 J_buNClothIn
-        -ap J_buCreateBlend right 0 100
-        
-        -ap J_buCreateColor left 0 67
-        -ac J_buCreateColor top  1 J_buCreateBlend
-        -ap J_buCreateColor right 0 100
+        -ap J_buNClothIn right 0 100        
         
         J_nClothFormLayout;
+    formLayout -e 
+        -ap J_buCreateBlend left 0 1
+        -af J_buCreateBlend top  0
+        -ap J_buCreateBlend right 0 33
+        
+        -ap J_buCreateColor left 0 34
+        -af J_buCreateBlend top  0
+        -ap J_buCreateColor right 0 66
+        
+        -ap J_buCachePB left 0 67
+        -af J_buCreateBlend top  0
+        -ap J_buCachePB right 0 100
+    J_nCacheFormLayout;
 showWindow J_CFXWorkFlow;
 J_CFXWorkFlow_init();
 J_CFXWorkFlow_runScriptJob();
@@ -135,6 +157,10 @@ global proc J_CFXWorkFlow_nClothIn()
 global proc J_CFXWorkFlow_JoinBlend()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_blendToSelectGeo()");
+}
+global proc J_CFXWorkFlow_CreateCachePlayBlast()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
 }
 //////////////////////////////////////////////////////////////
 ///根据场景中的选择,选择列表中的节点
@@ -203,3 +229,4 @@ global proc J_CFXWorkFlow_init()
         textScrollList -e -a $i J_allnNucleusNode;
     }  
 }
+J_CFXWorkFlow()

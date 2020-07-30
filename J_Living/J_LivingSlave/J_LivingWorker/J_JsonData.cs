@@ -7,32 +7,32 @@ using System.Threading.Tasks;
 using System.Net;
 using Newtonsoft.Json;
 
-namespace J_LivingSlave
+namespace J_LivingWorker
 {
 
     //运算节点设置
-    class J_SlaveSetting
+    class J_WorkerSetting
     {
         public string serverIp ="";
         public string serverPort = "";
         public string serverName = "";
 
-        public string slaveName = "";
-        public string slaveIp = "";
-        public string slavePort = "";
-        public string slaveTaskNum = "";
+        public string workerName = "";
+        public string workerIp = "";
+        public string workerPort = "";
+        public string workerTaskNum = "";
 
         public string userName = "";
         public string password = "";
-        public J_SlaveSetting()
+        public J_WorkerSetting()
         {
             serverIp = "192.168.1.250";
             serverPort = "6666";
             serverName = "J_server";
-            slaveName = Dns.GetHostName();            
-            slaveIp = Dns.GetHostByName(slaveName).AddressList[0].ToString();
-            slavePort = "6666";
-            slaveTaskNum = "1";
+            workerName = Dns.GetHostName();            
+            workerIp = Dns.GetHostByName(workerName).AddressList[0].ToString();
+            workerPort = "6666";
+            workerTaskNum = "1";
             userName = "admin";
             password = "admin";
             

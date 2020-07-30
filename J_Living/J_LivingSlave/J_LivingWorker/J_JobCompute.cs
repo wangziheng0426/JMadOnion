@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace J_LivingSlave
+namespace J_LivingWorker
 {
 
     class J_JobCompute
@@ -23,8 +23,8 @@ namespace J_LivingSlave
             jobInfo.RedirectStandardOutput = true;
             jobInfo.UseShellExecute = false;
             jobInfo.CreateNoWindow = false;
-            Thread slaveThread = new Thread(J_JobRuning);
-            slaveThread.Start(jobInfo);     
+            Thread workerThread = new Thread(J_JobRuning);
+            workerThread.Start(jobInfo);     
 
         }
         

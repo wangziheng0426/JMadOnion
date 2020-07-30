@@ -8,39 +8,39 @@ using System.Net.Sockets;
 using System.Net;
 using Newtonsoft.Json;
 
-namespace J_LivingSlave
+namespace J_LivingWorker
 {
     class J_NetWork
     {
-        public Socket socketSlave;
+        public Socket socketWorker;
         public IPAddress ip;
         public int port = 0;
         List<string> job_Types = new List<string>()
-        { "add_job","remove_job", "get_job_list","start_job","stop_job","start_slave","stop_slave"};
+        { "add_job","remove_job", "get_job_list","start_job","stop_job","start_worker","stop_worker"};
         //读取ip和端口
         public J_NetWork(string _ip, string _port)
         {
-            socketSlave = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            socketWorker = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             if (!IPAddress.TryParse(_ip, out ip))
             {
-                Console.WriteLine("start slave failed,check ip setting!");
+                Console.WriteLine("start worker failed,check ip setting!");
                 return;
             }
 
             if (!int.TryParse(_port, out port))
             {
-                Console.WriteLine("start slave failed,check port setting!");
+                Console.WriteLine("start worker failed,check port setting!");
                 return;
             }
-            socketSlave.Bind(new IPEndPoint(ip, port));
-            socketSlave.Listen(10);
-            Console.WriteLine("runing.......");
+            socketWorker.Bind(new IPEndPoint(ip, port));
+            socketWorker.Listen(10);
+            Console.WriteLine("server runing.......");
             //开始监听
             while (true)
             {
-                Socket _clientSocket = socketSlave.Accept();
-                Thread slaveThread = new Thread(ListenClient);
-                slaveThread.Start(_clientSocket);
+                Socket _clientSocket = socketWorker.Accept();
+                Thread workerThread = new Thread(ListenClient);
+                workerThread.Start(_clientSocket);
             }
 
         }
@@ -73,6 +73,7 @@ namespace J_LivingSlave
                     if (dataLength > 0)
                     {
                         string job_type = Encoding.ASCII.GetString(result, 0, dataLength);
+                        //接收信息，并反馈
                         if (job_type.Contains(job_type))
                         {
                             if (job_type == "get_job_list")
