@@ -49,6 +49,7 @@ if (`window -ex J_nClothTool`)
                 string $cbu12 =`button -al "center"  -w $ButtonW -h $ButtonH -l "保存预设"  -c J_nClothTool_savePresets`;
                 string $cbu13 =`button -al "center"  -w $ButtonW -h $ButtonH -l "删除预设"  -c J_nClothTool_delPresets`;
                 string $cbu14 =`button -al "center"  -w $ButtonW -h $ButtonH -l "下载预设"  -c J_nClothTool_downLoadPresets`;
+                string $cbu15 =`button -al "center"  -w $ButtonW -h $ButtonH -l "上传预设"  -c J_nClothTool_upLoadPresets`;
     /////////////////////////////////////////////////////////编辑窗体   
     formLayout -e 
         -af $cbu01 "top" 1  -ap $cbu01 "left" 0 1    -ap $cbu01 "right" 0 24
@@ -72,10 +73,11 @@ if (`window -ex J_nClothTool`)
     formLayout -e 
         -af nclothPresetslist "top" 1  -ap nclothPresetslist "left" 0 1    -ap nclothPresetslist "right" 0 49
         -af nclothNodeslist "top" 1  -ap nclothNodeslist "left" 0 50    -ap nclothNodeslist "right" 0 99
-        -ac $cbu11 "top" 1 nclothPresetslist -ap $cbu11 "left" 0 1    -ap $cbu11 "right" 0 24
-        -ac $cbu12 "top" 1 nclothPresetslist -ap $cbu12 "left" 0 25    -ap $cbu12 "right" 0 49
-        -ac $cbu13 "top" 1 nclothPresetslist -ap $cbu13 "left" 0 50    -ap $cbu13 "right" 0 74
-        -ac $cbu14 "top" 1 nclothPresetslist -ap $cbu14 "left" 0 75    -ap $cbu14 "right" 0 99
+        -ac $cbu11 "top" 1 nclothPresetslist -ap $cbu11 "left" 0 1    -ap $cbu11 "right" 0 20
+        -ac $cbu12 "top" 1 nclothPresetslist -ap $cbu12 "left" 0 21    -ap $cbu12 "right" 0 40
+        -ac $cbu13 "top" 1 nclothPresetslist -ap $cbu13 "left" 0 41    -ap $cbu13 "right" 0 60
+        -ac $cbu14 "top" 1 nclothPresetslist -ap $cbu14 "left" 0 61    -ap $cbu14 "right" 0 80
+        -ac $cbu15 "top" 1 nclothPresetslist -ap $cbu15 "left" 0 81    -ap $cbu15 "right" 0 99
         
         J_clothPresetsFormLayout;
 showWindow J_nClothTool;
@@ -152,29 +154,7 @@ global proc J_nClothTool_savePresets()
     J_nClothTool_getPresets($selectedType,"nclothPresetslist");
     }
 }
-///读取选择的预设,并将参数赋予选择的节点
-global proc J_nClothTool_readPresets()
-{
-    string $J_selNode[]=`textScrollList -q -si nclothNodeslist`;
-    string $J_selPresets[]=`textScrollList -q -si nclothPresetslist`;
-    for($i in $J_selNode)
-    {
-        string $selectedType=`objectType $i`;
-        string $J_ppath = `internalVar -userPresetsDir`+"attrPresets/nCloth/"+$J_selPresets[0];
-        applyAttrPreset $i $J_ppath 1;//读取预设
-    }
-}
-///删除选择的预设
-global proc J_nClothTool_delPresets()
-{   string $J_selNode[]=`textScrollList -q -ai nclothNodeslist`;
-    string $J_selPresets[]=`textScrollList -q -si nclothPresetslist`;
-        string $selectedType=`objectType $J_selNode[0]`;
-        string $J_ppath = `internalVar -userPrefDir`;
-        $J_ppath = substitute( "/prefs", $J_ppath, "");
-        $J_ppath+="presets/attrPresets/"+$selectedType+"/" + $J_selPresets[0];
-        sysFile -del  $J_ppath;//删除垃圾
-        textScrollList -e -ri $J_selPresets[0] nclothPresetslist;
-}
+
 ////////////////////////////////////////////////////创建碰撞
 //create passive collider
 global proc J_createPassive()
@@ -263,6 +243,7 @@ global proc  J_nClothTool_runScriptJob()
     string $ss = ("scriptJob -k "+ $ff);
     scriptJob -uid "J_nClothTool" $ss;
 }
+//下载预设
 global proc J_nClothTool_downLoadPresets()
 {
     string $nClothPresetsPath=J_getFilePath()+"mayaPresets/nCloth/";
@@ -277,6 +258,51 @@ global proc J_nClothTool_downLoadPresets()
     }
     J_nClothTool_getPresets("ncloth","nclothPresetslist");
 }
+//上传预设
+global proc J_nClothTool_upLoadPresets()
+{
+    string $destnationPath=J_getFilePath()+"mayaPresets/nCloth/";
+    string $nClothPresetsPath=`internalVar -userPresetsDir`+"attrPresets/nCloth/";
+    string $J_selPresets[]=`textScrollList -q -si nclothPresetslist`;
+    
+    sysFile -makeDir $destnationPath;
+    for ($item in $J_selPresets)
+    {
+    string $desFile=$destnationPath+$item;
+    string $souFile=$nClothPresetsPath+$item;
+    sysFile -copy $desFile $souFile;
+    }
+    
+}
+///读取选择的预设,并将参数赋予选择的节点
+global proc J_nClothTool_readPresets()
+{
+    string $J_selNode[]=`textScrollList -q -si nclothNodeslist`;
+    string $J_selPresets[]=`textScrollList -q -si nclothPresetslist`;
+    for($i in $J_selNode)
+    {
+        string $selectedType=`objectType $i`;
+        string $J_ppath = `internalVar -userPresetsDir`+"attrPresets/nCloth/"+$J_selPresets[0];
+        applyAttrPreset $i $J_ppath 1;//读取预设
+    }
+}
+///删除选择的预设
+global proc J_nClothTool_delPresets()
+{   string $J_selNode[]=`textScrollList -q -ai nclothNodeslist`;
+    string $J_selPresets[]=`textScrollList -q -si nclothPresetslist`;
+        string $selectedType="nCloth";
+        string $J_ppath = `internalVar -userPrefDir`;
+        $J_ppath = substitute( "/prefs", $J_ppath, "");
+        $J_ppath+="presets/attrPresets/"+$selectedType+"/" + $J_selPresets[0];
+        sysFile -del  $J_ppath;//删除垃圾
+        textScrollList -e -ri $J_selPresets[0] nclothPresetslist;
+}
+
+
+
+
+
+
 global proc J_importNcloth()
 {
     python("JpyModules.vfx.J_nClothTool.J_importNcloth()");
