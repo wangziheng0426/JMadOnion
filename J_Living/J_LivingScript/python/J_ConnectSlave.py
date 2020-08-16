@@ -2,27 +2,27 @@
 
 import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json,re
 import _winreg,socket
-class J_ConnectSlave:
+class J_ConnectWorker:
     def test(self):
         jobInfo={}
         jobInfo['job_Id']=5
         jobInfo['job_name']="a1"
         jobInfo['job_softWare']="ffmpeg"
         jobInfo['job_softWareVersion']="2018"
-        jobInfo['job_workFilePath']="C:/test"
+        jobInfo['job_projectPath']="C:/test"
         jobInfo['job_workFile']="a1.avi"
         jobInfo['job_scriptFile']=''
         jobInfo['job_state']="waiting"
         job_Args=['-i "C:/test/a1.avi" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a1_jc.mp4"']
 
-        #self.job_operation(("192.168.53.3", 6666), "add_job", 1,"test","maya.exe","path","file","script","state",[])
+        self.job_operation(("192.168.53.3", 6666), "add_job", 1,"test","maya.exe","path","file","script","state",[])
         #self.job_operation(("192.168.53.3", 6666), "add_job", 2, "test","maya.exe", "path", "file", "script", "state", [])
         #self.job_operation(("192.168.53.3", 6666), "add_job", 4, "test","maya.exe", "path", "file", "script", "state", [])
         #self.job_operation(("192.168.53.3", 6666), "add_job",jobInfo,job_Args)
         #self.job_operation(("192.168.53.3", 6666), "add_job", 6, "a2", "ffmpeg","2018","C:/test", "a2.avi", "", "waiting", ['-i "C:/test/a2.avi" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a2_jc.mp4"'])
         #self.job_operation(("192.168.53.3", 6666), "add_job", 7, "a3", "ffmpeg","2018", "C:/test", "a3.mp4", "", "waiting", ['-i "C:/test/a3.mp4" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a3_jc.mp4"'])
         #self.job_operation(("192.168.53.3", 6666), "add_job", 8, "a4", "ffmpeg", "2018", "C:/test", "a4.mp4","", "waiting", ['-i "C:/test/a4.mp4" -ss 0:0:0  -c:v hevc  -crf 22  -y "C:/test/a4_jc.mp4"'])
-        #self.job_operation(("192.168.53.3", 6666),'start_slave',jobInfo,[])
+        #self.job_operation(("192.168.53.3", 6666),'start_worker',jobInfo,[])
         #time.sleep(5)
         self.get_JobList()
 
@@ -39,7 +39,7 @@ class J_ConnectSlave:
         client.shutdown(socket.SHUT_RDWR)
         client.close()
     def job_operation(self,ip_port,job_type,job_info,job_args):
-        keys=['job_Id','job_name','job_softWare','job_softWareVersion','job_workFilePath','job_workFile','job_scriptFile','job_state']
+        keys=['job_Id','job_name','job_softWare','job_softWareVersion','job_projectPath','job_workFile','job_scriptFile','job_state']
         #检查传入数据
         for key in keys:
             if not job_info.has_key(key):
@@ -63,7 +63,7 @@ class J_ConnectSlave:
 
 
 def main():
-    connention=J_ConnectSlave()
+    connention=J_ConnectWorker()
     connention.test()
 
 

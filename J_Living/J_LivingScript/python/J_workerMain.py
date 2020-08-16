@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import J_slaveUi
+import J_workerUi
 import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools
 import _winreg
 import socket
@@ -12,10 +12,10 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 
 
-class J_slaveMain(QtGui.QMainWindow, J_slaveUi.Ui_J_slaveWin):
+class J_workerMain(QtGui.QMainWindow, J_workerUi.Ui_J_managerWin):
     localIp='127.0.0.1'
     def __init__(self):
-        super(J_slaveMain, self).__init__()
+        super(J_workerMain, self).__init__()
         self.setupUi(self)
         self.mainUiInit()
         self.J_createSlots()
@@ -81,7 +81,7 @@ class J_slaveMain(QtGui.QMainWindow, J_slaveUi.Ui_J_slaveWin):
         self.saveSettings()
 def main():
     app = QtGui.QApplication(sys.argv)
-    J_Window = J_slaveMain()
+    J_Window = J_workerMain()
     J_Window.show()
     sys.exit(app.exec_())
 
