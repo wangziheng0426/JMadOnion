@@ -53,7 +53,7 @@
    <widget class="QLineEdit" name="lineEdit_job_Id">
     <property name="geometry">
      <rect>
-      <x>215</x>
+      <x>180</x>
       <y>45</y>
       <width>101</width>
       <height>31</height>
@@ -93,7 +93,7 @@
    <widget class="QLineEdit" name="lineEdit_3">
     <property name="geometry">
      <rect>
-      <x>215</x>
+      <x>180</x>
       <y>84</y>
       <width>441</width>
       <height>31</height>
@@ -123,7 +123,7 @@
    <widget class="QLineEdit" name="lineEdit_5">
     <property name="geometry">
      <rect>
-      <x>215</x>
+      <x>180</x>
       <y>125</y>
       <width>441</width>
       <height>31</height>
@@ -153,7 +153,7 @@
    <widget class="QLineEdit" name="lineEdit_6">
     <property name="geometry">
      <rect>
-      <x>215</x>
+      <x>180</x>
       <y>165</y>
       <width>441</width>
       <height>31</height>
@@ -183,7 +183,7 @@
    <widget class="QLineEdit" name="lineEdit_7">
     <property name="geometry">
      <rect>
-      <x>215</x>
+      <x>180</x>
       <y>205</y>
       <width>441</width>
       <height>31</height>
@@ -213,7 +213,7 @@
    <widget class="QLineEdit" name="lineEdit_8">
     <property name="geometry">
      <rect>
-      <x>215</x>
+      <x>180</x>
       <y>245</y>
       <width>441</width>
       <height>31</height>
@@ -263,7 +263,7 @@
    <widget class="QComboBox" name="comboBox">
     <property name="geometry">
      <rect>
-      <x>215</x>
+      <x>180</x>
       <y>290</y>
       <width>131</width>
       <height>22</height>
