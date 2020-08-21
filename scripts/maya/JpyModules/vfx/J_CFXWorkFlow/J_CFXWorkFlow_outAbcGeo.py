@@ -13,6 +13,8 @@ import shutil
 import json
 import maya.mel as mel
 import maya.cmds as cmds
+import maya.api.OpenMaya as om
+
 def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     if cacheFileName =='':
@@ -26,6 +28,8 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
     logStr={}
     logStr[cacheFileName]={}
     logStr[cacheFileName]['geoInfo']=[]
+    timeLineStart=cmds.playbackOptions(query=True,minTime=True)
+    timeLineEnd=cmds.playbackOptions(query=True,maxTime=True)
     #建立导出模型组
     #if cmds.objExists('J_exportCloth_grp'):
     #    cmds.delete('J_exportCloth_grp')
@@ -40,13 +44,18 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
         cmds.confirmDialog(title=u'错误',message=u'   未选中任何节点   ',button='666')
         return
     J_deleteUnknownNode()
+    #时间线切换
+    cmds.currentTime(timeLineStart)
+    #整体出abc模型
     if model==0:
-        exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
+        exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -dataFormat hdf '
         for item in selectedNodes:
             #复制模型，以备导出
             duGeo=J_CFXWorkFlow_duplicateObj(item)
+            #将模型加入到导出ma
             exportGeo.append(duGeo)
-            exportString+=' -root '+item
+            #将模型加入到导出abc
+            exportString+=' -root '+duGeo
             temp={}
             temp['abcGeo']=item
             temp['dupGeo']=duGeo
@@ -57,15 +66,17 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
         cmds.select(exportGeo)
         if os.path.exists(geoFileName):
             os.remove(geoFileName)
-        cmds.file(geoFileName,op='v=0;',typ="mayaAscii", es=True)
+        cmds.file(geoFileName,op='v=0;',typ="mayaAscii", es=True,constructionHistory=False)
         mel.eval(exportString)
+    #每个模型出一个abc模式
     if model==1:
         for item in selectedNodes:
-            exportString='AbcExport -j "-frameRange '+str(cmds.playbackOptions(query=True,minTime=True))+' '+str(cmds.playbackOptions(query=True,maxTime=True))+' -uvWrite -dataFormat hdf '
-            exportString+=' -root '+item
-            exportString+=' -file '+j_clothCachePath+item.split('|')[-1].replace(':','@')+'.abc"'
+            exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -dataFormat hdf '
+            
             #复制模型，以备导出
             duGeo=J_CFXWorkFlow_duplicateObj(item)
+            exportString+=' -root '+duGeo
+            exportString+=' -file '+j_clothCachePath+item.split('|')[-1].replace(':','@')+'.abc"'
             exportGeo.append(duGeo)
             temp={}
             temp['abcGeo']=item
@@ -77,7 +88,7 @@ def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
         cmds.select(exportGeo)
         if os.path.exists(geoFileName):
             os.remove(geoFileName)
-        cmds.file(geoFileName,op='v=0;',typ="mayaAscii", es=True)
+        cmds.file(geoFileName,op='v=0;',typ="mayaAscii", es=True,constructionHistory=False)
     fileId=open(logFile,'w')
     fileId.write(json.dumps(logStr))
     fileId.close()        
@@ -118,8 +129,16 @@ def J_CFXWorkFlow_duplicateObj(inGeo):
     cmds.duplicate(rr=True, smartTransform=True )
     uuid=cmds.ls( sl=True, uuid=True )
     fullNodePath=cmds.ls(uuid[0])
+    newName=inGeo.split('|')[-1].replace(":","_")
+    fullNodePath[0]=cmds.rename(fullNodePath[0],newName)
+    #将源模型点位置信息传给要导出的模型
+    cmds.transferAttributes(inGeo,fullNodePath[0],transferPositions=1,transferNormals=0 
+                    ,transferUVs=0 ,transferColors=0 ,sampleSpace=4 ,sourceUvSpace="map1" ,targetUvSpace="map1"
+                    ,searchMethod=3,flipUVs=0,colorBorders=1 )
     
-    return cmds.parent(fullNodePath,world=True)[0]
+    if (cmds.listRelatives(fullNodePath[0],parent=True)==None):
+        return fullNodePath[0]
+    return cmds.parent(fullNodePath[0],world=True)[0]
 
 def J_deleteUnknownNode():
     cmds.delete(cmds.ls(type="unknown"))
