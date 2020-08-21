@@ -17,6 +17,7 @@ def J_CFXWorkFlow_nClothIn():
     clothInfoFile = cmds.fileDialog2(fileMode=1, caption="Import clothInfo")[0]
     abcFile=clothInfoFile.replace('.Jcc','.abc')
     prFxName=os.path.basename(clothInfoFile).replace('.Jcc','')
+    print prFxName
     runScript='file -import -type "mayaAscii" -gr -gn '+prFxName+"_cloth"+'  -ignoreVersion -ra true  -rpr \"'+prFxName+'\" -options "v=0;" \"'+clothInfoFile.replace('.Jcc','_Geo.ma\"')
     abcNode=''
     #导入abc
@@ -40,8 +41,11 @@ def J_CFXWorkFlow_nClothIn():
         state=True
         for item in clothInfo[prFxName]['geoInfo']:
             if cmds.objExists(item['abcGeo']):
-                if item['abcGeo'].find(mesh.split(':')[-1].split('|')[-1])>-1:
-                    print item['abcGeo']
+                print '-------'
+                print mesh
+                print '+++++'
+                print item['abcGeo']
+                if mesh==item['dupGeo']:
                     state=False
                     cmds.transferAttributes(mesh,item['abcGeo'],transferPositions=1,transferNormals=0 
                     ,transferUVs=0 ,transferColors=0 ,sampleSpace=4 ,sourceUvSpace="map1" ,targetUvSpace="map1"
@@ -49,6 +53,7 @@ def J_CFXWorkFlow_nClothIn():
         if state:
             cacheHasNotFoundTarget.append(mesh)
     if len(cacheHasNotFoundTarget)>0:
+        #从ma导入模型
         mel.eval(runScript)
         allClothMesh=cmds.listRelatives(prFxName+'_cloth',children=True,fullPath=True)
         for mesh in allAbcMeshs:
