@@ -1,2 +1,0 @@
-{"softList":[{"name":"ffmpeg","path":"c:/ffmpeg.exe","version":"2018"},{"name":"maya","path":"C:/Program Files/Autodesk/Maya2018/bin/maya.exe","version":"2018"},{"name":"mayabatch","path":"C:/Program Files/Autodesk/Maya2018/bin/mayabatch.exe","version":"2018"}]}
-
