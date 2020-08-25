@@ -5,21 +5,23 @@ import _winreg,socket
 class J_ConnectWorker:
     def test(self):
         ip_port=("192.168.54.163", 6666)
-        #ip_port = ("192.168.53.3", 6666)
+        ip_port = ("192.168.53.3", 6666)
         jobInfo={}
-        jobInfo['job_Id']=3
+        jobInfo['job_Id']=37
         jobInfo['job_name']="a1"
-        jobInfo['job_softWare']="ffmpeg"
+        jobInfo['job_softWare']="mayabatch"
         jobInfo['job_softWareVersion']="2018"
-        jobInfo['job_projectPath']="\\\\192.168.53.3/J_share/learn/pdg/201911"
-        jobInfo['job_workFile']="102目标与计划.mp4"
+        jobInfo['job_projectPath']="\\\\192.168.53.3/J_share/pro/test"
+        jobInfo['job_workFile']="ha.mb"
         jobInfo['job_scriptFile']=''
         jobInfo['job_state']="waiting"
-        jobInfo['job_args']=['-i "\\\\192.168.53.3\\J_share\\learn\\pdg\\201911\\102目标与计划.mp4" -ss 0:0:0  -c:v hevc  -crf 22  -y "\\\\192.168.53.3\\J_share\\learn\pdg\\201911\\102目标与计划_001.mp4"']
-
+        #jobInfo['job_args']=['-file "\\\\192.168.53.3\\J_share\\learn\\pdg\\201911\\102目标与计划.mp4" -ss 0:0:0  -c:v hevc  -crf 22  -y "\\\\192.168.53.3\\J_share\\learn\pdg\\201911\\102目标与计划_001.mp4"']
+        #jobInfo['job_args'] = ['-file "\\\\192.168.53.3\\J_share\\pro\\test\\ha.mb" -script "\\\\192.168.53.3\\J_share\\pro\\test\\ha.mel"']
+        jobInfo['job_args'] = [
+            '-file "\\\\192.168.53.3\\J_share\\pro\\test\\ha.mb" -command \\"J_autoSimAll()\\"']
         #self.job_operation(("192.168.53.3", 6666), "add_job",jobInfo,job_Args)
 
-
+        self.job_operation(ip_port, "remove_job", jobInfo)
         self.job_operation(ip_port, "add_job",jobInfo)
 
         self.job_operation(ip_port,'start_worker',jobInfo)

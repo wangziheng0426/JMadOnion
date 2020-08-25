@@ -237,7 +237,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Name:</string>
+     <string>Args:</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_9">
