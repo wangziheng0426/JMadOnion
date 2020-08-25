@@ -11,7 +11,7 @@ namespace J_LivingWorker
     class J_JobCompute
     {
         public bool jobDone = false;
-        J_JsonJobData jobData;
+        public J_JsonJobData jobData;
         public J_JobCompute(J_JsonJobData _job, J_softWareData _soft)
         {
             jobData = _job;
@@ -34,7 +34,7 @@ namespace J_LivingWorker
 
             System.Diagnostics.Process p = new System.Diagnostics.Process();
             p.StartInfo = _jobInfo as System.Diagnostics.ProcessStartInfo;
-
+            Console.WriteLine(p.StartInfo.Arguments.ToString());
             p.Start();
             p.WaitForExit();
             if (p.HasExited)

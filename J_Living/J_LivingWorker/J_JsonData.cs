@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.Net;
 using Newtonsoft.Json;
 
@@ -12,11 +12,7 @@ namespace J_LivingWorker
 
     //运算节点设置
     class J_WorkerSetting
-    {
-        public string serverIp ="";
-        public string serverPort = "";
-        public string serverName = "";
-
+    {        
         public string workerName = "";
         public string workerIp = "";
         public string workerPort = "";
@@ -24,6 +20,13 @@ namespace J_LivingWorker
 
         public string userName = "";
         public string password = "";
+
+
+        public string serverIp = "";
+        public string serverPort = "";
+        public string serverName = "";
+
+
         public J_WorkerSetting()
         {
             serverIp = "192.168.1.250";
@@ -37,17 +40,63 @@ namespace J_LivingWorker
             password = "admin";
             
         }
-        public void saveData(string path)
+        public void readServerSetting(string _settings)
         {
-            string lines= JsonConvert.SerializeObject(this);
-            File.WriteAllLines(path, new string[]{ lines,""});
+            Type t = this.GetType();
+            FieldInfo[] f = t.GetFields();
+            
+            if (_settings.StartsWith("{"))
+            {
+                J_WorkerSetting temp = JsonConvert.DeserializeObject<J_WorkerSetting>(_settings);
+                foreach (var i in f)
+                {
+                    i.SetValue(this, i.GetValue(temp));
+                }
+            }
+            else
+            {
+                string[] temp = { "\n"};
+                string[] settingList = _settings.Split(temp, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var i in f)
+                {
+                    foreach (var j in settingList)
+                    {
+                        if(i.Name==j.Split(':')[0])
+                        i.SetValue(this, j.Split(':')[1]);
+                    }
+                }
+            }
+            
+        }
+        public void saveServerSetting(string _path,string _model="json")
+        {
+            string lines = "";
+            if (_model == "json")
+            {
+                lines = JsonConvert.SerializeObject(this);
+                File.WriteAllLines(_path, new string[] { lines, "" });
+            }
+            else
+            {
+                Type t=this.GetType();
+                FieldInfo[] f = t.GetFields();
+                foreach (var i in f)
+                {
+                     lines += i.Name+":" + i.GetValue(this)+"\n";
+                }
+                File.WriteAllText(_path,lines);
+            }
         }
     }
     //软件设置相关
     class J_SoftWareSetting
     {
         public List<J_softWareData> softList = new List<J_softWareData>();
-        public void saveData(string path)
+        public void openSettings(string settings)
+        {
+            J_SoftWareSetting temp = JsonConvert.DeserializeObject<J_SoftWareSetting>(settings);
+        }
+        public void saveSettings(string path)
         {
             string lines = JsonConvert.SerializeObject(this);
             File.WriteAllLines(path, new string[] { lines, "" });
@@ -70,7 +119,7 @@ namespace J_LivingWorker
         public string job_name;
         public string job_softWare;
         public string job_softWareVersion;
-        public string job_workFilePath;
+        public string job_projectPath;
         public string job_workFile;
         public string job_scriptFile;
         //"waiting" 等待执行  "error" 执行崩溃或者出错 "stop" 未执行，或停止 "running" 运行中,"finished" 已完成
@@ -80,7 +129,7 @@ namespace J_LivingWorker
         public J_JsonJobData()
         {
             job_Id = 0; job_name = ""; job_softWare = "";
-            job_workFilePath = ""; job_workFile = ""; job_scriptFile = ""; job_state = "";
+            job_projectPath = ""; job_workFile = ""; job_scriptFile = ""; job_state = "";
             job_args = new List<string>(); job_logPath ="";
         }
         public override string ToString()

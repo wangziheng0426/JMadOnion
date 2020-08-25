@@ -24,29 +24,32 @@ namespace J_LivingWorker
             if (File.Exists(Directory.GetCurrentDirectory() + @"/workerSetting.txt"))
             {
                 string readSetting = File.ReadAllText(Directory.GetCurrentDirectory() + @"/workerSetting.txt");
-                try
-                { worker = JsonConvert.DeserializeObject<J_WorkerSetting>(readSetting); }
-                catch { }
+                worker.readServerSetting(readSetting);
             }
             else
             {
-                worker.saveData(Directory.GetCurrentDirectory() + @"/workerSetting.txt");
+                worker.saveServerSetting(Directory.GetCurrentDirectory() + @"/workerSetting.txt","text");
             }
+            //软件设置
             if (File.Exists(Directory.GetCurrentDirectory() + @"/softWareSetting.txt"))
             {
                 string readSetting = File.ReadAllText(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
+                
                 try
-                { softWares = JsonConvert.DeserializeObject<J_SoftWareSetting>(readSetting); }
+                {
+                    softWares = JsonConvert.DeserializeObject<J_SoftWareSetting>(readSetting);
+                }
                 catch
                 {
-                    Console.WriteLine("read soft setting");
+                    Console.WriteLine("read soft settings error!");
                 }
             }
             else
             {
                 softWares.softList.Add(new J_softWareData("ffmpeg", "c:/ffmpeg.exe", "2018"));
-                //softWares.soft.Add(new J_softWareData("max", "c:x", "201x"));
-                softWares.saveData(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
+                softWares.softList.Add(new J_softWareData("maya", "C:/Program Files/Autodesk/Maya2018/bin/maya.exe", "2018"));
+                softWares.softList.Add(new J_softWareData("mayabatch", "C:/Program Files/Autodesk/Maya2018/bin/mayabatch.exe", "2018"));
+                softWares.saveSettings(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
             }
         }
         public void Job_start()
@@ -174,7 +177,7 @@ namespace J_LivingWorker
                     {
                         if (item.jobDone)
                         {
-                            Console.WriteLine("xxxx\n\n");
+                            Console.WriteLine(item.jobData.job_name+"已完成\n\n");
                             jobComputeList.Remove(item);
                             break;
                         }
