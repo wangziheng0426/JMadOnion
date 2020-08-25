@@ -1,9 +1,0 @@
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\bin\Debug\J_LivingSlave.exe.config
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\bin\Debug\J_LivingSlave.exe
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\bin\Debug\J_LivingSlave.pdb
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\bin\Debug\Newtonsoft.Json.dll
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\obj\Debug\J_LivingSlave.csproj.CoreCompileInputs.cache
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\obj\Debug\J_LivingSlave.csproj.CopyComplete
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\obj\Debug\J_LivingSlave.exe
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\obj\Debug\J_LivingSlave.pdb
-D:\JMadOnion\J_Living\J_LivingSlave\J_LivingSlave\obj\Debug\J_LivingSlave.csprojAssemblyReference.cache
