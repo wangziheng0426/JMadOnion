@@ -43,7 +43,9 @@ def J_setBlendJointChain():
         if chsA==None or chsB==None or chsC==None:
             break;
     
-
+def J_createJointChainFromCurveEp():
+    sel =cmds.ls(sl=True)
+    
 if __name__ == '__main__':
     J_setBlendJointChain()
     

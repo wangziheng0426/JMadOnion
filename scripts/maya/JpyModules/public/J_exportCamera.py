@@ -63,6 +63,14 @@ def J_excuteExport(fileName,outType,bakeFrame):
             cmds.bakeSimulation( camTransform[0], t=(start,end), sb=1, at=["rx","ry","rz","tx","ty","tz"], hi="below" )
         cmds.select(cam)
         cmds.file((fileName[0:-3]+"_"+cam.replace(':','_')+'.fbx'), force=True ,options= "fbx" ,type ="FBX export" ,es=True )
-    
+def J_excuteSelectionToObj():
+    cmds.loadPlugin ( "objExport")
+    allSel=cmds.ls(sl=True)
+    filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
+    for item in allSel:
+        cmds.select(item)
+        cmds.file((filePath+item+'.obj'), force=True ,
+        options= "groups=1;ptgroups=1;materials=1;smoothing=1;normals=1" ,type ='OBJexport' ,es=True )
+J_excuteSelectionToObj()
 if __name__ == '__main__':
     J_exportCamera()

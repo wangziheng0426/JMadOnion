@@ -13,7 +13,7 @@ from PyQt4 import QtCore
 class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     settingFilePath=''
     model = QtGui.QStandardItemModel()
-    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','.m2ts']
+    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','.m2ts','.flv']
     def __init__(self):
         super(J_VideoConverter, self).__init__()
         self.setupUi(self)
