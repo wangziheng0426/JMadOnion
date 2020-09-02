@@ -47,17 +47,20 @@ if (`window -ex J_CFXWorkFlow`)
     /////////////////////////////////////////////////////////±à¼­´°Ìå  
     formLayout -e 
         -ap J_hairFrameLayout left 0 1
+        -ap J_hairFrameLayout right 0 99
         -af J_hairFrameLayout top 0
         
         -ap J_nClothFrameLayout left 0 1
+        -ap J_nClothFrameLayout right 0 99
         -ac J_nClothFrameLayout top  1 J_hairFrameLayout
         
         -ap J_nCacheFrameLayout left 0 1
+        -ap J_nCacheFrameLayout right 0 99
         -ac J_nCacheFrameLayout top  1 J_nClothFrameLayout
         
     J_cfxWorkFlowMain;
     formLayout -e 
-        -ap J_allHairSystemNode left 0 1
+        -ap J_allHairSystemNode left 0 0
         -af J_allHairSystemNode top 0
         -ap J_allHairSystemNode right 0 66
         
@@ -75,11 +78,11 @@ if (`window -ex J_CFXWorkFlow`)
         
         J_hairFormLayout;
     formLayout -e 
-        -ap J_allnClothSystemNode left 0 1
+        -ap J_allnClothSystemNode left 0 0
         -af J_allnClothSystemNode top 0
         -ap J_allnClothSystemNode right 0 66
         
-        -ap J_allnNucleusNode left 0 1
+        -ap J_allnNucleusNode left 0 0
         -ac J_allnNucleusNode top 1 J_allnClothSystemNode
         -ap J_allnNucleusNode right 0 66
         
@@ -105,7 +108,7 @@ if (`window -ex J_CFXWorkFlow`)
         
         J_nClothFormLayout;
     formLayout -e 
-        -ap J_buCreateBlend left 0 1
+        -ap J_buCreateBlend left 0 0
         -af J_buCreateBlend top  0
         -ap J_buCreateBlend right 0 33
         
@@ -229,4 +232,4 @@ global proc J_CFXWorkFlow_init()
         textScrollList -e -a $i J_allnNucleusNode;
     }  
 }
-J_CFXWorkFlow()
+//J_CFXWorkFlow()
