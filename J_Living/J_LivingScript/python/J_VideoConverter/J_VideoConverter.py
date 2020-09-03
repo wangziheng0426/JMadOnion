@@ -458,6 +458,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 def main():
     app = QtGui.QApplication(sys.argv)
     J_Window = J_VideoConverter()
+    J_Window.setAcceptDrops(True)
     J_Window.show()
     sys.exit(app.exec_())
 
