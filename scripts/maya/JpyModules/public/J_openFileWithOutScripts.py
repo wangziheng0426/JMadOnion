@@ -19,9 +19,13 @@ def J_openFileWithOutScripts():
     
     allsc=cmds.ls(type ='script')
     for item in allsc:
-        if item.find("MayaMelUIConfigurationFile")>-1:
-            scStr=cmds.getAttr(item+'.before')            
+        scStr=cmds.getAttr(item+'.before')  
+        if item.find("MayaMelUIConfigurationFile")>-1: 
             cmds.setAttr(item+'.before',scStr.replace('autoUpdatcAttrEnd;',''),type ='string')
+        if item=='sceneConfigurationScriptNode':
+            mel.eval(scStr)
+        if scStr==None:
+            cmds.delete(item)   
 def J_killPTTQ():
     envPath=mel.eval('getenv MAYA_LOCATION')+"/resources/l10n/"
     for item in os.walk(envPath):
@@ -76,6 +80,12 @@ def J_killPTTQ():
                     res+=mayaFile+u"——->被感染，已进行清理\n"
                     print (mayaFile+u"——->被感染，已进行清理")
     cmds.progressWindow(endProgress=1)   
-    cmds.confirmDialog( title='执行结果', message=res, button=['好'], dismissString='No' )                    
+    cmds.confirmDialog( title='执行结果', message=res, button=['好'], dismissString='No' ) 
+def J_kick_dajiangjun():
+    allsc=cmds.ls(type ='script')
+    for item in allsc:
+        print item
+        if item.find('vaccine_gene')>-1 or item.find('breed_gene')>-1 :
+            cmds.delete(item)    
 if __name__ == '__main__':
     J_killPTTQ()
