@@ -11,23 +11,33 @@ import maya.api.OpenMaya as om
 import os
 def J_createDynJointChain():
     sel=cmds.ls(sl=True,type='joint')
-    if sel.count<3:
+    if len(sel)<3:
         return
     path=om.MDagPath()
     mesh =om.MFnMesh()
     
-    for item in range(3,sel.count,1):
-
+    J_dynJointChainAddPolyFace(sel,mesh)
     
-def J_dynJointChainAddPolyFace(joint0,joint1,jiont2,mesh,offset=0.5):
-    point0=om.MVector(cmds.xform(joint0,query=True,ws=True,t=True))
-    point1=om.MVector(cmds.xform(joint1,query=True,ws=True,t=True))
-    point2=om.MVector(cmds.xform(joint2,query=True,ws=True,t=True))
+def J_dynJointChainAddPolyFace(joints,mesh,offset=0.5):
+    point0=om.MVector(cmds.xform(joints[0],query=True,ws=True,t=True))
+    point1=om.MVector(cmds.xform(joints[1],query=True,ws=True,t=True))
     distance0=point1.__sub__(point0)
-    distance1=point2.__sub__(point1)
-    faceDir=distance0__xor__(distance1).normal()
-    mPoints=[om.MPoint()]
-    
+    mPointList=[]
+    for item in range(3,len(joints),1):
+        point2=om.MVector(cmds.xform(joints[item],query=True,ws=True,t=True))
+        distance1=point2.__sub__(point1)
+        faceDir=distance0.__xor__(distance1).normal()
+        newPoint0=point2+faceDir*offset
+        newPoint1=point2-faceDir*offset
+        mPointList.append(newPoint0)
+        mPointList.append(newPoint1)
+    facePoint0=mPointList[0]
+    facePoint1=mPointList[1]
+    for item in range(3,len(mPointList),2):
+        mpoint4ToFace=[facePoint0,facePoint1,mPointList[item],mPointList[item-1]]
+        mesh.addPolygon(mpoint4ToFace)
+        facePoint0=mPointList[item-1]
+        facePoint1=mPointList[item]
     
     
 if __name__ == '__main__':
