@@ -24,7 +24,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,saveFile=""):
         return
     if (filePath!=''):
         j_CachePath=filePath+cacheFileName+'_cache/'
-        j_PbPath=j_CachePath+cacheFileName+'.mov'
+        j_PbPath=filePath+cacheFileName+'.mov'
     try:
         mel.eval('deleteCacheFile 2 { "keep", "" } ;')
     except :
