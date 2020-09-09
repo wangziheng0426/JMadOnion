@@ -19,18 +19,17 @@ def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,saveFile=""):
     fileName=cmds.file(query=True,sceneName=True,shortName=True)
     newFileName=filePath+cacheFileName+'_cache/'+fileName[0:-3]+'_'+saveFile+fileName[-3:]
     j_CachePath=''
-    j_PbPath=''
-    if (len(cmds.ls(sl=True))<1):
-        return
+    j_PbPath=''    
     if (filePath!=''):
         j_CachePath=filePath+cacheFileName+'_cache/'
         j_PbPath=filePath+cacheFileName+'.mov'
-    try:
-        mel.eval('deleteCacheFile 2 { "keep", "" } ;')
-    except :
-        pass
-    runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(frameRate)+'", "1","0","1","mcx" } ;'
-    mel.eval(runStr)
+    if (len(cmds.ls(sl=True))>0):
+        try:
+            mel.eval('deleteCacheFile 2 { "keep", "" } ;')
+        except :
+            pass
+        runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(frameRate)+'", "1","0","1","mcx" } ;'
+        mel.eval(runStr)
     
     
     cmds.playblast(format="qt",quality=100,viewer=viewer,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=(1920,1080),
