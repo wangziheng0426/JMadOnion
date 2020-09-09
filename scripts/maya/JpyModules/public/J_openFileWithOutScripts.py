@@ -73,7 +73,7 @@ def J_killPTTQ():
                         scStr=cmds.getAttr(item1+'.before')       
                         if scStr.find('autoUpdatcAttrEnd;')>-1:pttqExists=True                             
                         cmds.setAttr(item1+'.before',scStr.replace('autoUpdatcAttrEnd;',''),type ='string')
-
+                J_kick_dajiangjun()
                 if pttqExists:
                     cmds.file(rename=mayaFile)
                     cmds.file(save=True )  

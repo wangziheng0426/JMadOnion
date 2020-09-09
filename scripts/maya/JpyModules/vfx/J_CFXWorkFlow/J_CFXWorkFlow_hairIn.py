@@ -62,7 +62,7 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
         if cmds.objExists(hairNodeItem['hairNode']):
             if cmds.objectType(hairNodeItem['hairNode'])=='hairSystem':
                 hairState=1
-        hairTranformName=hairNodeItem['hairNode'].replace('Shape','')
+        hairTranformName=hairNodeItem['hairNode'].replace('Shape','')+'_tr'
         hairSysNodeName=hairNodeItem['hairNode']
         if hairState==0:
             trNode=cmds.createNode('transform',name=hairTranformName,parent=groupNode)
