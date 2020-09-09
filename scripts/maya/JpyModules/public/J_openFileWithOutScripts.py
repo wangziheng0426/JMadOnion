@@ -18,6 +18,7 @@ def J_openFileWithOutScripts():
     cmds.file(mayaFilePath,open=True , force=True,ignoreVersion=True,executeScriptNodes=False)
     
     allsc=cmds.ls(type ='script')
+    J_kick_dajiangjun()
     for item in allsc:
         scStr=cmds.getAttr(item+'.before')  
         if item.find("MayaMelUIConfigurationFile")>-1: 
