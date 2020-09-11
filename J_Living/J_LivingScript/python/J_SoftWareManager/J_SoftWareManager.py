@@ -6,13 +6,13 @@ import codecs
 import shutil
 import getpass
 import _winreg
-import os
+import os,functools
 import J_SoftWareManagerUi
 import subprocess
 import time
 import binascii, re, math
 import threading
-import sys
+import sys,math
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -28,6 +28,8 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
     def mainUiInit(self):
         #配置表格属性
         pass
+    def openSettingFile(self):
+        pass
     def getSoftWares(self):
         #try:
         keyX = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'Software\\Autodesk\\Maya')
@@ -39,17 +41,13 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
                 path= _winreg.QueryValueEx(keyX1,'MAYA_INSTALL_LOCATION')[0]
 
                 radioButton = QtGui.QRadioButton(self.groupBox)
-                radioButton.setObjectName('maya'+version+'chs')
-                radioButton.setText('maya' + version + u'中文')
+                radioButton.setObjectName('maya'+version)
+                radioButton.setText('maya' + version )
                 radioButton.accessibleName=path
                 radioButton.setChecked(False)
-                self.gridLayout.addWidget(radioButton, item, 0, 1, 1)
-                radioButton = QtGui.QRadioButton(self.groupBox)
-                radioButton.setObjectName('maya' + version+'en')
-                radioButton.setText('maya' + version +u'英文')
-                radioButton.accessibleName = path
-                radioButton.setChecked(False)
-                self.gridLayout.addWidget(radioButton, item, 1, 1, 1)
+                radioButton.clicked.connect(functools.partial(self.getPlugIns, version))
+                self.gridLayout.addWidget(radioButton, item/2, item%2, 1, 1)
+
             except WindowsError:
                 print 'xx'
     def openSoftWare(self):
@@ -63,7 +61,8 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
 
                 t = threading.Thread(target=self.runmaya, args=(path,inChs))
                 t.start()
-
+    def getPlugIns(self,version):
+        print (version+'plug')
     def runmaya(self,path,inCh):
         if inCh:
             os.environ['maya_ui_language'] = 'zh_cn'

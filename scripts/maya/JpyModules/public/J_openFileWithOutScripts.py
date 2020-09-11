@@ -89,4 +89,4 @@ def J_kick_dajiangjun():
         if item.find('vaccine_gene')>-1 or item.find('breed_gene')>-1 :
             cmds.delete(item)    
 if __name__ == '__main__':
-    J_killPTTQ()
+    J_openFileWithOutScripts()
