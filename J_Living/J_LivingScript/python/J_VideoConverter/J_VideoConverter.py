@@ -244,7 +244,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     writeCombinFile = open(combinFileListName.encode('gbk'), 'w')
                     writeCombinFile.write(videoToCombin)
                     writeCombinFile.close()
-                    allFile +=('c:/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n").encode('gbk')
+                    allFile +=(os.getcwd()+'/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n").encode('gbk')
                     print allFile
                     print type(allFile)
         writeFileAll.write(allFile)
@@ -365,13 +365,16 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         strtowrite=''
         combinId=[0,0]
         for i in range(0,self.tableView_fileList.model().rowCount()):
-            startTime=self.convertStrToTime(str(self.model.item(i,1).text()).decode('utf-8'))
+            startTimeStr=str(self.model.item(i,1).text()).decode('utf-8')
+            endTimeStr=str(self.model.item(i,2).text()).decode('utf-8')
+            #判断如果不是时间就用帧数
+            startTime=self.convertStrToTime(startTimeStr)
             startSec=startTime[0]*3600+startTime[1]*60+startTime[2]
-            endTime=self.convertStrToTime(str(self.model.item(i,2).text()).decode('utf-8'))
+            endTime=self.convertStrToTime(endTimeStr)
             endSec = endTime[0] * 3600 + endTime[1] * 60 + endTime[2]
             encodeSeconds=''
             resolusion=''
-            if endSec-startSec>1:
+            if endSec-startSec>0:
                 encodeSeconds=' -t '+str((endSec - startSec) //3600) + ':'\
                 + str(((endSec - startSec)%3600)//60) + ':'\
                 + str((endSec - startSec)%60) + ' '
@@ -381,7 +384,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 resolusion=' -s ' +str(self.model.item(i,3).text())+' '
             ####加入新行
             if encodeSeconds!='null':
-                strtowrite+='c:/ffmpeg.exe -i \"'+str(self.model.item(i,7).text())+'\"'\
+                strtowrite+=os.getcwd()+'/ffmpeg.exe -i \"'+str(self.model.item(i,7).text())+'\"'\
                             + ' -ss '+str(startTime[0])+':'+str(startTime[1])+':'+str(startTime[2])+ ' '\
                             +encodeSeconds\
                             + resolusion\
@@ -411,7 +414,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 writeCombinFile = open(combinFileListName.encode('gbk'), 'w')
                 writeCombinFile.write(videoToCombin)
                 writeCombinFile.close()
-                strtowrite += ('c:/ffmpeg.exe -safe 0 -f concat -i \"' +
+                strtowrite += (os.getcwd()+'/ffmpeg.exe -safe 0 -f concat -i \"' +
                                combinFileListName + '\" -c copy \"' +
                                combinFileName + '\"\n' + "\n")
 
@@ -429,7 +432,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         if (len(strlist)==3):
             for i in range(0,3):
                 try:
-                    res[i] = int(strlist[i])
+                    res[i] = float(strlist[i])
                 except ValueError:
                     pass
         return res
