@@ -375,8 +375,8 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             encodeSeconds=''
             resolusion=''
             if endSec-startSec>0:
-                encodeSeconds=' -t '+str((endSec - startSec) //3600) + ':'\
-                + str(((endSec - startSec)%3600)//60) + ':'\
+                encodeSeconds=' -t '+str(int(endSec - startSec) //3600) + ':'\
+                + str(int((endSec - startSec)%3600)//60) + ':'\
                 + str((endSec - startSec)%60) + ' '
             elif self.checkBox_ignoreEnd.checkState()==2:
                 encodeSeconds='null'
