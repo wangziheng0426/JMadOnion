@@ -75,6 +75,8 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
             cmds.select(hairSysNodeName)
             mel.eval('addPfxToHairSystem;')
             presetsPath=cmds.internalVar(userPresetsDir=True)+'/attrPresets/hairSystem/'
+            if not os.path.exists(presetsPath):
+                os.makedirs(presetsPath)
             shutil.copy(os.path.dirname(JhairFile)+'/hairPresets/'+hairSysNodeName.replace(':','_')+'.mel',presetsPath)
             mel.eval('applyAttrPreset '+hairSysNodeName+' '+hairSysNodeName.replace(':','_')+' 1')
             cmds.setAttr((hairSysNodeName+'.simulationMethod'),1)
