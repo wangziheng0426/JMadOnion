@@ -375,8 +375,8 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             encodeSeconds=''
             resolusion=''
             if endSec-startSec>0:
-                encodeSeconds=' -t '+str(int(endSec - startSec) //3600) + ':'\
-                + str(int((endSec - startSec)%3600)//60) + ':'\
+                encodeSeconds=' -t '+str((endSec - startSec) //3600) + ':'\
+                + str(((endSec - startSec)%3600)//60) + ':'\
                 + str((endSec - startSec)%60) + ' '
             elif self.checkBox_ignoreEnd.checkState()==2:
                 encodeSeconds='null'
@@ -385,7 +385,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             ####加入新行
             if encodeSeconds!='null':
                 strtowrite+=os.getcwd()+'/ffmpeg.exe -i \"'+str(self.model.item(i,7).text())+'\"'\
-                            + ' -ss '+str(int(startTime[0]))+':'+str(int(startTime[1]))+':'+str(startTime[2])+ ' '\
+                            + ' -ss '+str((startTime[0]))+':'+str((startTime[1]))+':'+str(startTime[2])+ ' '\
                             +encodeSeconds\
                             + resolusion\
                             + ' -c:v '+str(self.model.item(i,4).text())+' '\
