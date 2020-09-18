@@ -1,6 +1,6 @@
 *.pyc
 *.exe
-/J_Living/J_LivingWorker/.vs
+/J_Living/J_LivingWorker/.vs/
 /J_Living/J_LivingWorker/bin/
 /J_Living/J_LivingWorker/obj/
 /J_Living/J_LivingScript/python/.idea/
