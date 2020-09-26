@@ -19,6 +19,9 @@ sys.setdefaultencoding('utf-8')
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
+    settingFilePath=''
+    plugInPath=''
+
     def __init__(self):
         super(J_SoftWareManager, self).__init__()
         self.setupUi(self)
@@ -26,10 +29,21 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
         self.J_createSlots()
         self.getSoftWares()
     def mainUiInit(self):
-        #配置表格属性
-        pass
+        #配置文件
+        key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                              r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+        self.settingFilePath = _winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/J_softManagerSetting.ini'
+        if os.path.exists(self.settingFilePath):
+            fileTemp = open(self.settingFilePath, 'r')
+            self.plugInPath = fileTemp.readline().decode('utf-8').replace('\n','')
+
+        nn= QtGui.QAction(self)
+        nn.setText('xxx')
+        self.menu.addAction(nn)
+        nn.triggered.connect(self.openSettingFile)
     def openSettingFile(self):
-        pass
+        print 'setting'
+        QtGui.QFileDialog()
     def getSoftWares(self):
         #try:
         keyX = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'Software\\Autodesk\\Maya')
@@ -70,7 +84,19 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
 
     def J_createSlots(self):
         self.pushButton_open.clicked.connect(self.openSoftWare)
+        self.pushbutton.clicked.connect(self.J_setPluginPath)
+        self.action.triggered.connect(self.J_setPluginPath)
 
+
+    def J_setPluginPath(self):
+        self.plugInPath=QtGui.QFileDialog()
+    def saveSettings(self):
+        file = open(self.settingFilePath, 'w')
+        #保存选择的目录
+        strToSave =self.plugInPath
+
+        file.writelines(str(strToSave).encode('utf-8'), )
+        file.close()
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
