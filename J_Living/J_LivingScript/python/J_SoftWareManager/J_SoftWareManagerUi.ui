@@ -72,12 +72,9 @@
     <item row="3" column="1">
      <widget class="QPushButton" name="pushButton">
       <property name="text">
-       <string>设置工程</string>
+       <string>工程目录</string>
       </property>
      </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLineEdit" name="lineEdit_2"/>
     </item>
     <item row="4" column="1">
      <widget class="QPushButton" name="pushButton_open">
@@ -86,12 +83,16 @@
       </property>
      </widget>
     </item>
+    <item row="4" column="0">
+     <widget class="QLineEdit" name="lineEdit_senceFile"/>
+    </item>
     <item row="3" column="0">
-     <widget class="QComboBox" name="comboBox"/>
+     <widget class="QLineEdit" name="lineEdit_pluginPath"/>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -100,8 +101,19 @@
      <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>设置</string>
+    </property>
+    <addaction name="action"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action">
+   <property name="text">
+    <string>设置插件路径</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

@@ -1,3 +1,11 @@
+# -*- coding:utf-8 -*-
+##  @package public
+#
+##  @brief   导出平滑法线到uv4
+##  @author 桔
+##  @version 1.0
+##  @date   15:47 2020/9/24
+#  History:  
 import maya.api.OpenMaya as om
 import maya.cmds as cmds
 
@@ -40,4 +48,5 @@ def J_getGeoSmoothNormalToUv():
             uvid+=1
             vertexCount+=1
     #mesh.setCurrentUVSetName("map1")
-getGeoNormal()
+if __name__=='__main__':
+    getGeoNormal()
