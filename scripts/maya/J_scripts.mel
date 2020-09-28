@@ -13,7 +13,6 @@
 global proc J_scripts(string $J_mainPath,string $J_menuLabel)
 {
     ////////////////////////////////////////////////////////////////创建菜单
-    //string $J_menuLabel="疯狂的桔子";
     string $J_menuName="madOrange";
     if (`menu -exists  $J_menuName`) deleteUI $J_menuName;
         {string $menu=`menu  -l $J_menuLabel -p MayaWindow  $J_menuName`;}  
