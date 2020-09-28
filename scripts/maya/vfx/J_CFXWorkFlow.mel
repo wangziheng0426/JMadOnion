@@ -123,6 +123,7 @@ if (`window -ex J_CFXWorkFlow`)
 showWindow J_CFXWorkFlow;
 J_CFXWorkFlow_init();
 J_CFXWorkFlow_runScriptJob();
+catch(loadPlugin("AbcExport.mll"));
 }
 
 //J_CFXWorkFlow;

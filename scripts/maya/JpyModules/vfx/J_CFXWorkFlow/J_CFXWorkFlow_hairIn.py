@@ -20,7 +20,10 @@ def J_CFXWorkFlow_hairIn():
     readJHairFile=open(j_hairFile[0],'r')
     hairData={}
     abcNode=''
-    J_CFXWorkFlow_upDataAttachCurvesToHairSystem()
+    try:
+        J_CFXWorkFlow_upDataAttachCurvesToHairSystem()
+    except:
+        cmds.confirmDialog(title=u'错误',message=u'    当前maya可能没有管理员权限运行，请联系你的系统管理员开放权限，否则可能导致    ',button='哦')
     #毛发节点组
     if cmds.objExists('J_importHair_grp'):
         cmds.delete('J_importHair_grp')
