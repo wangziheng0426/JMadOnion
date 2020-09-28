@@ -70,7 +70,7 @@
      <widget class="QTreeView" name="treeView"/>
     </item>
     <item row="3" column="1">
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="pushButton_pro">
       <property name="text">
        <string>工程目录</string>
       </property>
