@@ -76,7 +76,13 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
             mel.eval('assignHairSystem '+hairSysNode+';')
             cmds.connectAttr('time1.outTime',hairSysNode+'.currentTime')
             cmds.select(hairSysNodeName)
-            mel.eval('addPfxToHairSystem;')
+            
+            #添加笔刷
+            if hairNodeItem['hairBrush']==0:
+                mel.eval('addPfxToHairSystem;')
+            else:
+                mel.eval('AssignBrushToHairSystem;')
+            
             presetsPath=cmds.internalVar(userPresetsDir=True)+'/attrPresets/hairSystem/'
             if not os.path.exists(presetsPath):
                 os.makedirs(presetsPath)

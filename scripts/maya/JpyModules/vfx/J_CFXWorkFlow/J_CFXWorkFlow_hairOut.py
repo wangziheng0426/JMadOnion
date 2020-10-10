@@ -65,7 +65,7 @@ def J_CFXWorkFlow_hairOut():
                 newOutCurveGroup=newOutCurveGroup+'0'
         cmds.createNode('transform',name=newOutCurveGroup)
         follicleNodes= cmds.listConnections(item,type='follicle',destination=False,shapes=True)
-        currentHairMessage={'hairNode':'','curveGroup':'','shader':{}}
+        currentHairMessage={'hairBrush':0,'hairNode':'','curveGroup':'','shader':{}}
         if follicleNodes is not None:
             #生成输出曲线
             for follicleItem in follicleNodes:
@@ -80,6 +80,10 @@ def J_CFXWorkFlow_hairOut():
             shutil.move(presetsPath,(j_hairPresetsPath))
             #输出abc
             if follicleNodes.count>0:
+                pfhairs=cmds.listConnections(item,type='pfxHair',shapes=True)
+                if pfhairs!=None:
+                    if cmds.listConnections(pfhairs[0],type='brush',shapes=True)!= None:
+                        currentHairMessage['hairBrush']=1
                 currentHairMessage['hairNode']=item
                 currentHairMessage['curveGroup']=newOutCurveGroup
                 curveGroups.append(newOutCurveGroup)
