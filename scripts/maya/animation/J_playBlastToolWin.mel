@@ -151,4 +151,3 @@ global proc J_playBlastCheckBoxAllOff()
     }
 
 }
-J_playBlastToolWin
