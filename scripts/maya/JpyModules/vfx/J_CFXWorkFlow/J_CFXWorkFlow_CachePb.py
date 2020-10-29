@@ -13,11 +13,20 @@ import sys
 import shutil
 import maya.cmds as cmds
 import maya.mel as mel
-def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,saveFile=""):
-    filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
+def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,render=False,saveAsFile=False):
+    filePath=os.path.dirname(cmds.file(query=True,sceneName=True))+'/'    
+    fileName=cmds.file(query=True,sceneName=True,shortName=True)[:-3]
+    fileNamePrf=cmds.file(query=True,sceneName=True,shortName=True)[-3:]
+    if(saveAsFile):
+        countPrefx=0
+        files=os.listdir(filePath)
+        while (fileName+'_'+str(countPrefx)+fileNamePrf) in files:
+            countPrefx=countPrefx+1
+        fileName=filePath+fileName+'_'+str(countPrefx)+fileNamePrf
+        cmds.file(rename=fileName)
+        cmds.file(save=True)
+        
     cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
-    fileName=cmds.file(query=True,sceneName=True,shortName=True)
-    newFileName=filePath+cacheFileName+'_cache/'+fileName[0:-3]+'_'+saveFile+fileName[-3:]
     j_CachePath=''
     j_PbPath=''    
     if (filePath!=''):
@@ -34,8 +43,6 @@ def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,saveFile=""):
     
     cmds.playblast(format="qt",quality=100,viewer=viewer,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=(1920,1080),
     framePadding=4,compression="H.264",percent=100,clearCache=True)
-    if(saveFile!=""):
-        cmds.file(rename=newFileName)
-        cmds.file(save=True)
+
 if __name__=='__main__':
     J_CFXWorkFlow_CachePb()
