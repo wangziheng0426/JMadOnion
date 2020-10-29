@@ -20,7 +20,7 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
     string $J_menuList=$J_mainPath+"/config/menuList.txt";
     //¼ÓÔØabc²å¼þ
     string $mayapath=`getenv MAYA_LOCATION`+"/bin/plug-ins/AbcExport.mll";
-    loadPluginCmd( $mayapath); 
+    loadPlugin( $mayapath); 
     int $J_fileId=`fopen $J_menuList "r"`;
     int $loopRun=1;
     fgetline $J_fileId;
