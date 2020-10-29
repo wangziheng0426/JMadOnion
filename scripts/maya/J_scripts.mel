@@ -18,7 +18,9 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
         {string $menu=`menu  -l $J_menuLabel -p MayaWindow  $J_menuName`;}  
     //读取菜单列表
     string $J_menuList=$J_mainPath+"/config/menuList.txt";
-    
+    //加载abc插件
+    string $mayapath=`getenv MAYA_LOCATION`+"/bin/plug-ins/AbcExport.mll";
+    loadPluginCmd( $mayapath); 
     int $J_fileId=`fopen $J_menuList "r"`;
     int $loopRun=1;
     fgetline $J_fileId;
