@@ -20,7 +20,10 @@ def J_CFXWorkFlow_hairIn():
     readJHairFile=open(j_hairFile[0],'r')
     hairData={}
     abcNode=''
-    J_CFXWorkFlow_upDataAttachCurvesToHairSystem()
+    try:
+        J_CFXWorkFlow_upDataAttachCurvesToHairSystem()
+    except:
+        cmds.confirmDialog(title=u'错误',message=u'    当前maya可能没有管理员权限运行，请联系你的系统管理员开放权限，否则可能导致    ',button='哦')
     #毛发节点组
     if cmds.objExists('J_importHair_grp'):
         cmds.delete('J_importHair_grp')
@@ -73,8 +76,16 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
             mel.eval('assignHairSystem '+hairSysNode+';')
             cmds.connectAttr('time1.outTime',hairSysNode+'.currentTime')
             cmds.select(hairSysNodeName)
-            mel.eval('addPfxToHairSystem;')
+            
+            #添加笔刷
+            if hairNodeItem['hairBrush']==0:
+                mel.eval('addPfxToHairSystem;')
+            else:
+                mel.eval('AssignBrushToHairSystem;')
+            
             presetsPath=cmds.internalVar(userPresetsDir=True)+'/attrPresets/hairSystem/'
+            if not os.path.exists(presetsPath):
+                os.makedirs(presetsPath)
             shutil.copy(os.path.dirname(JhairFile)+'/hairPresets/'+hairSysNodeName.replace(':','_')+'.mel',presetsPath)
             mel.eval('applyAttrPreset '+hairSysNodeName+' '+hairSysNodeName.replace(':','_')+' 1')
             cmds.setAttr((hairSysNodeName+'.simulationMethod'),1)

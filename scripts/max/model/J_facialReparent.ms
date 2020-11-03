@@ -76,6 +76,6 @@ fn J_facialReparent =
 	(log +=(" Body_H_001 not found\\n"))
 	if eyePart==undefined do
 	(log +=(" Eye_001 not found\\n"))
-messagebox log
+
 )
 J_facialReparent()
