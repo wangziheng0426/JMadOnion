@@ -122,7 +122,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "J_videoConverter", None))
         self.checkBox_ignoreEnd.setText(_translate("MainWindow", "忽略未定义结尾的文件", None))
         self.checkBox_combinVideo.setText(_translate("MainWindow", "合并切割的视频", None))
         self.checkBox_shutdown.setText(_translate("MainWindow", "自动关机", None))

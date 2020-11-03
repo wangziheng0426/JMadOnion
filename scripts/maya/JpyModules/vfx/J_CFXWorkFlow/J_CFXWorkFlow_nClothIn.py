@@ -54,7 +54,10 @@ def J_CFXWorkFlow_nClothIn():
             cacheHasNotFoundTarget.append(mesh)
     if len(cacheHasNotFoundTarget)>0:
         #从ma导入模型
-        mel.eval(runScript)
+        try:
+            mel.eval(runScript)
+        except:
+            cmds.confirmDialog(title=u'错误',message=u'可能未加载指定渲染器，加载后重试',button='哦')
         allClothMesh=cmds.listRelatives(prFxName+'_cloth',children=True,fullPath=True)
         for mesh in allAbcMeshs:
             for clothMesh in allClothMesh:

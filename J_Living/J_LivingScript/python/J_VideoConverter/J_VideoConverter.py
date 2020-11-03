@@ -12,8 +12,9 @@ from PyQt4 import QtCore
 
 class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     settingFilePath=''
+    ffmpegPath='c:/ffmpeg.exe'
     model = QtGui.QStandardItemModel()
-    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','.m2ts','.flv']
+    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','.m2ts','.flv','.asf']
     def __init__(self):
         super(J_VideoConverter, self).__init__()
         self.setupUi(self)
@@ -28,6 +29,10 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                               r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
         self.settingFilePath = _winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/videoConverterSetting.ini'
         self.listViewInit()
+        if not os.path.exists(self.ffmpegPath):
+            self.ffmpegPath = os.getcwd() + '/ffmpeg.exe'
+        if not os.path.exists(self.ffmpegPath):
+            QtGui.QMessageBox.about(self, u'提示', u"ffmpeg 失踪了")
     def listViewInit(self):
         self.tableView_fileList.setModel(self.model)
         if os.path.exists(self.settingFilePath):
@@ -244,7 +249,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     writeCombinFile = open(combinFileListName.encode('gbk'), 'w')
                     writeCombinFile.write(videoToCombin)
                     writeCombinFile.close()
-                    allFile +=(os.getcwd()+'/ffmpeg.exe -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n").encode('gbk')
+                    allFile +=(self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n").encode('gbk')
                     print allFile
                     print type(allFile)
         writeFileAll.write(allFile)
@@ -363,6 +368,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 ######创建执行文件，同时输出Jliving 任务列表
     def createBatFile(self):
         strtowrite=''
+
         combinId=[0,0]
         for i in range(0,self.tableView_fileList.model().rowCount()):
             startTimeStr=str(self.model.item(i,1).text()).decode('utf-8')
@@ -384,8 +390,8 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 resolusion=' -s ' +str(self.model.item(i,3).text())+' '
             ####加入新行
             if encodeSeconds!='null':
-                strtowrite+=os.getcwd()+'/ffmpeg.exe -i \"'+str(self.model.item(i,7).text())+'\"'\
-                            + ' -ss '+str(int(startTime[0]))+':'+str(int(startTime[1]))+':'+str(startTime[2])+ ' '\
+                strtowrite+= self.ffmpegPath+' -i \"'+str(self.model.item(i,7).text())+'\"'\
+                            + ' -ss '+str((startTime[0]))+':'+str((startTime[1]))+':'+str(startTime[2])+ ' '\
                             +encodeSeconds\
                             + resolusion\
                             + ' -c:v '+str(self.model.item(i,4).text())+' '\
@@ -414,7 +420,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 writeCombinFile = open(combinFileListName.encode('gbk'), 'w')
                 writeCombinFile.write(videoToCombin)
                 writeCombinFile.close()
-                strtowrite += (os.getcwd()+'/ffmpeg.exe -safe 0 -f concat -i \"' +
+                strtowrite += (self.ffmpegPath+' -safe 0 -f concat -i \"' +
                                combinFileListName + '\" -c copy \"' +
                                combinFileName + '\"\n' + "\n")
 
@@ -432,7 +438,10 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         if (len(strlist)==3):
             for i in range(0,3):
                 try:
-                    res[i] = float(strlist[i])
+                    if i==2:
+                        res[i] = float(strlist[i])
+                    else:
+                        res[i] = int(strlist[i])
                 except ValueError:
                     pass
         return res

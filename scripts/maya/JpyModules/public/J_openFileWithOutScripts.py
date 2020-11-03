@@ -12,8 +12,8 @@ import maya.mel as mel
 import os
 def J_openFileWithOutScripts():
     selectPath=cmds.internalVar(userWorkspaceDir=True)
-    if cmds.optionVar( query= "RecentFilesList")!=0:
-        selectPath='/'.join(cmds.optionVar( query= "RecentFilesList")[0].split('/')[0:-1])
+    if cmds.optionVar( query= "lastLocalWS")!='':
+        selectPath=cmds.optionVar( query= "lastLocalWS")
     mayaFilePath = cmds.fileDialog2(fileMode=1, caption="open maya file without script",startingDirectory=selectPath)
     cmds.file(mayaFilePath,open=True , force=True,ignoreVersion=True,executeScriptNodes=False)
     

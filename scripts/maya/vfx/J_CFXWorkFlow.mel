@@ -28,7 +28,7 @@ if (`window -ex J_CFXWorkFlow`)
             setParent ..;
         setParent ..;
         ///////////////////////////布料
-        frameLayout -cll 1 -cl 0 -h 300-l "布料工具"  J_nClothFrameLayout;
+        frameLayout -cll 1 -cl 0  -l "布料工具"  J_nClothFrameLayout;
             formLayout  -numberOfDivisions 100  J_nClothFormLayout;
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnClothSystemNode\")"  -allowMultiSelection 1 -h 163 J_allnClothSystemNode;
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnNucleusNode\")"  -allowMultiSelection 1 -h 100 J_allnNucleusNode;
@@ -39,11 +39,19 @@ if (`window -ex J_CFXWorkFlow`)
                 button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
             setParent ..;
         setParent ..;
-        frameLayout -cll 1 -cl 0 -h 100-l "缓存工具"  J_nCacheFrameLayout;
+        frameLayout -cll 1 -cl 0 -l "缓存工具"  J_nCacheFrameLayout;
             formLayout  -numberOfDivisions 100  J_nCacheFormLayout;
-                button -l "融合blend" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_JoinBlend()" J_buCreateBlend;
+                button -l "融合blend" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
                 button -l "添加随机颜色" -w $ButtonW  -h $ButtonH -c  "J_randomColor()" J_buCreateColor;
-                button -l "一键缓存拍屏" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_CreateCachePlayBlast()" J_buCachePB;
+                button -l "一键缓存拍屏" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast()" J_buCachePB;
+            setParent ..;
+        setParent ..;
+        frameLayout -cll 1 -cl 0 -l "后台解算"  J_batchSimFrameLayout;
+            formLayout  -numberOfDivisions 100  J_batchSimFormLayout;
+                textField -text "workerIp&port&frameRate" J_ipPort;
+                button -l "链接服务器" -w $ButtonW  -h $ButtonH -c  "J_connectWorker()" J_buConnectWorker;
+                button -l "解算&拍屏" -w $ButtonW  -h $ButtonH -c  "J_simAndPlayBlast()" J_buJ_simAndPlayBlast;
+                button -l "解算&渲染" -w $ButtonW  -h $ButtonH -c  "J_simAndRender()" J_buJ_simAndRender;
     /////////////////////////////////////////////////////////编辑窗体  
     formLayout -e 
         -ap J_hairFrameLayout left 0 1
@@ -58,6 +66,9 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_nCacheFrameLayout right 0 99
         -ac J_nCacheFrameLayout top  1 J_nClothFrameLayout
         
+        -ap J_batchSimFrameLayout left 0 1
+        -ap J_batchSimFrameLayout right 0 99
+        -ac J_batchSimFrameLayout top  1 J_nCacheFrameLayout
     J_cfxWorkFlowMain;
     formLayout -e 
         -ap J_allHairSystemNode left 0 0
@@ -113,16 +124,36 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_buCreateBlend right 0 33
         
         -ap J_buCreateColor left 0 34
-        -af J_buCreateBlend top  0
+        -af J_buCreateColor top  0
         -ap J_buCreateColor right 0 66
         
         -ap J_buCachePB left 0 67
-        -af J_buCreateBlend top  0
+        -af J_buCreateColor top  0
         -ap J_buCachePB right 0 100
     J_nCacheFormLayout;
+    
+    formLayout -e 
+        -ap J_ipPort left 0 0
+        -af J_ipPort top  0
+        -ap J_ipPort right 0 99
+        
+        
+        -ap J_buConnectWorker left 0 0
+        -ac J_buConnectWorker top  1 J_ipPort
+        -ap J_buConnectWorker right 0 33
+        
+        -ap J_buJ_simAndPlayBlast left 0 34
+        -ac J_buJ_simAndPlayBlast top  1 J_ipPort
+        -ap J_buJ_simAndPlayBlast right 0 66
+        
+        -ap J_buJ_simAndRender left 0 67
+        -ac J_buJ_simAndRender top  1 J_ipPort
+        -ap J_buJ_simAndRender right 0 100 
+    J_batchSimFormLayout;
 showWindow J_CFXWorkFlow;
 J_CFXWorkFlow_init();
 J_CFXWorkFlow_runScriptJob();
+catch(loadPlugin("AbcExport.mll"));
 }
 
 //J_CFXWorkFlow;
@@ -157,14 +188,30 @@ global proc J_CFXWorkFlow_nClothIn()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_nClothIn()");
 }
-global proc J_CFXWorkFlow_JoinBlend()
+global proc J_JoinBlend()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_blendToSelectGeo()");
 }
-global proc J_CFXWorkFlow_CreateCachePlayBlast()
+global proc J_CreateCachePlayBlast()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
 }
+
+global proc J_connectWorker()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
+}
+
+global proc J_simAndPlayBlast()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
+}
+
+global proc J_simAndRender()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
+}
+
 //////////////////////////////////////////////////////////////
 ///根据场景中的选择,选择列表中的节点
 global proc J_CFXWorkFlow_selectNode()
