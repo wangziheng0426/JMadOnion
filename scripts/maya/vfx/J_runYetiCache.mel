@@ -162,6 +162,14 @@ global proc runYetiCacheBtn()
     int $optionVersion=`radioButtonGrp -q -select  rbg`;
     int $startFrame=`textField  -q -tx startFrameInputTextField`;
     int $endFrame=`textField  -q -tx endFrameInputTextField`;
+    //为每个yeti节点建立子文件夹
+    python( "import sys,os,shutil" );
+    
+    for ($item in $seletedYetiNode)
+    {
+        
+    }
+    //为每个yeti节点建立子文件夹
     if(size($seletedYetiNode)&&$optionVersion==1)
     {
         for($yetiNode in $seletedYetiNode)
@@ -198,7 +206,7 @@ global proc runYetiCache(string $yetiMayaNode,string $yetiCachePath,string $yeti
         {sysFile -makeDir $yetiCachePath;}
         select $yetiMayaNode;
         setAttr ($yetiMayaNode+".fileMode") 0;
-        string $temp=$yetiCachePath+"/"+$yetiFileName+"_%04d.fur";
+        string $temp=$yetiCachePath+"/"+$yetiMayaNode+"/"+$yetiFileName+"_%04d.fur";
         pgYetiCommand -writeCache $temp -range $yetiCacheStartTime $yetiCacheEndTime -samples $yetiSamples   ;
         setAttr -type "string" ($yetiMayaNode+".cacheFileName") $temp;
         setAttr ($yetiMayaNode+".fileMode") 1;
@@ -217,7 +225,7 @@ global proc runYetiCachePlugs(string $yetiMayaNode[],string $yetiCachePath,strin
     }
     ///////////////////////////////
     select $yetiMayaNode;
-    string $yetiCacheName=$yetiCachePath+"/"+substituteAllString($yetiFileName, ":", "_")+"_<NAME>_%04d.fur";
+    string $yetiCacheName=$yetiCachePath+"/<NAME>/"+substituteAllString($yetiFileName, ":", "_")+"<NAME>_%04d.fur";
     //print ($yetiCacheName+"    ccaaaa\n");
     pgYetiCommand -writeCache $yetiCacheName -range $yetiCacheStartTime $yetiCacheEndTime -samples $yetiSamples   ;
 

@@ -6,7 +6,7 @@
 ##  @version 1.0
 ##  @date  18:25 2020/7/29
 #  History:  
-##缓存拍屏
+##后台渲染
 import json
 import os
 import sys
