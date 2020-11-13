@@ -23,7 +23,8 @@ def J_CFXWorkFlow_hairIn():
     try:
         J_CFXWorkFlow_upDataAttachCurvesToHairSystem()
     except:
-        cmds.confirmDialog(title=u'错误',message=u'    当前maya可能没有管理员权限运行，请联系你的系统管理员开放权限，否则可能导致    ',button='哦')
+        #cmds.confirmDialog(title=u'错误',message=u'    当前maya可能没有管理员权限运行，请联系你的系统管理员开放权限，否则可能导致    ',button='哦')
+        pass
     #毛发节点组
     if cmds.objExists('J_importHair_grp'):
         cmds.delete('J_importHair_grp')
@@ -73,7 +74,7 @@ def J_CFXWorkFlow_createHairNode(abcNode,hairData,JhairFile,groupNode):
             for groupItem in allCurveGroup:
                 if groupItem.find(hairNodeItem['curveGroup'])>-1:
                     cmds.select(groupItem)
-            mel.eval('assignHairSystem '+hairSysNode+';')
+            mel.eval('J_assignHairSystem '+hairSysNode+';')
             cmds.connectAttr('time1.outTime',hairSysNode+'.currentTime')
             cmds.select(hairSysNodeName)
             

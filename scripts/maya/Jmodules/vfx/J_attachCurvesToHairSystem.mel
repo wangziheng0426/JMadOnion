@@ -1,0 +1,153 @@
+// ===========================================================================
+// Copyright 2017 Autodesk, Inc. All rights reserved.
+//
+// Use of this software is subject to the terms of the Autodesk license
+// agreement provided at the time of installation or download, or which
+// otherwise accompanies this software in either electronic or hard copy form.
+// ===========================================================================
+//
+//
+//  Creation Date:  2003
+//
+//  Description:
+//	     Routine to make dynamic curves from passed nurbs curve array.	
+//
+
+
+global proc J_assignHairSystem( string $hsys )
+{
+	if( $hsys != "" ){
+		if( !objExists( $hsys ) ){
+			string $fmt = (uiRes("m_assignHairSystem.kInvalidHairSystem"));
+			warning( `format -s $hsys $fmt` );
+			return;
+		}
+		if( nodeType( $hsys ) != "hairSystem" ){
+			string $shape[] = `ls -dag -shapes $hsys`;
+			if( size( $shape ) > 0 ){
+				$hsys = $shape[0];
+			}
+			if( nodeType( $hsys ) != "hairSystem" ){
+				string $fmt = (uiRes("m_assignHairSystem.kNotAHairSystem"));
+				warning( `format -s $hsys $fmt` );
+				return;
+			}
+		}
+	}
+	string $sel[] = `ls -sl`;
+	convertHairSelection( "follicles" );
+	string $follicles[]  = `ls -sl`;
+	int   $lastIndex[] = {0};
+
+	if( size( $follicles ) > 0 ){
+		if( $hsys == "" ){
+			string $selHsys[] = getSelectedHairSystems();
+
+			if( size( $selHsys ) > 0 ){
+				$hsys = copyHairSystem( $selHsys[0] );
+			} else {
+				$hsys = `createNode hairSystem`;
+			}
+			string $nucleus = getActiveNucleusNode( false, true ); 
+			addActiveToNSystem( $hsys, $nucleus);
+			connectAttr ($nucleus + ".startFrame") ($hsys + ".startFrame");
+			connectAttr time1.outTime ($hsys + ".currentTime");
+		}
+		attachFolliclesToHairSystem( $hsys, $follicles );
+	} else {
+		// no follicles selected(directly or indirectly)
+		// .. see if we have any curves that we could
+		// make dynamic
+		string $curves[] = `ls -dag -type nurbsCurve $sel`;
+		if( size( $curves ) > 0 ){
+			if( $hsys == "" ){
+				$hsys = `createNode hairSystem`;
+				string $nucleus = getActiveNucleusNode( false, true ); 
+				addActiveToNSystem( $hsys, $nucleus);
+				connectAttr ($nucleus + ".startFrame") ($hsys + ".startFrame");
+				connectAttr time1.outTime ($hsys + ".currentTime");
+			}
+			J_attachCurvesToHairSystem( $hsys, $curves, false );
+		} else {
+			warning( (uiRes("m_assignHairSystem.kNoValidObjects")) );
+		}
+	}
+	select $sel;
+	
+}
+
+
+global proc J_attachCurvesToHairSystem( string $hsys, string $curves[], int $lockEnds )
+{
+	int $numCurves = size( $curves );
+	if( $numCurves < 1 ){ 
+		return;
+	}
+	string $groupNames[] = getHairSystemGroups( $hsys, true );
+	
+	string $parent = "";
+	int $endIndex[] = {0};
+	int $i, $j, $k, $l;
+	for( $i = 0; $i < size($curves); $i++ ){
+		string $curve = $curves[$i];
+		// Determine if the curve is a COS or just a regular curve.
+		// This is cloned from "convertCurvesToStrokes.mel"
+		int $COS = 0;
+		string $relatives[] = `listRelatives -fullPath -ap -p $curve`;
+		for ($j = 0; $j < size( $relatives ); $j++) {
+			string $testMe = $relatives[$j];
+			if (`nodeType $testMe` == "transform") {
+				string $testList[] = `listRelatives  -fullPath -ap -p $testMe`;
+				for ($k = 0; $k < size( $testList ); $k++) {
+					string $subTest = $testList[$k];
+					if (`nodeType $subTest` == "curveVarGroup") {
+						string $testList2[] = `listRelatives  -fullPath -ap -p $subTest`;
+						for ($l = 0; $l < size( $testList2 ); $l++) {
+							if (`nodeType $testList2[$l]` == "nurbsSurface") {
+								$COS = 1;
+								$parent = $testList2[$l];
+								$j = size( $relatives );
+								$k = size( $testList  );
+								$l = size( $testList2 );
+							}
+						}
+					}
+					else {
+						if (`nodeType $testList[$k]` == "nurbsSurface") {
+							$COS = 1;
+							$parent = $testList[$k];
+							$j = size( $relatives);
+							$k = size( $testList );
+						}
+					}
+				}
+			}
+			else if (`nodeType $testMe` == "nurbsSurface") {
+				$parent = $testMe;
+				$COS = 1;
+				$j = size( $relatives);
+			}
+		}
+		if ( $COS == 1 ) {
+			// the name in $curves is something like nurbsPlane->curve1: this
+			// has illegal characters for a name so we use the default naming
+			// string $cFS = `createNode "curveFromSurfaceCoS" -name ($curves[$i] + "cFS")`;
+			string $cFS = `createNode "curveFromSurfaceCoS"`;
+			// Do we need to check the index of the WS connections?
+			connectAttr ($curve + ".ws[0]") ($cFS + ".curveOnSurface");
+			connectAttr ($parent + ".ws[0]") ($cFS + ".inputSurface");
+			$curve = $cFS;
+		}
+		string $surf = ""; // no surface to attach to
+		int $doRest = false;
+		string $hname = createHairCurveNode($hsys, $surf,
+							0.0, 0.0, 0, true, true, 
+							$doRest, false, $curve, 1.0, $endIndex,
+							$groupNames[0], $groupNames[1], 1);
+		if( $lockEnds  && size( $hname ) > 0 ){
+			setAttr ( $hname + ".pointLock" ) 3;
+			setAttr ( $hname + ".restPose" ) 1;
+		}
+	}
+}
+
