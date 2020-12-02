@@ -1,0 +1,18 @@
+1:29 2020/12/3
+学习笔记
+https://www.bilibili.com/video/BV1zW411C7Mv?from=search&seid=14018950032225171032
+
+
+制作一个适合自己的ui界面
+
+节点分类
+sop模块  模型
+rop模块  特效
+
+旋转，位移缩放
+
+
+制作苹果
+创建一个geo
+创建曲线 旋转成型
+缝合点 ：fuse
