@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
-import check
-import public
-import vfx
-import rigid
 import animation
+import check
+import compute
+import public
+import rigid
+import vfx
