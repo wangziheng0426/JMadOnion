@@ -5,7 +5,7 @@ import _winreg,socket
 class J_ConnectWorker:
     def test(self):
         ip_port=("192.168.54.163", 6666)
-        ip_port = ("192.168.53.3", 6666)
+        ip_port = ("192.168.1.187", 6666)
         jobInfo={}
         jobInfo['job_Id']=37
         jobInfo['job_name']="a1"
