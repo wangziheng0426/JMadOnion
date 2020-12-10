@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Threading;
 using System.IO;
+using Microsoft.Win32;
+using System.Runtime.InteropServices;//关闭系统切换
+
+
 
 namespace J_LivingWorker
 {
@@ -19,6 +23,7 @@ namespace J_LivingWorker
         private static readonly J_JobManage instance = new J_JobManage();
         private J_JobManage()
         {
+            
             //读取设置初始化服务器
             Console.WriteLine("Read setting file");
             if (File.Exists(Directory.GetCurrentDirectory() + @"/workerSetting.txt"))
@@ -46,9 +51,8 @@ namespace J_LivingWorker
             }
             else
             {
+                softWares=J_CreateSoftwareSettings();
                 softWares.softList.Add(new J_softWareData("ffmpeg", "c:/ffmpeg.exe", "2018"));
-                softWares.softList.Add(new J_softWareData("maya", "C:/Program Files/Autodesk/Maya2018/bin/maya.exe", "2018"));
-                softWares.softList.Add(new J_softWareData("mayabatch", "C:/Program Files/Autodesk/Maya2018/bin/mayabatch.exe", "2018"));
                 softWares.saveSettings(Directory.GetCurrentDirectory() + @"/softWareSetting.txt");
             }
         }
@@ -185,6 +189,28 @@ namespace J_LivingWorker
                     
                 }
             }
+        }
+
+        J_SoftWareSetting J_CreateSoftwareSettings()
+        {
+            J_SoftWareSetting softWares = new J_SoftWareSetting();
+            RegistryKey keyX = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,RegistryView.Registry64)
+                .OpenSubKey("SOFTWARE\\Autodesk\\Maya");
+
+            string[] mayaVersionKeys = keyX.GetSubKeyNames();
+
+            foreach(var item in mayaVersionKeys)
+            {
+                string mayaRegistryPath = (item + "\\Setup\\InstallPath");
+                RegistryKey mayaPathKey = keyX.OpenSubKey(mayaRegistryPath);
+                if (mayaPathKey!=null)
+                {
+                    softWares.softList.Add(
+                        new J_softWareData("maya", mayaPathKey.GetValue("MAYA_INSTALL_LOCATION").ToString(), item));
+                }
+            }
+
+            return softWares;
         }
     }
 }
