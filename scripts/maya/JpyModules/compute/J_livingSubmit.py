@@ -15,7 +15,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 
 #获取当前农场节点的任务信息
-def get_JobList(self,ip_port):
+def J_getJobList(ip_port):
     client = socket.socket()
     client.connect(ip_port)
     client.send("get_job_list")

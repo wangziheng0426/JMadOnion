@@ -19,6 +19,7 @@ namespace J_LivingWorker
             Console.WriteLine(_job.job_name+"start-----------------");
             System.Diagnostics.ProcessStartInfo jobInfo = new System.Diagnostics.ProcessStartInfo();
             jobInfo.FileName = _soft.path;
+            //运行参数，需要日后更新
             jobInfo.Arguments =string.Join(" ",_job.job_args) ;
             jobInfo.RedirectStandardOutput = true;
             jobInfo.UseShellExecute = false;

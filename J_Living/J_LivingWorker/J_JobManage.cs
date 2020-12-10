@@ -206,7 +206,9 @@ namespace J_LivingWorker
                 if (mayaPathKey!=null)
                 {
                     softWares.softList.Add(
-                        new J_softWareData("maya", mayaPathKey.GetValue("MAYA_INSTALL_LOCATION").ToString(), item));
+                        new J_softWareData("maya", (mayaPathKey.GetValue("MAYA_INSTALL_LOCATION").ToString()+"bin\\maya.exe"), item));
+                    softWares.softList.Add(
+                        new J_softWareData("mayabatch", (mayaPathKey.GetValue("MAYA_INSTALL_LOCATION").ToString() + "bin\\mayabatch.exe"), item));
                 }
             }
 
