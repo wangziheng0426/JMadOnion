@@ -258,6 +258,13 @@ global proc J_CFXWorkFlow_selectitem(string $tList)
     string $temp1[]=`textScrollList -q -si $tList`;
     select $temp1;
 }
+//链接j living服务端，查看服务端状态
+global proc J_connectWorker()
+{
+    string $ipPort=`textField -q -text J_ipPort`;
+    print $ipPort;
+    python("JpyModules.compute.J_getJobList('"+$ipPort+"')");
+}
 global proc J_CFXWorkFlow_init()
 {
     textScrollList -e -ra  J_allHairSystemNode;
