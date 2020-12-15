@@ -33,9 +33,9 @@ def J_CFXWorkFlow_LivingSim(idIpPortFrameRate):
     frameRate=idIpPortFrameRate.split('&')[3]
     
     scriptFile=open(scriptFileName,'w')
-    scriptFile.write('python("import time");\npython("time.sleep(10)");\n'        
-        +'python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb('
-        +frameRate+',False,False,False)");\n'+'python("cmds.quit(force=True)");')
+    scriptFile.write('python("cmds.evalDeferred(\'JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb('
+        +frameRate+',False,False,False)\')");\n'
+        +'python("cmds.evalDeferred(\'cmds.quit(force=True)\')");')
     scriptFile.close()
     ip_port = (ip, int(port))
     jobInfo={}
@@ -54,7 +54,14 @@ def J_CFXWorkFlow_LivingSim(idIpPortFrameRate):
     JpyModules.compute.J_livingSubmit(ip_port, "remove_job", jobInfo)
     #新增任务
     JpyModules.compute.J_livingSubmit(ip_port, "add_job",jobInfo)
-    
+def J_CFXWorkFlow_LivingGetInfo(idIpPortFrameRate):
+    if len(idIpPortFrameRate.split('&'))!=4:
+        print "imfomation error"
+        return
+    ip=idIpPortFrameRate.split('&')[1]
+    port=idIpPortFrameRate.split('&')[2]
+    ip_port = (ip, int(port))
+    JpyModules.compute.J_getJobList(ip_port)
 if __name__=='__main__':
     J_CFXWorkFlow_LivingSim('10&192.168.1.187&6666&1')
     JpyModules.compute.J_getJobList(("192.168.1.187", 6666))
