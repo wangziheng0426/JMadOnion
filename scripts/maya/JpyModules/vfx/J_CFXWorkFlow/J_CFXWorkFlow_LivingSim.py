@@ -13,6 +13,7 @@ import sys
 import shutil
 import maya.cmds as cmds
 import maya.mel as mel
+import JpyModules
 def J_CFXWorkFlow_LivingSim(idIpPortFrameRate):
     if len(idIpPortFrameRate.split('&'))!=4:
         print "imfomation error"

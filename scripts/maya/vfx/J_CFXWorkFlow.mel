@@ -263,8 +263,18 @@ global proc J_connectWorker()
 {
     string $ipPort=`textField -q -text J_ipPort`;
     print $ipPort;
-    python("JpyModules.compute.J_getJobList('"+$ipPort+"')");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_LivingGetInfo('"+$ipPort+"')");
 }
+//链接j living服务端，解算并拍屏
+global proc J_simAndPlayBlast()
+{
+    string $ipPort=`textField -q -text J_ipPort`;
+    print $ipPort;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_LivingSim('"+$ipPort+"')");
+}
+
+
+
 global proc J_CFXWorkFlow_init()
 {
     textScrollList -e -ra  J_allHairSystemNode;
