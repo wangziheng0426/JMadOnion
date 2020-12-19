@@ -24,6 +24,7 @@ global proc string J_sourceScripts(string $inPath)
     python("import os");
     python("import shutil");
     python("sys.path.append('"+`J_getSysPath`+""+"')");
+    python("sys.path.append('"+`J_getSysPath`+"/site_packages"+"')");
     python("import JpyModules");
     print "PlugIn Loaded\n";
     return "success";
