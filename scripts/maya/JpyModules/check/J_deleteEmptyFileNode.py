@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-##  @package public
+##  @package check
 #
 ##  @brief  删除场景中空贴图节点,或者贴图读取不到的节点
 ##  @author 桔
