@@ -27,17 +27,14 @@ def J_checkPolyTrapped(closestValue=0,farthestValue=1):
         resample=True
     #改顶点色显示    
     targetObj=sel.getComponent(1)[0].fullPathName()
-    if cmds.getAttr(targetObj+".displayColors")==0:
+    if not pTargetMesh.displayColors:
         cmds.setAttr( targetObj+".displayColors", 1)
         for i in range(0,faceCount,1):
-            vertexDistance[i]={}
-            vertexCount=0
             for verticesId in  pTargetMesh.getPolygonVertices(i):
                 targetPointPosition= pTargetMesh.getPoint(verticesId,om.MSpace.kWorld) #return mPoint
                 baseNearestPointPosition=pBaseMesh.getClosestPoint(targetPointPosition,om.MSpace.kWorld)[0] #return mPoint
                 pointDistance=targetPointPosition.distanceTo(baseNearestPointPosition)
-                vertexDistance[i][vertexCount]=pointDistance
-                vertexCount=vertexCount+1
+                vertexDistance[verticesId]=pointDistance
                 if resample:
                     if closestValue>pointDistance:
                         closestValue=pointDistance
@@ -45,19 +42,11 @@ def J_checkPolyTrapped(closestValue=0,farthestValue=1):
                         farthestValue=pointDistance
 
         for k,v in vertexDistance.items():
-            for k1,v1 in  v.items():
-                greenColor=pymel.util.arrays.linstep(closestValue,farthestValue,v1)
-                pTargetMesh.setFaceVertexColor(om.MColor([1-greenColor,greenColor,0]),k,k1)
+            greenColor=pymel.util.arrays.linstep(closestValue,farthestValue,v)
+            pTargetMesh.setVertexColor(om.MColor([1-greenColor,greenColor,0]),k)
 
     else:
-        cmds.setAttr( targetObj+".displayColors", 0)    
-    
-
-   
-        
-    #pPoint=pMesh.getClosestPoint(om.MPoint(0,10,0),om.MSpace.kWorld)
-    #pUV=pMesh.getUVAtPoint( pPoint[0],om.MSpace.kWorld)
-    #print pUV
+        pTargetMesh.displayColors=False   
 
 if __name__=='__main__':
-    J_checkPolyTrapped()
+    J_checkPolyTrappedV2()
