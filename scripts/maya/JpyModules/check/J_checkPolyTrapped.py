@@ -19,7 +19,7 @@ def J_checkPolyTrapped(closestValue=0,farthestValue=1):
     pTargetMesh=om.MFnMesh(sel.getComponent(1)[0])
     #
     faceCount=pTargetMesh.numPolygons
-    vertexDistance={}
+    vertexDistance=[]
     resample=False
     if closestValue>=farthestValue:
         closestValue=100
@@ -29,24 +29,21 @@ def J_checkPolyTrapped(closestValue=0,farthestValue=1):
     targetObj=sel.getComponent(1)[0].fullPathName()
     if not pTargetMesh.displayColors:
         cmds.setAttr( targetObj+".displayColors", 1)
-        for i in range(0,faceCount,1):
-            for verticesId in  pTargetMesh.getPolygonVertices(i):
-                targetPointPosition= pTargetMesh.getPoint(verticesId,om.MSpace.kWorld) #return mPoint
-                baseNearestPointPosition=pBaseMesh.getClosestPoint(targetPointPosition,om.MSpace.kWorld)[0] #return mPoint
-                pointDistance=targetPointPosition.distanceTo(baseNearestPointPosition)
-                vertexDistance[verticesId]=pointDistance
-                if resample:
-                    if closestValue>pointDistance:
-                        closestValue=pointDistance
-                    if farthestValue<pointDistance:
-                        farthestValue=pointDistance
-
-        for k,v in vertexDistance.items():
-            greenColor=pymel.util.arrays.linstep(closestValue,farthestValue,v)
-            pTargetMesh.setVertexColor(om.MColor([1-greenColor,greenColor,0]),k)
+        pointsPos=pTargetMesh.getPoints(om.MSpace.kWorld)
+        for item in pointsPos:
+            baseNearestPointPosition=pBaseMesh.getClosestPoint(item,om.MSpace.kWorld)[0] #return mPoint
+            pointDistance=item.distanceTo(baseNearestPointPosition)
+            vertexDistance.append(pointDistance)
+        colors=[]
+        vertexIds=[]
+        for i in range(len(vertexDistance)):
+            greenColor=pymel.util.arrays.linstep(closestValue,farthestValue,vertexDistance[i])
+            colors.append(om.MColor([1-greenColor,greenColor,0]))
+            vertexIds.append(i)
+        pTargetMesh.setVertexColors(colors,vertexIds)
 
     else:
         pTargetMesh.displayColors=False   
 
 if __name__=='__main__':
-    J_checkPolyTrappedV2()
+    J_checkPolyTrapped()
