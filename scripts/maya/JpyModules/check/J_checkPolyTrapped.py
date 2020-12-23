@@ -11,7 +11,7 @@ import maya.cmds as cmds
 import pymel as pm
 import pymel.util.arrays
 #
-def J_checkPolyTrapped(resample=False,closestValue=0,farthestValue=10):
+def J_checkPolyTrapped(closestValue=0,farthestValue=1):
     sel=om.MGlobal.getActiveSelectionList()
     #基础比对模型
     pBaseMesh=om.MFnMesh(sel.getComponent(0)[0])
@@ -20,10 +20,11 @@ def J_checkPolyTrapped(resample=False,closestValue=0,farthestValue=10):
     #
     faceCount=pTargetMesh.numPolygons
     vertexDistance={}
-    uvid=0
-    if resample:
+    resample=False
+    if closestValue>=farthestValue:
         closestValue=100
         farthestValue=0
+        resample=True
     #改顶点色显示    
     targetObj=sel.getComponent(1)[0].fullPathName()
     if cmds.getAttr(targetObj+".displayColors")==0:
