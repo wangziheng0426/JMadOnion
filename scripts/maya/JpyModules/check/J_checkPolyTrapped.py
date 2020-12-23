@@ -10,6 +10,7 @@ import maya.api.OpenMaya as om
 import maya.cmds as cmds
 import pymel as pm
 import pymel.util.arrays
+import math
 #
 def J_checkPolyTrapped(closestValue=0,farthestValue=1):
     sel=om.MGlobal.getActiveSelectionList()
@@ -30,15 +31,21 @@ def J_checkPolyTrapped(closestValue=0,farthestValue=1):
     if not pTargetMesh.displayColors:
         cmds.setAttr( targetObj+".displayColors", 1)
         pointsPos=pTargetMesh.getPoints(om.MSpace.kWorld)
+
         for item in pointsPos:
-            baseNearestPointPosition=pBaseMesh.getClosestPoint(item,om.MSpace.kWorld)[0] #return mPoint
-            pointDistance=item.distanceTo(baseNearestPointPosition)
+            posNor=pBaseMesh.getClosestPointAndNormal(item,om.MSpace.kWorld) #return tuple (mpoint, mvector,int)
+
+            pointDistance=item.distanceTo(posNor[0])
+
+            pointDistance=pointDistance*(om.MVector(item.x,item.y,item.z).normalize().__mul__(posNor[1].normalize()))
+   
             vertexDistance.append(pointDistance)
         colors=[]
         vertexIds=[]
         for i in range(len(vertexDistance)):
             greenColor=pymel.util.arrays.linstep(closestValue,farthestValue,vertexDistance[i])
-            colors.append(om.MColor([1-greenColor,greenColor,0]))
+            redColor=pymel.util.arrays.linstep(0,1,(1-greenColor)*math.copysign(1,vertexDistance[i]))
+            colors.append(om.MColor([redColor,greenColor,0,1]))
             vertexIds.append(i)
         pTargetMesh.setVertexColors(colors,vertexIds)
 
