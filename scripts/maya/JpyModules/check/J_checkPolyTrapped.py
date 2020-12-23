@@ -9,6 +9,7 @@
 import maya.api.OpenMaya as om
 import maya.cmds as cmds
 import pymel as pm
+import pymel.util.arrays
 #
 def J_checkPolyTrapped(resample=False,closestValue=0,farthestValue=10):
     sel=om.MGlobal.getActiveSelectionList()
@@ -23,29 +24,34 @@ def J_checkPolyTrapped(resample=False,closestValue=0,farthestValue=10):
     if resample:
         closestValue=100
         farthestValue=0
-        
-    
-    for i in range(0,faceCount,1):
-        vertexDistance[i]={}
-        vertexCount=0
-        for verticesId in  pTargetMesh.getPolygonVertices(i):
-            targetPointPosition= pTargetMesh.getPoint(verticesId,om.MSpace.kWorld) #return mPoint
-            baseNearestPointPosition=pBaseMesh.getClosestPoint(targetPointPosition,om.MSpace.kWorld)[0] #return mPoint
-            pointDistance=targetPointPosition.distanceTo(baseNearestPointPosition)
-            vertexDistance[i][vertexCount]=pointDistance
-            vertexCount=vertexCount+1
-            if resample:
-                if closestValue>pointDistance:
-                    closestValue=pointDistance
-                if farthestValue<pointDistance:
-                    farthestValue=pointDistance
+    #改顶点色显示    
+    targetObj=sel.getComponent(1)[0].fullPathName()
+    if cmds.getAttr(targetObj+".displayColors")==0:
+        cmds.setAttr( targetObj+".displayColors", 1)
+        for i in range(0,faceCount,1):
+            vertexDistance[i]={}
+            vertexCount=0
+            for verticesId in  pTargetMesh.getPolygonVertices(i):
+                targetPointPosition= pTargetMesh.getPoint(verticesId,om.MSpace.kWorld) #return mPoint
+                baseNearestPointPosition=pBaseMesh.getClosestPoint(targetPointPosition,om.MSpace.kWorld)[0] #return mPoint
+                pointDistance=targetPointPosition.distanceTo(baseNearestPointPosition)
+                vertexDistance[i][vertexCount]=pointDistance
+                vertexCount=vertexCount+1
+                if resample:
+                    if closestValue>pointDistance:
+                        closestValue=pointDistance
+                    if farthestValue<pointDistance:
+                        farthestValue=pointDistance
 
-    for k,v in vertexDistance.items():
-        for k1,v1 in  v.items():
-            greenColor=pymel.util.arrays.linstep(closestValue,farthestValue,v1)
-            pTargetMesh.setFaceVertexColor(om.MColor([1-greenColor,greenColor,0]),k,k1)
-        
-            
+        for k,v in vertexDistance.items():
+            for k1,v1 in  v.items():
+                greenColor=pymel.util.arrays.linstep(closestValue,farthestValue,v1)
+                pTargetMesh.setFaceVertexColor(om.MColor([1-greenColor,greenColor,0]),k,k1)
+
+    else:
+        cmds.setAttr( targetObj+".displayColors", 0)    
+    
+
    
         
     #pPoint=pMesh.getClosestPoint(om.MPoint(0,10,0),om.MSpace.kWorld)
