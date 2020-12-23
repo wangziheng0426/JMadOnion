@@ -36,8 +36,8 @@ def J_checkPolyTrapped(closestValue=0,farthestValue=1):
             posNor=pBaseMesh.getClosestPointAndNormal(item,om.MSpace.kWorld) #return tuple (mpoint, mvector,int)
 
             pointDistance=item.distanceTo(posNor[0])
-
-            pointDistance=pointDistance*(om.MVector(item.x,item.y,item.z).normalize().__mul__(posNor[1].normalize()))
+            pointDirection=item-posNor[0]
+            pointDistance=pointDistance*(om.MVector(pointDirection.x,pointDirection.y,pointDirection.z).normalize().__mul__(posNor[1].normalize()))
    
             vertexDistance.append(pointDistance)
         colors=[]
