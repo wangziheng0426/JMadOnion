@@ -17,7 +17,7 @@ def J_checkPolyTrapped(resample=False,closestValue=0,farthestValue=10):
     pBaseMesh=om.MFnMesh(sel.getComponent(0)[0])
     #目标检查模型
     pTargetMesh=om.MFnMesh(sel.getComponent(1)[0])
-    
+    #
     faceCount=pTargetMesh.numPolygons
     vertexDistance={}
     uvid=0
