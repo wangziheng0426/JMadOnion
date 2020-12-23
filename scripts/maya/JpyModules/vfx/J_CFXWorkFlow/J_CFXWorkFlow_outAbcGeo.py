@@ -15,12 +15,13 @@ import maya.mel as mel
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
 
-def J_CFXWorkFlow_outAbcGeo(cacheFileName='',model=0):
+def J_CFXWorkFlow_outAbcGeo(selectedNodes=[],cacheFileName='',model=0):
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     if cacheFileName =='':
         cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
     #找到选中节点下所有mesh
-    selectedNodes=J_CFXWorkFlow_getAllMeshUnderSelections(cmds.ls(sl=True,long=True))
+    if len(selectedNodes)<1:
+        selectedNodes=J_CFXWorkFlow_getAllMeshUnderSelections(cmds.ls(sl=True,long=True))
     j_clothCachePath=filePath+cacheFileName+'_cache/'
     if not os.path.exists(j_clothCachePath):
             os.makedirs(j_clothCachePath)
@@ -113,9 +114,10 @@ def J_CFXWorkFlow_getChildNodes(currentNode,meshList):
         if cmds.objectType( item, isType='transform' ):
             J_CFXWorkFlow_getChildNodes(item,meshList)
             
+#暂时不用了
 def J_CFXWorkFlow_outAbcOrgGeoWithMat():
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
-    cacheFileName='noName'
+    cacheFileName=''
     if cacheFileName =='':
         cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
     selectedNodes=cmds.ls(sl=True,long=True)
@@ -124,6 +126,7 @@ def J_CFXWorkFlow_outAbcOrgGeoWithMat():
     for item in selectedNodes:
         newobj=cmds.duplicate(item)
     mel.eval('file -force -options "v=0;" -typ "mayaBinary" -pr -es "'+j_clothCachePath+cacheFileName+'.mb";')
+#暂时不用了
 def J_CFXWorkFlow_duplicateObj(inGeo):
     cmds.select(inGeo)
     cmds.duplicate(rr=True, smartTransform=True )
