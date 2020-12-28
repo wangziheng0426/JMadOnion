@@ -2,6 +2,7 @@
 import animation
 import check
 import compute
+import model
 import public
 import rigid
 import vfx
