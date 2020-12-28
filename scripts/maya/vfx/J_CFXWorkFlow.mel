@@ -42,7 +42,7 @@ if (`window -ex J_CFXWorkFlow`)
         frameLayout -cll 1 -cl 0 -l "缓存工具"  J_nCacheFrameLayout;
             formLayout  -numberOfDivisions 100  J_nCacheFormLayout;
                 button -l "融合blend" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
-                button -l "添加随机颜色" -w $ButtonW  -h $ButtonH -c  "J_randomColor()" J_buCreateColor;
+                button -l "添加随机颜色" -w $ButtonW  -h $ButtonH -c  "J_meshRandomColor()" J_buCreateColor;
                 button -l "一键缓存拍屏" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast()" J_buCachePB;
             setParent ..;
         setParent ..;
@@ -190,8 +190,14 @@ global proc J_CFXWorkFlow_nClothIn()
 }
 global proc J_JoinBlend()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_blendToSelectGeo()");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_copyGroupDeformAnimation()");
 }
+global proc J_meshRandomColor()
+{
+    python("JpyModules.model.J_meshRandomColor()");
+}
+
+
 global proc J_CreateCachePlayBlast()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");

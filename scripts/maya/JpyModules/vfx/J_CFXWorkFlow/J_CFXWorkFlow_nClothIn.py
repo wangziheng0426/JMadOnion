@@ -66,19 +66,6 @@ def J_CFXWorkFlow_nClothIn():
                     ,transferUVs=0 ,transferColors=0 ,sampleSpace=4 ,sourceUvSpace="map1" ,targetUvSpace="map1"
                     ,searchMethod=3,flipUVs=0,colorBorders=1 )
         
-#选择两个组进行操作，组内不可以有子物体，脚本会讲第一个组内的模型作为源物体，寻找第二个组中同名模型制作blendshape
-def J_CFXWorkFlow_blendToSelectGeo():
-    selectNodes=cmds.ls(sl=True,allPaths=True)
-    
-    if (len(selectNodes))!=2:
-        return
-    sourceList=cmds.listRelatives(selectNodes[0],children=True,fullPath=True)
-    desList=cmds.listRelatives(selectNodes[1],children=True,fullPath=True)
-    for i0 in sourceList:
-        for i1 in desList:
-            if i0.split('|')[-1]==i1.split('|')[-1].split(':')[-1]:
-                temp=cmds.blendShape(i0,i1)
-                cmds.blendShape( temp,edit=True, weight=[(0,1.0)] )
                 
 def J_CFXWorkFlow_getMeshsFromAbc(abcNode,allMeshParent):
     allAbcMeshs=cmds.listConnections(abcNode,type='mesh')
