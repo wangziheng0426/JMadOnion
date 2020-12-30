@@ -1,0 +1,80 @@
+/////////////////////////////////////////////////////////////
+///\file J_modelConvert.mel
+///\brief 模型格式转换
+///
+///\author 桔
+///\version 1.0
+///\date  16:56 2018/3/6
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_modelDistanceCheck()//主程序
+{
+/////////////////////////////////////////////////////////////生成窗体
+string $checkBoxs[];
+int $winWidth=300;
+int $count=10;
+if (`window -ex J_modelDistanceCheckWin`)
+    deleteUI -window J_modelDistanceCheckWin;
+    window -w 300 -h ($count*2+200) -title "模型间距检查" J_modelDistanceCheckWin;
+        
+        frameLayout -cll 1 -cl 0 -bs "etchedIn" -h ($count*20) -l "模型间距检查"  myColum;
+        formLayout  -h ($count*20) J_modelDistanceCheckLayout;
+        textField  -w 260 -h 25 -text "参考模型名字复制到这里（不要带前后缀）" baseObj;
+
+        floatSliderGrp -label "最小间距" -field true
+            -minValue 0 -maxValue 180
+            -fieldMinValue 0 -fieldMaxValue 180
+            -value 0 objMinDis;
+        floatSliderGrp -label "最大间距" -field true
+            -minValue 0.001 -maxValue 1000
+            -fieldMinValue 0.001 -fieldMaxValue 1000
+            -value 1 objMaxDis;
+
+        button -l "读取模型" -c  "addModelsFromSelectC" buttonRead ;
+        button -l "检查间距" -c  "J_runDistanceCheck" buttonRun ;
+    /////////////////////////////////////////////////////////编辑窗体   
+    int $apx=0;
+    int $apy=0;
+
+    formLayout -e 
+    
+        -af baseObj left 0 
+        -af baseObj top 0
+        -af baseObj right 0
+
+        
+        -af objMinDis left -50 
+        -ac objMinDis top $apy baseObj
+        
+        -af objMaxDis left -50 
+        -ac objMaxDis top $apy objMinDis
+        
+        -af buttonRead left $apx 
+        -ac buttonRead top $apy objMaxDis
+        -af buttonRead right $apx
+        
+        -af buttonRun left $apx 
+        -ac buttonRun top $apy buttonRead
+        -af buttonRun right $apx
+        
+        J_modelDistanceCheckLayout;
+showWindow J_modelDistanceCheckWin;
+}
+global proc addModelsFromSelectC()
+{
+    string $sel[]=`ls -sl`;
+    textField -e -text $sel[0]  baseObj;
+}
+global proc J_runDistanceCheck()
+{
+    float $min=`intSliderGrp -q -v objMinDis`;
+    float $max=`intSliderGrp -q -v objMaxDis`;
+    string $sel[]=`ls -sl`;
+    string $base=`textField -q -text  baseObj`;
+    select $base;
+    select -tgl $sel[0];
+    python("JpyModules.check.J_checkPolyTrapped("+$min+","+$max+")");
+}
+
