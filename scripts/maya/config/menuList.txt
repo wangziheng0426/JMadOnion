@@ -15,8 +15,6 @@
   <SubMenu> 转换选点 J_selectPoint model/J_selectPoint.mel </SubMenu>  
   <SubMenu> 整理曲线工具 J_curveTools model/J_curveTools.mel </SubMenu>  
   <SubMenu> 资产导入管理器 J_sourceManger prop/J_sourceManger.mel </SubMenu>  
-  #<SubMenu> 地形编辑器 J_spPaint3d prop/J_spPaint3d.mel </SubMenu>  
-  <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
   <SubMenu> 炒鸡不二 tjh_cut_tool_Main J_file/tjh_cut_tool_Main/tjh_cut_tool_Main.mel </SubMenu>  
   
   
