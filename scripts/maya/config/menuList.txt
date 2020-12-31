@@ -16,6 +16,7 @@
   <SubMenu> 整理曲线工具 J_curveTools model/J_curveTools.mel </SubMenu>  
   <SubMenu> 资产导入管理器 J_sourceManger prop/J_sourceManger.mel </SubMenu>  
   <SubMenu> 炒鸡不二 tjh_cut_tool_Main J_file/tjh_cut_tool_Main/tjh_cut_tool_Main.mel </SubMenu>  
+  <SubMenu> 间距检查 J_modelDistanceCheck model/J_modelDistanceCheck.mel </SubMenu>  
   
   
   <MainMenu> 特效工具 vfx </MainMenu>  
