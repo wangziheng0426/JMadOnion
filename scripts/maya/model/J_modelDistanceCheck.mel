@@ -77,5 +77,6 @@ global proc J_runDistanceCheck()
     select $base;
     select -tgl $sel[0];
     python("JpyModules.check.J_checkPolyTrapped("+$min+","+$max+")");
+    select $sel;
 }
 
