@@ -33,17 +33,20 @@ if (`window -ex J_CFXWorkFlow`)
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnClothSystemNode\")"  -allowMultiSelection 1 -h 163 J_allnClothSystemNode;
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnNucleusNode\")"  -allowMultiSelection 1 -h 100 J_allnNucleusNode;
                 button -l "选择布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"nCloth\")" J_buNClothMark;
+                button -l "随机颜色" -w $ButtonW  -h $ButtonH -c  "J_meshRandomColor()" J_buRandomColor;
                 button -l "导出变型布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outInBetweenGeo()" J_buNClothOut;
                 button -l "导出abc布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
                 button -l "导出独立abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
                 button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
+                button -l "自动适配abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_abcIn()" J_buNAbcIn;
+                button -l "拷贝点动画" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
             setParent ..;
         setParent ..;
-        frameLayout -cll 1 -cl 0 -l "缓存工具"  J_nCacheFrameLayout;
+        frameLayout -cll 1 -cl 0 -l "mc缓存拍屏"  J_nCacheFrameLayout;
             formLayout  -numberOfDivisions 100  J_nCacheFormLayout;
-                button -l "融合blend" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
-                button -l "添加随机颜色" -w $ButtonW  -h $ButtonH -c  "J_meshRandomColor()" J_buCreateColor;
-                button -l "一键缓存拍屏" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast()" J_buCachePB;
+                button -l "1倍缓存拍屏" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast()" J_buCachePB;
+                button -l "2倍缓存拍屏" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast2()" J_buCachePB2;
+                button -l "4倍缓存拍屏" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast4()" J_buCachePB4;
             setParent ..;
         setParent ..;
         frameLayout -cll 1 -cl 0 -l "后台解算"  J_batchSimFrameLayout;
@@ -101,8 +104,12 @@ if (`window -ex J_CFXWorkFlow`)
         -af J_buNClothMark top 0
         -ap J_buNClothMark right 0 100
 
+        -ap J_buRandomColor left 0 67
+        -ac J_buRandomColor top  1 J_buNClothMark
+        -ap J_buRandomColor right 0 100
+        
         -ap J_buNClothOut left 0 67
-        -ac J_buNClothOut top  1 J_buNClothMark
+        -ac J_buNClothOut top  1 J_buRandomColor
         -ap J_buNClothOut right 0 100
         
         -ap J_buNClothOutAbc left 0 67
@@ -111,25 +118,33 @@ if (`window -ex J_CFXWorkFlow`)
         
         -ap J_buNClothOutAbcSep left 0 67
         -ac J_buNClothOutAbcSep top  1 J_buNClothOutAbc
-        -ap J_buNClothOutAbcSep right 0 100
-        
+        -ap J_buNClothOutAbcSep right 0 100  
+
         -ap J_buNClothIn left 0 67
         -ac J_buNClothIn top  1 J_buNClothOutAbcSep
-        -ap J_buNClothIn right 0 100        
+        -ap J_buNClothIn right 0 100   
+
+        -ap J_buNAbcIn left 0 67
+        -ac J_buNAbcIn top  1 J_buNClothIn
+        -ap J_buNAbcIn right 0 100   
+
+        -ap J_buCreateBlend left 0 67
+        -ac J_buCreateBlend top  1 J_buNAbcIn
+        -ap J_buCreateBlend right 0 100           
         
         J_nClothFormLayout;
     formLayout -e 
-        -ap J_buCreateBlend left 0 0
-        -af J_buCreateBlend top  0
-        -ap J_buCreateBlend right 0 33
+        -ap J_buCachePB left 0 0
+        -af J_buCachePB top  0
+        -ap J_buCachePB right 0 33
         
-        -ap J_buCreateColor left 0 34
-        -af J_buCreateColor top  0
-        -ap J_buCreateColor right 0 66
+        -ap J_buCachePB2 left 0 34
+        -af J_buCachePB2 top  0
+        -ap J_buCachePB2 right 0 66
         
-        -ap J_buCachePB left 0 67
-        -af J_buCreateColor top  0
-        -ap J_buCachePB right 0 100
+        -ap J_buCachePB4 left 0 67
+        -af J_buCachePB4 top  0
+        -ap J_buCachePB4 right 0 100
     J_nCacheFormLayout;
     
     formLayout -e 
@@ -188,6 +203,12 @@ global proc J_CFXWorkFlow_nClothIn()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_nClothIn()");
 }
+global proc J_CFXWorkFlow_abcIn()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_autoMatchAbc()");
+}
+
+
 global proc J_JoinBlend()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_copyGroupDeformAnimation()");
@@ -201,6 +222,14 @@ global proc J_meshRandomColor()
 global proc J_CreateCachePlayBlast()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
+}
+global proc J_CreateCachePlayBlast2()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5)");
+}
+global proc J_CreateCachePlayBlast4()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.25)");
 }
 
 global proc J_connectWorker()

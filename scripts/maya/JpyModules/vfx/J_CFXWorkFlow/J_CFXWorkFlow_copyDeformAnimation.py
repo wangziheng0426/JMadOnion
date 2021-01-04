@@ -11,8 +11,8 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om2
 import json,math,os
 
-#选择所有动画控制曲线，和要导出的模型
-#_sampleSpace 是传递属性依据，默认是4使用元素和顶点，拓补结构不同的模型要使用3
+#拷贝模型顶点动画。工作原理：复制目标模型，逐帧拷贝源模型每个顶点的世界位置到复制的目标模型
+#并将修改过点位置的模型再次复制。得到模型序列。最后使用模型序列制作融合变形。
 def J_CFXWorkFlow_copyDeformAnimation(sourceMesh='',deatnationMesh='',startTime=0,endTime=0):
     if sourceMesh=='' or deatnationMesh=='':
         if len(cmds.ls(sl=True))!=2:
@@ -68,15 +68,17 @@ def J_CFXWorkFlow_copyDeformAnimation(sourceMesh='',deatnationMesh='',startTime=
     
     for i in range((startTime),(endTime+1)):
         for j in range(len(cmds.getAttr(blendNode+'.weight')[0])):
-            cmds.currentTime(i)
+            #cmds.currentTime(i)
             if (i-startTime-1)==j:
                 cmds.blendShape(blendNode,edit=True,weight=[(j,1)])
             else:
                 cmds.blendShape(blendNode,edit=True,weight=[(j,0)])
-            cmds.setKeyframe(blendNode,outTangentType="linear",inTangentType="linear")
+        cmds.setKeyframe(blendNode,time=i,outTangentType="linear",inTangentType="linear")
     cmds.currentTime(startTime)   
     
-        
+#整组拷贝点动画 使用方法：选择两个组，先选的为源，后选的为目标
+#工作原理，递归查找组下所有模型，将所有源模型和目标模型在当前帧比对模型点数和点位置
+#如果点数相同，点位置重合，则认为是同一个模型，调用拷贝点动画方法拷贝点动画。
 def J_CFXWorkFlow_copyGroupDeformAnimation(sourceGroup='',destinationGroup=''):
     
     if sourceGroup=='':
@@ -111,9 +113,9 @@ def J_CFXWorkFlow_copyGroupDeformAnimation(sourceGroup='',destinationGroup=''):
                 J_CFXWorkFlow_copyDeformAnimation(sourceMeshItem,destinationMeshItem)
 
 
-
-#选择所有动画控制曲线，和要导出的模型
-#_sampleSpace 是传递属性依据，默认是4使用元素和顶点，拓补结构不同的模型要使用3
+#自动适配abc功能。选择一个组，运行工具，选择abc文件。工具会递归查找组下的模型，并导入abc，使用abc与组内查到的模型逐一比对，
+#如果在当前帧模型点数相同且顶点重合，则认为是相同模型。
+#注意_sampleSpace 是传递属性依据，默认是4使用元素和顶点适用于拓部结构相同的模型，拓补结构不同的模型要使用3
 def J_CFXWorkFlow_autoMatchAbc(_sampleSpace=4):
     selectAbcFile = cmds.fileDialog2(fileMode=1, caption="Import clothInfo")[0]
     if not selectAbcFile.endswith('.abc'):
@@ -126,10 +128,14 @@ def J_CFXWorkFlow_autoMatchAbc(_sampleSpace=4):
         return
     prFxName=os.path.basename(selectAbcFile).replace('.abc','')
     abcNode=''
-    if cmds.objExists(prFxName+'_mdCache'):
-        cmds.delete(prFxName+'_mdCache')
-    groupNode=cmds.createNode('transform',name=(prFxName+'_mdCache'))
-            
+    suffix=0
+    trNodeName=prFxName+'_abcCache'+'_'+str(suffix)
+    while cmds.objExists(trNodeName):
+        suffix+=1
+        trNodeName=prFxName+'_abcCache'+'_'+str(suffix)
+
+    groupNode=cmds.createNode('transform',name=trNodeName)
+    cmds.setAttr((groupNode+'.visibility'),0) 
     if  selectAbcFile  is not None:
         abcNode=mel.eval('AbcImport -mode import -reparent '+groupNode+' \"'+selectAbcFile +'\";')
         startTime=int(cmds.getAttr(abcNode+'.startFrame'))
@@ -164,7 +170,7 @@ def J_CFXWorkFlow_autoMatchAbc(_sampleSpace=4):
                     cmds.transferAttributes(meshItem,destinationMeshItem,transferPositions=1,transferNormals=0,transferUVs=0 ,transferColors=0 ,sampleSpace=_sampleSpace ,sourceUvSpace="map1" ,targetUvSpace="map1",searchMethod=3,flipUVs=0,colorBorders=1 )
                 else:
                     J_CFXWorkFlow_copyDeformAnimation(meshItem,destinationMeshItem)
-                
+     #递归找mesh           
 def J_getAllMeshUnderSelections(selectedNodes):
     allMesh=[]
     
