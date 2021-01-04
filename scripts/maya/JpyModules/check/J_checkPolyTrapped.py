@@ -8,12 +8,14 @@
 #  History:  
 import maya.api.OpenMaya as om2
 import maya.cmds as cmds
+import maya.mel as mel
 import pymel as pm
 import pymel.util.arrays
 import math
 import uuid
 #
-def J_checkPolyTrapped(closestValue=0,farthestValue=1):
+def J_checkPolyTrapped(closestValue=0,farthestValue=1,saveVColor=False,model=0):
+    selection=cmds.ls(sl=True)
     sel=om2.MGlobal.getActiveSelectionList()
     #基础比对模型
     pBaseMesh=om2.MFnMesh(sel.getComponent(0)[0])
@@ -49,9 +51,14 @@ def J_checkPolyTrapped(closestValue=0,farthestValue=1):
             colors.append(om2.MColor([redColor,greenColor,0,1]))
             vertexIds.append(i)
         pTargetMesh.setVertexColors(colors,vertexIds)
-
+        cmds.select(selection[1])
+        mel.eval("PaintVertexColorTool")
+        cmds.artAttrPaintVertexCtx("artAttrColorPerVertexContext",edit=True,exportfilesave="c:/tmp.iff" )
+    
     else:
         pTargetMesh.displayColors=False   
+    
+    
 def J_convertMeshVertexColor2Texture(Mesh='',height=128,width=128,format='png',filePath='c:/tmp.png'):
     sel=om2.MGlobal.getActiveSelectionList()
     Mmesh=om2.MFnMesh(sel.getComponent(0)[0])
@@ -62,14 +69,15 @@ def J_convertMeshVertexColor2Texture(Mesh='',height=128,width=128,format='png',f
         for j in range(width):
             uvid=Mmesh.getClosestUVs(float(i)/height,float(j)/width)[0]
             uv=Mmesh.getUV(uvid)
-            pointPos = Mmesh.getPointsAtUV(uv[0],uv[1],space=om2.MSpace.kObject, uvSet='map1', tolerance=1e-5)[1][0]
+            pointPosList = Mmesh.getPointsAtUV(uv[0],uv[1],space=om2.MSpace.kObject, uvSet='map1', tolerance=1e-5)
+            pointPos=pointPosList[1][0]
             #print  pointPos
             pointId=Mmesh.getClosestPoint(pointPos)[1]
-            pcolor=Mmesh.getColor(pointId)
-            pix.append(int(pcolor.r*255))
-            pix.append(int(pcolor.g*255))
-            pix.append(int(pcolor.b*255))
-            pix.append(int(pcolor.a*255))
+            pcolor=Mmesh.getVertexColors()[pointId]
+            pix.append(int(min(255,pcolor.r*255)))
+            pix.append(int(min(255,pcolor.g*255)))
+            pix.append(int(min(255,pcolor.b*255)))
+            pix.append(int(min(255,pcolor.a*255)))
     print pix
     
     img.setPixels(bytearray(pix), height, width)
