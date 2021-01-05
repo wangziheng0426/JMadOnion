@@ -142,6 +142,7 @@ def J_CFXWorkFlow_autoMatchAbc(_sampleSpace=4):
         cmds.currentTime(startTime)
     allAbcMeshs=cmds.listConnections(abcNode,type='mesh')
     allAbcAnimationMesh=[]
+    cmds.currentTime(int(cmds.getAttr( abcNode+'.startFrame')))
     for meshItem in allAbcMeshs:
         if cmds.polyEvaluate(meshItem,shell=True) >1:
             separateMeshs=cmds.polySeparate(meshItem)
@@ -165,7 +166,7 @@ def J_CFXWorkFlow_autoMatchAbc(_sampleSpace=4):
             sourceFPP1=om2.MVector(cmds.xform((destinationMeshItem+'.vtx[1]'),query=True,ws=True,t=True))
             p1d=(abcFPP1-sourceFPP1).length()
             
-            if abcMeshVn==sourceMeshVn and p0d<0.001 and p1d<0.001: 
+            if abcMeshVn==sourceMeshVn and p0d<0.003 and p1d<0.003: 
                 if _sampleSpace<5:
                     cmds.transferAttributes(meshItem,destinationMeshItem,transferPositions=1,transferNormals=0,transferUVs=0 ,transferColors=0 ,sampleSpace=_sampleSpace ,sourceUvSpace="map1" ,targetUvSpace="map1",searchMethod=3,flipUVs=0,colorBorders=1 )
                 else:
