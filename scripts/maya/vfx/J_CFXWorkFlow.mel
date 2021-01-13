@@ -51,10 +51,10 @@ if (`window -ex J_CFXWorkFlow`)
         setParent ..;
         frameLayout -cll 1 -cl 0 -l "后台解算"  J_batchSimFrameLayout;
             formLayout  -numberOfDivisions 100  J_batchSimFormLayout;
-                textField -text "workerIp&port&frameRate" J_ipPort;
-                button -l "链接服务器" -w $ButtonW  -h $ButtonH -c  "J_connectWorker()" J_buConnectWorker;
+                textField -text "id&workerIp&port&frameRate" J_ipPort;
+                button -l "查询服务器" -w $ButtonW  -h $ButtonH -c  "J_connectWorker()" J_buConnectWorker;
                 button -l "解算&拍屏" -w $ButtonW  -h $ButtonH -c  "J_simAndPlayBlast()" J_buJ_simAndPlayBlast;
-                button -l "解算&渲染" -w $ButtonW  -h $ButtonH -c  "J_simAndRender()" J_buJ_simAndRender;
+                button -l "批量解算" -w $ButtonW  -h $ButtonH -c  "J_queueSim()" J_buJ_queueSim;
     /////////////////////////////////////////////////////////编辑窗体  
     formLayout -e 
         -ap J_hairFrameLayout left 0 1
@@ -161,9 +161,9 @@ if (`window -ex J_CFXWorkFlow`)
         -ac J_buJ_simAndPlayBlast top  1 J_ipPort
         -ap J_buJ_simAndPlayBlast right 0 66
         
-        -ap J_buJ_simAndRender left 0 67
-        -ac J_buJ_simAndRender top  1 J_ipPort
-        -ap J_buJ_simAndRender right 0 100 
+        -ap J_buJ_queueSim left 0 67
+        -ac J_buJ_queueSim top  1 J_ipPort
+        -ap J_buJ_queueSim right 0 100 
     J_batchSimFormLayout;
 showWindow J_CFXWorkFlow;
 J_CFXWorkFlow_init();
@@ -242,9 +242,9 @@ global proc J_simAndPlayBlast()
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
 }
 
-global proc J_simAndRender()
+global proc J_queueSim()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
+    J_livingQueue();
 }
 
 //////////////////////////////////////////////////////////////

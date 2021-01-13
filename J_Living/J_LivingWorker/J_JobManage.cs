@@ -83,7 +83,8 @@ namespace J_LivingWorker
                 bool notInList = true;
                 foreach (var i in jobList)
                 {
-                    if (i.job_Id == json_JobData.job_Id) { notInList = false; res = "job id:" + json_JobData.job_Id + " already in list"; break; }
+                    if (i.job_Id == json_JobData.job_Id)
+                    { notInList = false; res = "job id:" + json_JobData.job_Id + " already in list"; break; }
                 }
                 if (notInList)
                 {
@@ -95,7 +96,7 @@ namespace J_LivingWorker
             {
                 foreach (var i in jobList)
                 {
-                    if (i.job_Id == json_JobData.job_Id && i.job_name == json_JobData.job_name)
+                    if (i.job_Id == json_JobData.job_Id)
                     {
                         jobList.Remove(i);
                         res = json_JobData.job_Id + "->" + json_JobData.job_name + ":" + "job_removed";
