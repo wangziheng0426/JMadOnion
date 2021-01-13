@@ -18,12 +18,12 @@ global proc J_livingQueue()//主程序
     window -w 300 -h 360 -title "J_Living" J_LivingQueue;
         int $ButtonW=80;
         int $ButtonH=30;
-        formLayout  -numberOfDivisions 100  J_livingQueueMain;
         string $clothPropert={};
         frameLayout -cll 1 -cl 0 -h 140-l "批量解算工具"  J_LivingQueueLayout;
             formLayout  -numberOfDivisions 100  J_LivingQueueFormLayout;
-
-                button -l "选择毛发" -w $ButtonW  -h $ButtonH -c  "J_livingQueue_init(\"hairSystem\")" J_buHairMark;
+                textField -text "workerIp&port&id&frameRate" J_ipPort;
+                textScrollList   -allowMultiSelection 1 -h 110 J_allClothNode;
+                //button -l "选择毛发" -w $ButtonW  -h $ButtonH -c  "J_livingQueue_init(\"hairSystem\")" J_buHairMark;
 
             setParent ..;
         setParent ..;
@@ -31,9 +31,9 @@ global proc J_livingQueue()//主程序
     /////////////////////////////////////////////////////////编辑窗体  
     formLayout -e 
        
-        -ap J_buHairMark left 0 67
-        -af J_buHairMark top 0
-        -ap J_buHairMark right 0 100
+        -ap J_allClothNode left 0 1
+        -af J_allClothNode top 0
+        -ap J_allClothNode right 0 100
 
         J_LivingQueueFormLayout;
 
@@ -47,6 +47,11 @@ global proc J_livingQueue()//主程序
 
 global proc J_livingQueue_init()
 {
+    string $nclothNodes[]=`ls -type nCloth`;
+    for ( $item in $nclothNodes)
+    {
+        textScrollList -e -a $item J_allClothNode;
+    }
 
 }
-//J_livingQueue()
+J_livingQueue()

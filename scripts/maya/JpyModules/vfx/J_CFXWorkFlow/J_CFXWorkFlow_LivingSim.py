@@ -14,11 +14,7 @@ import shutil
 import maya.cmds as cmds
 import maya.mel as mel
 import JpyModules
-def J_CFXWorkFlow_LivingSim(idIpPortFrameRate,scriptToRun='',overWriteJob=True):
-    if len(idIpPortFrameRate.split('&'))!=4:
-        print "imfomation error"
-        return
-    
+def J_CFXWorkFlow_LivingSim(ipPortIdFrameRate,scriptToRun='',overWriteJob=True):
     if cmds.file(query=True,sceneName=True,shortName=True)=='':
         cmds.confirmDialog(title=u'错误',message=u'文件未保存，或者需要另存为mb格式',button='好吧')
         return
@@ -28,10 +24,11 @@ def J_CFXWorkFlow_LivingSim(idIpPortFrameRate,scriptToRun='',overWriteJob=True):
     filePathWithName=cmds.file(query=True,sceneName=True)
     scriptFileName=filePath+fileName+'.mel'
     
-    id=idIpPortFrameRate.split('&')[0]
-    ip=idIpPortFrameRate.split('&')[1]
-    port=idIpPortFrameRate.split('&')[2]
-    frameRate=idIpPortFrameRate.split('&')[3]
+    infos=J_CFXWorkFlow_getIpPort(ipPortIdFrameRate)
+    ip=infos[0]
+    port=infos[1]
+    jobId=str(infos[2])
+    frameRate=infos[3]
     
     scriptFile=open(scriptFileName,'w')
     scriptFile.write(scriptToRun+'\npython("cmds.evalDeferred(\'JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb('
@@ -40,7 +37,7 @@ def J_CFXWorkFlow_LivingSim(idIpPortFrameRate,scriptToRun='',overWriteJob=True):
     scriptFile.close()
     ip_port = (ip, int(port))
     jobInfo={}
-    jobInfo['job_Id']=id
+    jobInfo['job_Id']=jobId
     jobInfo['job_name']=fileName
     jobInfo['job_softWare']="maya"
     jobInfo['job_softWareVersion']=int(cmds.about(q=True,version=True))
@@ -50,20 +47,25 @@ def J_CFXWorkFlow_LivingSim(idIpPortFrameRate,scriptToRun='',overWriteJob=True):
     jobInfo['job_state']="waiting"
     jobInfo['job_args'] = [' -file \"'+filePathWithName+'\" -script \"'+scriptFileName+'\"']
     #开启计算节点
+
     JpyModules.compute.J_livingSubmit(ip_port,'start_worker',jobInfo)
     if overWriteJob:
         #移除当前id任务
         JpyModules.compute.J_livingSubmit(ip_port, "remove_job", jobInfo)
     #新增任务
     JpyModules.compute.J_livingSubmit(ip_port, "add_job",jobInfo)
-def J_CFXWorkFlow_LivingGetInfo(idIpPortFrameRate):
-    if len(idIpPortFrameRate.split('&'))!=4:
-        print "imfomation error"
-        return
-    ip=idIpPortFrameRate.split('&')[1]
-    port=idIpPortFrameRate.split('&')[2]
+def J_CFXWorkFlow_LivingGetInfo(ipPortIdFrameRate):
+    info=J_CFXWorkFlow_getIpPort(ipPortIdFrameRate)
+    ip=info[0]
+    port=info[1]
     ip_port = (ip, int(port))
     JpyModules.compute.J_getJobList(ip_port)
+def J_CFXWorkFlow_getIpPort(ipPortIdFrameRate):
+    oriinfo=ipPortIdFrameRate.split('&')
+    info=['127.0.0.1','6666','99','1']
+    for i in range(len(oriinfo)):
+        info[i]=oriinfo[i]
+    return info
 if __name__=='__main__':
-    J_CFXWorkFlow_LivingSim('10&192.168.71.1&6666&1')
-    JpyModules.compute.J_getJobList(("192.168.71.1", 6666))
+    J_CFXWorkFlow_LivingSim('1.4.26.2')
+    JpyModules.compute.J_getJobList(('1.4.26.2', 6666))
