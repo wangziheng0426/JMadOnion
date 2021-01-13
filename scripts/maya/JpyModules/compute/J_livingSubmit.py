@@ -23,7 +23,9 @@ def J_getJobList(ip_port):
     while (temp != "" and temp!="list_ended"):
         print temp
         client.send('job_recived');
-        temp = (client.recv(4096)).decode('utf-8').encode('gbk')
+        temp = (client.recv(4096)).decode('utf-8').encode('gbk')        
+    if temp=="list_ended":
+        print 'list_ended'
     client.shutdown(socket.SHUT_RDWR)
     client.close()
 #与农场交互，提交任务 

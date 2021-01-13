@@ -14,7 +14,7 @@ import shutil
 import maya.cmds as cmds
 import maya.mel as mel
 import JpyModules
-def J_CFXWorkFlow_LivingSim(idIpPortFrameRate):
+def J_CFXWorkFlow_LivingSim(idIpPortFrameRate,scriptToRun='',overWriteJob=True):
     if len(idIpPortFrameRate.split('&'))!=4:
         print "imfomation error"
         return
@@ -34,7 +34,7 @@ def J_CFXWorkFlow_LivingSim(idIpPortFrameRate):
     frameRate=idIpPortFrameRate.split('&')[3]
     
     scriptFile=open(scriptFileName,'w')
-    scriptFile.write('python("cmds.evalDeferred(\'JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb('
+    scriptFile.write(scriptToRun+'\npython("cmds.evalDeferred(\'JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb('
         +frameRate+',False,False,False)\')");\n'
         +'python("cmds.evalDeferred(\'cmds.quit(force=True)\')");')
     scriptFile.close()
@@ -46,13 +46,14 @@ def J_CFXWorkFlow_LivingSim(idIpPortFrameRate):
     jobInfo['job_softWareVersion']=int(cmds.about(q=True,version=True))
     jobInfo['job_projectPath']=cmds.optionVar( query= "lastLocalWS")
     jobInfo['job_workFile']=cmds.file(query=True,sceneName=True,shortName=True)
-    jobInfo['job_scriptFile']=''
+    jobInfo['job_scriptFile']=scriptFileName
     jobInfo['job_state']="waiting"
     jobInfo['job_args'] = [' -file \"'+filePathWithName+'\" -script \"'+scriptFileName+'\"']
     #开启计算节点
     JpyModules.compute.J_livingSubmit(ip_port,'start_worker',jobInfo)
-    #移除当前id任务
-    JpyModules.compute.J_livingSubmit(ip_port, "remove_job", jobInfo)
+    if overWriteJob:
+        #移除当前id任务
+        JpyModules.compute.J_livingSubmit(ip_port, "remove_job", jobInfo)
     #新增任务
     JpyModules.compute.J_livingSubmit(ip_port, "add_job",jobInfo)
 def J_CFXWorkFlow_LivingGetInfo(idIpPortFrameRate):
@@ -64,5 +65,5 @@ def J_CFXWorkFlow_LivingGetInfo(idIpPortFrameRate):
     ip_port = (ip, int(port))
     JpyModules.compute.J_getJobList(ip_port)
 if __name__=='__main__':
-    J_CFXWorkFlow_LivingSim('10&192.168.1.187&6666&1')
-    JpyModules.compute.J_getJobList(("192.168.1.187", 6666))
+    J_CFXWorkFlow_LivingSim('10&192.168.71.1&6666&1')
+    JpyModules.compute.J_getJobList(("192.168.71.1", 6666))

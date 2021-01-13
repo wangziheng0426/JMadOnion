@@ -1,0 +1,52 @@
+/////////////////////////////////////////////////////////////
+///\file J_livingQueue.mel
+///
+///\brief    批量解算
+///
+///\author 桔
+///\version 1.0
+///\date  15:23 2021/1/13
+///History:  
+///
+///////////////////////////////////////////////////////////////
+global proc J_livingQueue()//主程序
+{
+    /////////////////////////////////////////////////////////////生成窗体
+    string $checkBoxs[];
+    if (`window -ex J_LivingQueue`)
+        deleteUI -window J_LivingQueue;
+    window -w 300 -h 360 -title "J_Living" J_LivingQueue;
+        int $ButtonW=80;
+        int $ButtonH=30;
+        formLayout  -numberOfDivisions 100  J_livingQueueMain;
+        string $clothPropert={};
+        frameLayout -cll 1 -cl 0 -h 140-l "批量解算工具"  J_LivingQueueLayout;
+            formLayout  -numberOfDivisions 100  J_LivingQueueFormLayout;
+
+                button -l "选择毛发" -w $ButtonW  -h $ButtonH -c  "J_livingQueue_init(\"hairSystem\")" J_buHairMark;
+
+            setParent ..;
+        setParent ..;
+       
+    /////////////////////////////////////////////////////////编辑窗体  
+    formLayout -e 
+       
+        -ap J_buHairMark left 0 67
+        -af J_buHairMark top 0
+        -ap J_buHairMark right 0 100
+
+        J_LivingQueueFormLayout;
+
+    showWindow J_LivingQueue;
+    J_livingQueue_init();
+}
+
+//J_livingQueue;
+//引用python命令
+
+
+global proc J_livingQueue_init()
+{
+
+}
+//J_livingQueue()
