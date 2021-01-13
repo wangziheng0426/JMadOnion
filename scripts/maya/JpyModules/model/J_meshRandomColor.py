@@ -12,7 +12,7 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om2
 import random
 
-#获取当前农场节点的任务信息
+#模型添加随机颜色
 def J_meshRandomColor():
     sels=om2.MGlobal.getActiveSelectionList()
     for i in range(sels.length()):
