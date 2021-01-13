@@ -30,7 +30,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,render=False,saveAsFile=False)
     j_CachePath=''
     j_PbPath=''    
     if (filePath!=''):
-        j_CachePath=filePath+cacheFileName+'_cache/'
+        j_CachePath=filePath+cacheFileName+'_cache/mc/'
         j_PbPath=filePath+cacheFileName+'.mov'
     if (len(cmds.ls(sl=True))>0):
         try:
