@@ -19,21 +19,35 @@ global proc J_livingQueue()//主程序
         int $ButtonW=80;
         int $ButtonH=30;
         string $clothPropert={};
-        frameLayout -cll 1 -cl 0 -h 140-l "批量解算工具"  J_LivingQueueLayout;
+        frameLayout -cll 1 -cl 0 -h 300-l "批量解算工具"  J_LivingQueueLayout;
             formLayout  -numberOfDivisions 100  J_LivingQueueFormLayout;
                 textField -text "workerIp&port&id&frameRate" J_ipPort;
                 textScrollList   -allowMultiSelection 1 -h 110 J_allClothNode;
                 //button -l "选择毛发" -w $ButtonW  -h $ButtonH -c  "J_livingQueue_init(\"hairSystem\")" J_buHairMark;
-
+                scrollLayout scrollLayoutQueue;
+                    rowColumnLayout -numberOfColumns 5 attributesOfNodes;
+                        button;button;button;button;button;
+                    setParent ..;
+                setParent ..;
             setParent ..;
         setParent ..;
        
     /////////////////////////////////////////////////////////编辑窗体  
     formLayout -e 
-       
+        -ap J_ipPort left 0 1
+        -af J_ipPort top 0
+        -ap J_ipPort right 0 100
+        
+        
         -ap J_allClothNode left 0 1
-        -af J_allClothNode top 0
+        -ac J_allClothNode top 0 J_ipPort
         -ap J_allClothNode right 0 100
+        -ap J_allClothNode bottom 0 40
+        
+        -ap scrollLayoutQueue left 0 1
+        -ap scrollLayoutQueue top 1 50  
+        -ap scrollLayoutQueue right 0 100
+        -ap scrollLayoutQueue bottom 0 100
 
         J_LivingQueueFormLayout;
 
@@ -41,8 +55,6 @@ global proc J_livingQueue()//主程序
     J_livingQueue_init();
 }
 
-//J_livingQueue;
-//引用python命令
 
 
 global proc J_livingQueue_init()
