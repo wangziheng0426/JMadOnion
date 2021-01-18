@@ -16,54 +16,186 @@ global proc J_livingQueue()//主程序
     if (`window -ex J_LivingQueue`)
         deleteUI -window J_LivingQueue;
     window -w 300 -h 360 -title "J_Living" J_LivingQueue;
-        int $ButtonW=80;
-        int $ButtonH=30;
-        string $clothPropert={};
-        frameLayout -cll 1 -cl 0 -h 300-l "批量解算工具"  J_LivingQueueLayout;
-            formLayout  -numberOfDivisions 100  J_LivingQueueFormLayout;
-                textField -text "workerIp&port&id&frameRate" J_ipPort;
-                textScrollList   -allowMultiSelection 1 -h 110 J_allClothNode;
-                //button -l "选择毛发" -w $ButtonW  -h $ButtonH -c  "J_livingQueue_init(\"hairSystem\")" J_buHairMark;
-                scrollLayout scrollLayoutQueue;
-                    rowColumnLayout -numberOfColumns 5 attributesOfNodes;
-                        button;button;button;button;button;
-                    setParent ..;
-                setParent ..;
-            setParent ..;
-        setParent ..;
-       
-    /////////////////////////////////////////////////////////编辑窗体  
-    formLayout -e 
-        -ap J_ipPort left 0 1
-        -af J_ipPort top 0
-        -ap J_ipPort right 0 100
-        
-        
-        -ap J_allClothNode left 0 1
-        -ac J_allClothNode top 0 J_ipPort
-        -ap J_allClothNode right 0 100
-        -ap J_allClothNode bottom 0 40
-        
-        -ap scrollLayoutQueue left 0 1
-        -ap scrollLayoutQueue top 1 50  
-        -ap scrollLayoutQueue right 0 100
-        -ap scrollLayoutQueue bottom 0 100
+    string $form = `formLayout`;
+    textField -text "id" J_livingQueueId;
+    textField -text "ip" J_livingQueueIp;
+    textField -text "prot" J_livingQueuePort;
+    textField -text "rate" J_livingQueueRate;
+    textField  J_livingQueueNamePrefx;
+    
+    button -l "保存并提交" -c submitJobs J_livingQueueSubmitJonb;
+    string $tabs = `tabLayout -innerMarginWidth 5 -innerMarginHeight 5  J_LivingQueueTableLayout`;
+    formLayout -edit
 
-        J_LivingQueueFormLayout;
-
+        -af J_livingQueueId "top"    0
+        -ap J_livingQueueId "left"  0 0
+        -ap J_livingQueueId "right" 0 10
+        
+        -af J_livingQueueIp "top"    0
+        -ap J_livingQueueIp "left"  0 10
+        -ap J_livingQueueIp "right" 0 40
+        
+        -af J_livingQueuePort "top"    0
+        -ap J_livingQueuePort "left"  0 40
+        -ap J_livingQueuePort "right" 0 55
+        
+        -af J_livingQueueRate "top"    0
+        -ap J_livingQueueRate "left"  0 55
+        -ap J_livingQueueRate "right" 0 65
+        
+        -af J_livingQueueNamePrefx "top"    0
+        -ap J_livingQueueNamePrefx "left"  0 65
+        -ap J_livingQueueNamePrefx "right" 0 85
+        
+        -af J_livingQueueSubmitJonb "top"    0
+        -ap J_livingQueueSubmitJonb "left"  0 85
+        -ap J_livingQueueSubmitJonb "right" 0 100
+        
+        -ac $tabs "top" 0 J_livingQueueId
+        -af $tabs "left"   0
+        -af $tabs "bottom" 0
+        -af $tabs "right"  0
+        $form ;
     showWindow J_LivingQueue;
-    J_livingQueue_init();
+    J_livingQueue_init($tabs);
 }
 
 
 
-global proc J_livingQueue_init()
+proc J_livingQueue_init(string $tabs)
 {
-    string $nclothNodes[]=`ls -type nCloth`;
-    for ( $item in $nclothNodes)
+//记录节点属性
+string $hairAttrS[]={};
+string $nclothAttrS[]={};
+string $nucleusAttrS[]={};
+string $nrigidAttrS[]={};
+//查询所有选择节点的shape
+    string $sel[]=`ls -l -sl -dagObjects`;
+    string $selTypes[];
+    int $count=0;
+    //抽取所有选择的类型
+    for ($i=0;$i<size($sel);$i++ )
     {
-        textScrollList -e -a $item J_allClothNode;
+        if (`objectType $sel[$i]`!="transform")
+        {
+            $selTypes[$count]=`objectType $sel[$i]`;
+            $count++;
+        }
     }
+    //去重
+    $selTypes=stringArrayRemoveDuplicates($selTypes);
+    //根据类型建立面板，最多不超过16页，只提取前16个类型
+    for ($i=0;$i<16;$i++)
+        {
+        if ($i == size($selTypes)) break;
+        string $nodeProperts[];
+        for ($item in $sel)
+        {
+        if (`objectType $item`==$selTypes[$i])
+            {
+            $nodeProperts=`listAttr -s -k $item`;break;
+            }
+        }
 
+        string $J_LivingQueueFormLayout=`formLayout  -numberOfDivisions 100  `;
+        string $nodeList=`textScrollList -sc passSelectioinValueToUi   -allowMultiSelection 1 -h 110`;
+        for ($item in $sel )
+        {
+            if (`objectType $item`==$selTypes[$i])
+            {
+            textScrollList-e -a $item  $nodeList;
+            }
+        }
+        string $scrollLayoutT=`scrollLayout`;
+            for ($j=0;$j<size($nodeProperts);$j++)
+            {
+            rowColumnLayout -numberOfColumns 5  ;
+                string $floatSliderGrpNode=`floatSliderGrp -label $nodeProperts[$j] -field true
+                    -minValue 0 -maxValue 2
+                    -fieldMinValue -100 -fieldMaxValue 100
+                    -value 0`;
+                floatSliderGrp -e -cc ("passSliderValueToNode(\""+$floatSliderGrpNode+"\")") $floatSliderGrpNode;
+            setParent ..;
+            }
+        setParent ..;
+        setParent ..;
+        tabLayout -edit  -tabLabel $J_LivingQueueFormLayout $selTypes[$i] $tabs;
+        
+        /////////////////////////////////////////////////////////编辑窗体  
+        formLayout -e 
+            -ap $nodeList left 0 1
+            -ap $nodeList top 0 1
+            -ap $nodeList right 0 100
+            -ap $nodeList bottom 0 40
+            
+            -ap $scrollLayoutT left 0 1
+            -ap $scrollLayoutT top 1 40  
+            -ap $scrollLayoutT right 0 100
+            -ap $scrollLayoutT bottom 0 100
+
+            $J_LivingQueueFormLayout;
+        }
+}
+proc passSelectioinValueToUi()
+{
+    string $formlayout=`tabLayout -q -ca -st J_LivingQueueTableLayout`;
+    string $formLayoutChs[]=`formLayout -q -ca $formlayout`;
+    string $selectedItemInList[]=`textScrollList -q -si $formLayoutChs[0]`;
+    string $rowColumnLayouts[]=`scrollLayout -q -ca $formLayoutChs[1]`;
+    for ($item in $rowColumnLayouts)
+    {
+        string $sliders[]=`rowColumnLayout -q -ca $item `;
+        string $sliderLabelName=`floatSliderGrp -q -label $sliders[0]`;
+        int $countOfSelectedItems=size($selectedItemInList);
+        string $nodeName=$selectedItemInList[$countOfSelectedItems-1];
+        if (`attributeExists $sliderLabelName $nodeName` )
+        {
+        float $value=`getAttr ($nodeName+"."+$sliderLabelName)`;
+        floatSliderGrp -e -value $value $sliders[0];        
+        }
+    }
+    select $selectedItemInList;
+}
+
+proc passSliderValueToNode(string $sliderName)
+{   
+    string $formlayout=`tabLayout -q -ca -st J_LivingQueueTableLayout`;
+    string $formLayoutChs[]=`formLayout -q -ca $formlayout`;
+    string $selectedItemInList[]=`textScrollList -q -si $formLayoutChs[0]`;
+    for ($item in $selectedItemInList)
+    {
+        string $sliderLabelName=`floatSliderGrp -q -label $sliderName`;
+        float $value=`floatSliderGrp -q -v $sliderName`;
+        catch(`setAttr ($item+"."+$sliderLabelName) $value`);        
+    }
+}
+proc submitJobs()
+{
+    string $filePath=`file -s`;
+    string $id=`textField -q -text J_livingQueueId`;
+    string $ip=`textField -q -text J_livingQueueIp`;
+    string $po=`textField -q -text J_livingQueuePort`;
+    string $ra=`textField -q -text J_livingQueueRate`;
+    string $pf=`textField -q -text J_livingQueueNamePrefx`;
+    string $ipPort=$ip+"&"+$po+"&"+$id+"&"+$ra;
+    string $scriptToRun="";
+    string $scName=`file -q -sceneName`;
+    string $fileName=`file -q -sceneName -shortName`;
+    string $buffer[];
+    $numTokens = `tokenize $scName "/" $buffer`;
+    string $path ="";
+    for ($i=0;$i<(size($buffer)-1);$i++)
+        $path+=$buffer[$i]+"/";
+        
+    $numTokens = `tokenize $fileName "." $buffer`;
+    $fileName=$buffer[0];
+    string $fullPathName=$path+$fileName+"_id_"+$id+"_"+$pf+"."+$buffer[1];
+    $scriptToRun+="\\n";
+    $scriptToRun+="file -rn \""+$fullPathName+"\";";
+    $scriptToRun+="\\n";
+    $scriptToRun+="file -save;" ;
+    string $pyCommand="JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_LivingSim("+"'"+$ipPort+"','"+$scriptToRun+"')";
+    
+    python($pyCommand);
 }
 J_livingQueue()
