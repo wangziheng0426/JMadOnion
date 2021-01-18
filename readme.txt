@@ -8,15 +8,14 @@
 //自动安装方式：
 //
 //将J_autoInstallMadOnion.mel拖入maya视窗
-//
+//注意：maya必须是英文版，madonion必须存放在英文目录。
 //
 //
 //
 //如果自动安装不成功可以尝试手动安装方式：
 //
 //第一步：将整个插件文件夹复制到本地任意目录，打开JmadOnionGit\scripts\maya\userSetup.mel
-//第二步：将文件中第5行"your path"
-//            引号中的部分替换为当前userSetup所在目录，并将路径中所有右斜杠“\”改为“\\”
+//第二步：将文件中第5行"your path"引号中的部分替换为当前userSetup所在目录，并将路径中所有右斜杠“\”改为“\\”
 //第三步：手动将userSetup.mel拷贝到文档/maya/2016/scripts下
 //
 //
