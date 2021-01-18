@@ -26,6 +26,7 @@
   <SubMenu> yeti替换贴图 J_replactYetiTextureWin vfx/J_replactYetiTextureWin.mel </SubMenu>
   <SubMenu> yeti极速缓存 J_runYetiCache vfx/J_runYetiCache.mel </SubMenu>  
   <SubMenu> 解算流程工具 J_CFXWorkFlow vfx/J_CFXWorkFlow.mel </SubMenu>  
+  <SubMenu> 批量解算 J_livingQueue vfx/J_livingQueue.mel </SubMenu> 
   <SubMenu> 布料制作工具 J_nClothTool vfx/J_nClothTool.mel </SubMenu>
   
     

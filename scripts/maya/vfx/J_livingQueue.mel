@@ -62,7 +62,7 @@ global proc J_livingQueue()//主程序
 
 
 
-proc J_livingQueue_init(string $tabs)
+global proc J_livingQueue_init(string $tabs)
 {
 //记录节点属性
 string $hairAttrS[]={};
