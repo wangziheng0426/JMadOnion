@@ -116,7 +116,7 @@ def J_CFXWorkFlow_copyGroupDeformAnimation(sourceGroup='',destinationGroup=''):
 #自动适配abc功能。选择一个组，运行工具，选择abc文件。工具会递归查找组下的模型，并导入abc，使用abc与组内查到的模型逐一比对，
 #如果在当前帧模型点数相同且顶点重合，则认为是相同模型。
 #注意_sampleSpace 是传递属性依据，默认是4使用元素和顶点适用于拓部结构相同的模型，拓补结构不同的模型要使用3
-def J_CFXWorkFlow_autoMatchAbc(_sampleSpace=4):
+def J_CFXWorkFlow_autoMatchAbc(_sampleSpace=4,separateMesh=False):
     selectAbcFile = cmds.fileDialog2(fileMode=1, caption="Import clothInfo")[0]
     if not selectAbcFile.endswith('.abc'):
         print (selectAbcFile)
@@ -144,7 +144,7 @@ def J_CFXWorkFlow_autoMatchAbc(_sampleSpace=4):
     allAbcAnimationMesh=[]
     cmds.currentTime(int(cmds.getAttr( abcNode+'.startFrame')))
     for meshItem in allAbcMeshs:
-        if cmds.polyEvaluate(meshItem,shell=True) >1:
+        if cmds.polyEvaluate(meshItem,shell=True) >1 and separateMesh:
             separateMeshs=cmds.polySeparate(meshItem)
 
             for separateMeshItem in separateMeshs:   
