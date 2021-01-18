@@ -136,7 +136,7 @@ string $nrigidAttrS[]={};
             $J_LivingQueueFormLayout;
         }
 }
-proc passSelectioinValueToUi()
+global proc passSelectioinValueToUi()
 {
     string $formlayout=`tabLayout -q -ca -st J_LivingQueueTableLayout`;
     string $formLayoutChs[]=`formLayout -q -ca $formlayout`;
@@ -157,7 +157,7 @@ proc passSelectioinValueToUi()
     select $selectedItemInList;
 }
 
-proc passSliderValueToNode(string $sliderName)
+global proc passSliderValueToNode(string $sliderName)
 {   
     string $formlayout=`tabLayout -q -ca -st J_LivingQueueTableLayout`;
     string $formLayoutChs[]=`formLayout -q -ca $formlayout`;
@@ -169,7 +169,7 @@ proc passSliderValueToNode(string $sliderName)
         catch(`setAttr ($item+"."+$sliderLabelName) $value`);        
     }
 }
-proc submitJobs()
+global proc submitJobs()
 {
     string $filePath=`file -s`;
     string $id=`textField -q -text J_livingQueueId`;
