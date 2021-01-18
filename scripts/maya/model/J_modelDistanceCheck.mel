@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////
-///\file J_modelConvert.mel
+///\file J_modelDistanceCheck.mel
 ///\brief 模型格式转换
 ///
 ///\author 桔
@@ -24,11 +24,11 @@ if (`window -ex J_modelDistanceCheckWin`)
         textField  -w 260 -h 25 -text "参考模型名字复制到这里（不要带前后缀）" baseObj;
 
         floatSliderGrp -label "最小间距" -field true
-            -minValue 0 -maxValue 180
+            -minValue 0 -maxValue 2
             -fieldMinValue 0 -fieldMaxValue 180
             -value 0 objMinDis;
         floatSliderGrp -label "最大间距" -field true
-            -minValue 0.001 -maxValue 1000
+            -minValue 0.001 -maxValue 5
             -fieldMinValue 0.001 -fieldMaxValue 1000
             -value 1 objMaxDis;
 
@@ -47,9 +47,11 @@ if (`window -ex J_modelDistanceCheckWin`)
         
         -af objMinDis left -50 
         -ac objMinDis top $apy baseObj
+        -af objMinDis right 100 
         
         -af objMaxDis left -50 
         -ac objMaxDis top $apy objMinDis
+        -af objMaxDis right 100 
         
         -af buttonRead left $apx 
         -ac buttonRead top $apy objMaxDis
