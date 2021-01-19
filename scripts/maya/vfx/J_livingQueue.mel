@@ -23,11 +23,12 @@ global proc J_livingQueue()//主程序
     textField -text "rate" J_livingQueueRate;
     textField  J_livingQueueNamePrefx;
     
-    button -l "保存并提交" -c submitJobs J_livingQueueSubmitJonb;
+    button -l "保存提交" -c J_livingQueue_submitJobs J_livingQueueSubmitJob;
+    button -l "极速提交" -c J_livingQueue_fastSubmitJobs J_livingQueueFastSubmitJob;
     string $tabs = `tabLayout -innerMarginWidth 5 -innerMarginHeight 5  J_LivingQueueTableLayout`;
     formLayout -edit
 
-        -af J_livingQueueId "top"    0
+        -af J_livingQueueId "top"   0
         -ap J_livingQueueId "left"  0 0
         -ap J_livingQueueId "right" 0 10
         
@@ -37,19 +38,23 @@ global proc J_livingQueue()//主程序
         
         -af J_livingQueuePort "top"    0
         -ap J_livingQueuePort "left"  0 40
-        -ap J_livingQueuePort "right" 0 55
+        -ap J_livingQueuePort "right" 0 50
         
         -af J_livingQueueRate "top"    0
-        -ap J_livingQueueRate "left"  0 55
-        -ap J_livingQueueRate "right" 0 65
+        -ap J_livingQueueRate "left"  0 50
+        -ap J_livingQueueRate "right" 0 60
         
         -af J_livingQueueNamePrefx "top"    0
-        -ap J_livingQueueNamePrefx "left"  0 65
-        -ap J_livingQueueNamePrefx "right" 0 85
+        -ap J_livingQueueNamePrefx "left"  0 60
+        -ap J_livingQueueNamePrefx "right" 0 80
         
-        -af J_livingQueueSubmitJonb "top"    0
-        -ap J_livingQueueSubmitJonb "left"  0 85
-        -ap J_livingQueueSubmitJonb "right" 0 100
+        -af J_livingQueueSubmitJob "top"    0
+        -ap J_livingQueueSubmitJob "left"  0 80
+        -ap J_livingQueueSubmitJob "right" 0 90
+        
+        -af J_livingQueueFastSubmitJob "top"    0
+        -ap J_livingQueueFastSubmitJob "left"  0 90
+        -ap J_livingQueueFastSubmitJob "right" 0 100
         
         -ac $tabs "top" 0 J_livingQueueId
         -af $tabs "left"   0
@@ -89,16 +94,25 @@ string $nrigidAttrS[]={};
         {
         if ($i == size($selTypes)) break;
         string $nodeProperts[];
+        string $nodePropertsTemp[];
         for ($item in $sel)
         {
         if (`objectType $item`==$selTypes[$i])
             {
-            $nodeProperts=`listAttr -s -k $item`;break;
+            $nodePropertsTemp=`listAttr -se -s -k $item`;
+            break;
             }
+        }
+        int $countTemp=0;
+        for ($item in $nodePropertsTemp)
+        {
+            if (`gmatch $item "*.*"`)continue;
+            $nodeProperts[$countTemp]=$item;
+            $countTemp++;
         }
 
         string $J_LivingQueueFormLayout=`formLayout  -numberOfDivisions 100  `;
-        string $nodeList=`textScrollList -sc passSelectioinValueToUi   -allowMultiSelection 1 -h 110`;
+        string $nodeList=`textScrollList -sc J_livingQueue_passSelectioinValueToUi   -allowMultiSelection 1 -h 110`;
         for ($item in $sel )
         {
             if (`objectType $item`==$selTypes[$i])
@@ -112,9 +126,9 @@ string $nrigidAttrS[]={};
             rowColumnLayout -numberOfColumns 5  ;
                 string $floatSliderGrpNode=`floatSliderGrp -label $nodeProperts[$j] -field true
                     -minValue 0 -maxValue 2
-                    -fieldMinValue -100 -fieldMaxValue 100
+                    -fieldMinValue -1000 -fieldMaxValue 1000
                     -value 0`;
-                floatSliderGrp -e -cc ("passSliderValueToNode(\""+$floatSliderGrpNode+"\")") $floatSliderGrpNode;
+                floatSliderGrp -e -cc ("J_livingQueue_passSliderValueToNode(\""+$floatSliderGrpNode+"\")") $floatSliderGrpNode;
             setParent ..;
             }
         setParent ..;
@@ -135,8 +149,27 @@ string $nrigidAttrS[]={};
 
             $J_LivingQueueFormLayout;
         }
+    //读取配置文件
+    string $mypath=`internalVar -ups`+"J_livingQueueSettings.mel";
+    $fileId=`fopen $mypath "r"`;
+    string $nextLine = `fgetword $fileId  `;
+    string $info[];
+    int $count1=0;
+    while ( size( $nextLine ) > 0 )
+    {
+        $info[$count1]=$nextLine;
+        $nextLine = `fgetword $fileId`;
+        $count1++;
+    }
+    fclose $fileId;
+    textField -e -text $info[0] J_livingQueueId;
+    textField -e -text $info[1] J_livingQueueIp;
+    textField -e -text $info[2] J_livingQueuePort;
+    textField -e -text $info[3] J_livingQueueRate;
+    textField -e -text $info[4] J_livingQueueNamePrefx;
+    
 }
-global proc passSelectioinValueToUi()
+global proc J_livingQueue_passSelectioinValueToUi()
 {
     string $formlayout=`tabLayout -q -ca -st J_LivingQueueTableLayout`;
     string $formLayoutChs[]=`formLayout -q -ca $formlayout`;
@@ -151,13 +184,14 @@ global proc passSelectioinValueToUi()
         if (`attributeExists $sliderLabelName $nodeName` )
         {
         float $value=`getAttr ($nodeName+"."+$sliderLabelName)`;
-        floatSliderGrp -e -value $value $sliders[0];        
+        floatSliderGrp -e -value $value $sliders[0];    
+        floatSliderGrp -e -maxValue ($value*10) $sliders[0];          
         }
     }
     select $selectedItemInList;
 }
 
-global proc passSliderValueToNode(string $sliderName)
+global proc J_livingQueue_passSliderValueToNode(string $sliderName)
 {   
     string $formlayout=`tabLayout -q -ca -st J_LivingQueueTableLayout`;
     string $formLayoutChs[]=`formLayout -q -ca $formlayout`;
@@ -169,7 +203,21 @@ global proc passSliderValueToNode(string $sliderName)
         catch(`setAttr ($item+"."+$sliderLabelName) $value`);        
     }
 }
-global proc submitJobs()
+
+global proc J_livingQueue_saveSetting()
+{
+    string $id=`textField -q -text J_livingQueueId`;
+    string $ip=`textField -q -text J_livingQueueIp`;
+    string $po=`textField -q -text J_livingQueuePort`;
+    string $ra=`textField -q -text J_livingQueueRate`;
+    string $pf=`textField -q -text J_livingQueueNamePrefx`;
+    string $info=$id+" "+$ip+" "+$po+" "+$ra+" "+$pf+" ";
+    string $mypath=`internalVar -ups`+"J_livingQueueSettings.mel";
+    $fileId=`fopen $mypath "w"`;
+    fwrite $fileId $info;
+    fclose $fileId;
+}
+global proc J_livingQueue_submitJobs()
 {
     string $filePath=`file -s`;
     string $id=`textField -q -text J_livingQueueId`;
@@ -195,7 +243,79 @@ global proc submitJobs()
     $scriptToRun+="\\n";
     $scriptToRun+="file -save;" ;
     string $pyCommand="JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_LivingSim("+"'"+$ipPort+"','"+$scriptToRun+"')";
-    
     python($pyCommand);
+    J_livingQueue_saveSetting();
 }
-J_livingQueue()
+global proc J_livingQueue_fastSubmitJobs()
+{
+    //ip prot
+    string $filePath=`file -s`;
+    string $id=`textField -q -text J_livingQueueId`;
+    string $ip=`textField -q -text J_livingQueueIp`;
+    string $po=`textField -q -text J_livingQueuePort`;
+    string $ra=`textField -q -text J_livingQueueRate`;
+    string $pf=`textField -q -text J_livingQueueNamePrefx`;
+    string $ipPort=$ip+"&"+$po+"&"+$id+"&"+$ra;
+    
+    
+    //保存节点属性
+    //每个页面
+    string $scriptToRun="";
+    string $formlayout[]=`tabLayout -q -ca J_LivingQueueTableLayout`;
+    for ($formItem in $formlayout)
+    {
+        string $formLayoutChs[]=`formLayout -q -ca $formItem`;
+        string $scrolllListItems[]=`textScrollList -q -ai $formLayoutChs[0]`;
+        string $scrolllListSelItems[]=`textScrollList -q -si $formLayoutChs[0]`;
+        string $rowColumnLayouts[]=`scrollLayout -q -ca $formLayoutChs[1]`;
+        for ($scrolllListItem in $scrolllListItems)
+        {
+            for ($item in $rowColumnLayouts)
+            {
+                string $sliders[]=`rowColumnLayout -q -ca $item `;
+                string $sliderLabelName=`floatSliderGrp -q -label $sliders[0]`;
+
+                if (`attributeExists $sliderLabelName $scrolllListItem` )
+                {
+                    float $value =`getAttr ($scrolllListItem+"."+$sliderLabelName)`;
+                    $scriptToRun+="catch(`setAttr "+$scrolllListItem+"."+$sliderLabelName+" "+$value +"`);\n";
+                }
+            }
+        }
+    
+    }
+        
+    string $scName=`file -q -sceneName`;
+    string $fileName=`file -q -sceneName -shortName`;
+    string $buffer[];
+    $numTokens = `tokenize $scName "/" $buffer`;
+    string $path ="";
+    for ($i=0;$i<(size($buffer)-1);$i++)
+        $path+=$buffer[$i]+"/";
+        
+    $numTokens = `tokenize $fileName "." $buffer`;
+    $fileName=$buffer[0];
+    string $fullPathName=$path+$fileName+"_id_"+$id+"_"+$pf+"."+$buffer[1];
+    $scriptToRun+="\n";
+    $scriptToRun+="file -rn \""+$fullPathName+"\";";
+    $scriptToRun+="\n";
+    $scriptToRun+="file -save;\n" ;
+    
+    $scriptToRun+="python(\"cmds.evalDeferred('JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb("+$ra+",False,False,False)')\");\n";
+    $scriptToRun+="python(\"cmds.evalDeferred('cmds.quit(force=True)')\");\n";
+    
+    string $scriptFile=$path+$fileName+"_id_"+$id+"_"+$pf+".mel";
+    $fileId=`fopen $scriptFile "w"`;
+    fwrite $fileId $scriptToRun;
+    fclose $fileId;
+    
+    
+    string $pyCommand="JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_LivingSim("+"'"+$ipPort+"','"+$scriptFile+"')";
+    python($pyCommand);
+    J_livingQueue_saveSetting();
+}
+
+
+
+
+

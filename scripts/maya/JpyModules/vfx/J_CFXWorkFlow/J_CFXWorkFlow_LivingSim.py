@@ -15,6 +15,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 import JpyModules
 def J_CFXWorkFlow_LivingSim(ipPortIdFrameRate,scriptToRun='',overWriteJob=True):
+    print scriptToRun
     if cmds.file(query=True,sceneName=True,shortName=True)=='':
         cmds.confirmDialog(title=u'错误',message=u'文件未保存，或者需要另存为mb格式',button='好吧')
         return
@@ -22,19 +23,23 @@ def J_CFXWorkFlow_LivingSim(ipPortIdFrameRate,scriptToRun='',overWriteJob=True):
     #最后带斜杠
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     filePathWithName=cmds.file(query=True,sceneName=True)
-    scriptFileName=filePath+fileName+'.mel'
+    
     
     infos=J_CFXWorkFlow_getIpPort(ipPortIdFrameRate)
     ip=infos[0]
     port=infos[1]
     jobId=str(infos[2])
     frameRate=infos[3]
-    
-    scriptFile=open(scriptFileName,'w')
-    scriptFile.write(scriptToRun+'\npython("cmds.evalDeferred(\'JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb('
-        +frameRate+',False,False,False)\')");\n'
-        +'python("cmds.evalDeferred(\'cmds.quit(force=True)\')");')
-    scriptFile.close()
+    scriptFileName=filePath+fileName+"_id_"+jobId+'.mel'
+    #接受传入mel文件作为脚本执行，如果判定脚本文件存在，则不使用生成的脚本
+    if scriptToRun.endswith('.mel'):
+        scriptFileName=scriptToRun
+    else:
+        scriptFile=open(scriptFileName,'w')    
+        scriptFile.write(scriptToRun+'\npython("cmds.evalDeferred(\'JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb('
+            +frameRate+',False,False,False)\')");\n'
+            +'python("cmds.evalDeferred(\'cmds.quit(force=True)\')");')
+        scriptFile.close()
     ip_port = (ip, int(port))
     jobInfo={}
     jobInfo['job_Id']=jobId
