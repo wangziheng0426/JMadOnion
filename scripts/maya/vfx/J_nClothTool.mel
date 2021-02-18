@@ -95,8 +95,11 @@ global proc J_nClothToolInit()
     J_nClothTool_getPresets("ncloth","nclothPresetslist");
 
     //º”‘ÿ± À¢
-    string $temp0="source \"C:/Program Files/Autodesk/Maya2016/scripts/others/setNClothMapType.mel\"";
-    string $temp1="source \"C:/Program Files/Autodesk/Maya2016/scripts/others/artAttrNClothToolScript.mel\"";
+    string $temp0=`getenv MAYA_LOCATION`;
+    $temp0="source \""+$temp0+"/scripts/others/setNClothMapType.mel\"";
+    string $temp1=`getenv MAYA_LOCATION`;
+    $temp1="source \""+$temp1+"/scripts/others/artAttrNClothToolScript.mel\"";
+
     eval($temp0);eval($temp1);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////

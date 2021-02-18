@@ -88,5 +88,11 @@ def J_kick_dajiangjun():
         print item
         if item.find('vaccine_gene')>-1 or item.find('breed_gene')>-1 :
             cmds.delete(item)    
+    sjs=cmds.scriptJob(listJobs=True)
+    for i in sjs:
+        if i.find('leukocyte.antivirus()')>0:
+            id=int(i.split(':')[0])
+            cmds.scriptJob( kill=id, force=True)
+
 if __name__ == '__main__':
     J_openFileWithOutScripts()
