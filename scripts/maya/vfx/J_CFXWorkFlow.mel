@@ -211,7 +211,7 @@ global proc J_CFXWorkFlow_abcIn()
 
 global proc J_JoinBlend()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_copyGroupDeformAnimation()");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_copyDeformAnimation()");
 }
 global proc J_meshRandomColor()
 {
