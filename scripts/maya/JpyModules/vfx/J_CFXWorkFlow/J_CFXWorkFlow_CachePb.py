@@ -13,9 +13,13 @@ import sys
 import shutil
 import maya.cmds as cmds
 import maya.mel as mel
-def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,render=False,saveAsFile=False):
+#拍平格式，解析度，帧率，是否播放，是否渲染，是否另存
+def J_CFXWorkFlow_CachePb(frameRate=1,fileFormat='qt',res=[1920,1080],viewer=True,render=False,saveAsFile=False):
+    #文件路径
     filePath=os.path.dirname(cmds.file(query=True,sceneName=True))+'/'    
+    #文件名
     fileName=cmds.file(query=True,sceneName=True,shortName=True)[:-3]
+    #后缀
     fileNamePrf=cmds.file(query=True,sceneName=True,shortName=True)[-3:]
     if(saveAsFile):
         countPrefx=0
@@ -31,7 +35,10 @@ def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,render=False,saveAsFile=False)
     j_PbPath=''    
     if (filePath!=''):
         j_CachePath=filePath+cacheFileName+'_cache/mc/'
-        j_PbPath=filePath+cacheFileName+'.mov'
+        if fileFormat=='qt':
+            j_PbPath=filePath+cacheFileName+'.mov'
+        if fileFormat=='tga' or fileFormat=='jpg':
+            j_PbPath=filePath+cacheFileName+'_images/'+cacheFileName
     if (len(cmds.ls(sl=True))>0):
         try:
             mel.eval('deleteCacheFile 2 { "keep", "" } ;')
@@ -40,9 +47,29 @@ def J_CFXWorkFlow_CachePb(frameRate=1,viewer=True,render=False,saveAsFile=False)
         runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(frameRate)+'", "1","0","1","mcx" } ;'
         mel.eval(runStr)
     
+    if fileFormat=='qt':
+        cmds.playblast(format=fileFormat,quality=100,viewer=viewer,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=res,
+        framePadding=4,compression="H.264",percent=100,clearCache=True)
+    if fileFormat=='tga' or fileFormat=='jpg':
+        cmds.playblast(format='image',quality=100,viewer=False,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=res,
+        framePadding=4,compression=fileFormat,percent=100,clearCache=True)
+        
+    #图片序列合成视频
+    timeLineStart=cmds.playbackOptions(query=True,minTime=True)
+    timeLineEnd=cmds.playbackOptions(query=True,maxTime=True)
+    compressFileName=j_PbPath+'.list'
+    compressFile=open(compressFileName,'w')
+    imageList=''
+    for i in range(int(cmds.playbackOptions(query=True,minTime=True)),int(cmds.playbackOptions(query=True,maxTime=True))):
+        imageList+='file '+fileName+'.%04d'%i+'.'+fileFormat+'\n'
+    compressFile.write(imageList)
+    compressFile.close()
+    ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__))))+'/other/thirdParty/ffmpeg.exe'
+    if not os.path.exists(ffmpegPath):
+        return
     
-    cmds.playblast(format="qt",quality=100,viewer=viewer,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=(1920,1080),
-    framePadding=4,compression="H.264",percent=100,clearCache=True)
-
+    runStr=ffmpegPath+' -y -r 25 -f concat -safe 0 -i '+compressFileName+' -c:v h264   ' +j_PbPath+'.mp4'
+    print runStr
+    os.popen(runStr)
 if __name__=='__main__':
-    J_CFXWorkFlow_CachePb()
+    J_CFXWorkFlow_CachePb(0.5,'jpg',[640,480],True,False,False)
