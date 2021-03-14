@@ -30,7 +30,7 @@ global proc J_autoSim(string $simState)
             setAttr ($ii+".enable") 1;
         }    
     }
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5,False,\"autoSim\")");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5,'','jpg',0,False,False,False");
 }
 global proc J_autoSimAll()
 {

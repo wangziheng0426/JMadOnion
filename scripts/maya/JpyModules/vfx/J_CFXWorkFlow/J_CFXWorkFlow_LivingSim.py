@@ -35,9 +35,10 @@ def J_CFXWorkFlow_LivingSim(ipPortIdFrameRate,scriptToRun='',overWriteJob=True):
     if scriptToRun.endswith('.mel'):
         scriptFileName=scriptToRun
     else:
+        
         scriptFile=open(scriptFileName,'w')    
         scriptFile.write(scriptToRun+'\npython("cmds.evalDeferred(\'JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb('
-            +frameRate+',False,False,False)\')");\n'
+            +frameRate+'\'\',\'jpg\',False,False,False)\')");\n'
             +'python("cmds.evalDeferred(\'cmds.quit(force=True)\')");')
         scriptFile.close()
     ip_port = (ip, int(port))

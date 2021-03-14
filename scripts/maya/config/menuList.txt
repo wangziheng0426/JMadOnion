@@ -33,5 +33,6 @@
   <MainMenu> 动画工具 anim </MainMenu>  
   <SubMenu> 拍平工具 J_playBlastToolWin animation/J_playBlastToolWin.mel </SubMenu>
   <MainMenu> 渲染工具 render </MainMenu>  
+  <SubMenu> 自动分层 J_autoLayerWin render/J_autoLayer.mel </SubMenu>
   #<SubMenu> 前台渲染 J_perFrameRender render/J_perFrameRender.mel </SubMenu> 
 </root>

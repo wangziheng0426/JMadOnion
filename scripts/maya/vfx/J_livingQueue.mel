@@ -301,7 +301,7 @@ global proc J_livingQueue_fastSubmitJobs()
     $scriptToRun+="\n";
     $scriptToRun+="file -save;\n" ;
     
-    $scriptToRun+="python(\"cmds.evalDeferred('JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb("+$ra+",False,False,False)')\");\n";
+    $scriptToRun+="python(\"cmds.evalDeferred('JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb("+$ra+"'jpg','',0,False,False,False)')\");\n";
     $scriptToRun+="python(\"cmds.evalDeferred('cmds.quit(force=True)')\");\n";
     
     string $scriptFile=$path+$fileName+"_id_"+$id+"_"+$pf+".mel";
