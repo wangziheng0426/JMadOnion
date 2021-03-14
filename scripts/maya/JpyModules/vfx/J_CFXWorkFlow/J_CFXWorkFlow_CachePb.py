@@ -10,17 +10,21 @@
 import json
 import os
 import sys
-import shutil
+import shutil,time
 import maya.cmds as cmds
 import maya.mel as mel
 #拍平格式，解析度，帧率，是否播放，是否渲染，是否另存
-def J_CFXWorkFlow_CachePb(frameRate=1,fileFormat='qt',res=[1920,1080],viewer=True,render=False,saveAsFile=False):
+def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],fileFormat='qt',skipFrame=0,viewer=True,render=False,saveAsFile=False):
     #文件路径
     filePath=os.path.dirname(cmds.file(query=True,sceneName=True))+'/'    
     #文件名
     fileName=cmds.file(query=True,sceneName=True,shortName=True)[:-3]
     #后缀
     fileNamePrf=cmds.file(query=True,sceneName=True,shortName=True)[-3:]
+    #视频尺寸
+    if res=='':
+        res=[cmds.getAttr("defaultResolution.width"),cmds.getAttr("defaultResolution.height")]
+    
     if(saveAsFile):
         countPrefx=0
         files=os.listdir(filePath)
@@ -39,6 +43,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1,fileFormat='qt',res=[1920,1080],viewer=Tru
             j_PbPath=filePath+cacheFileName+'.mov'
         if fileFormat=='tga' or fileFormat=='jpg':
             j_PbPath=filePath+cacheFileName+'_images/'+cacheFileName
+            j_ffmpegFile=filePath+cacheFileName+'.mp4'
     if (len(cmds.ls(sl=True))>0):
         try:
             mel.eval('deleteCacheFile 2 { "keep", "" } ;')
@@ -51,25 +56,42 @@ def J_CFXWorkFlow_CachePb(frameRate=1,fileFormat='qt',res=[1920,1080],viewer=Tru
         cmds.playblast(format=fileFormat,quality=100,viewer=viewer,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=res,
         framePadding=4,compression="H.264",percent=100,clearCache=True)
     if fileFormat=='tga' or fileFormat=='jpg':
+        res=[(res[0]+res[0]%2),(res[1]+res[1]%2)]
         cmds.playblast(format='image',quality=100,viewer=False,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=res,
         framePadding=4,compression=fileFormat,percent=100,clearCache=True)
         
-    #图片序列合成视频
-    timeLineStart=cmds.playbackOptions(query=True,minTime=True)
-    timeLineEnd=cmds.playbackOptions(query=True,maxTime=True)
-    compressFileName=j_PbPath+'.list'
-    compressFile=open(compressFileName,'w')
-    imageList=''
-    for i in range(int(cmds.playbackOptions(query=True,minTime=True)),int(cmds.playbackOptions(query=True,maxTime=True))):
-        imageList+='file '+fileName+'.%04d'%i+'.'+fileFormat+'\n'
-    compressFile.write(imageList)
-    compressFile.close()
-    ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__))))+'/other/thirdParty/ffmpeg.exe'
-    if not os.path.exists(ffmpegPath):
-        return
-    
-    runStr=ffmpegPath+' -y -r 25 -f concat -safe 0 -i '+compressFileName+' -c:v h264   ' +j_PbPath+'.mp4'
-    print runStr
-    os.popen(runStr)
+        #图片序列合成视频
+        timeLineStart=cmds.playbackOptions(query=True,minTime=True)
+        timeLineEnd=cmds.playbackOptions(query=True,maxTime=True)
+        compressFileName=j_PbPath+'.list'
+        compressFile=open(compressFileName,'w')
+        imageList=''
+        for i in range(int(cmds.playbackOptions(query=True,minTime=True)+skipFrame),int(cmds.playbackOptions(query=True,maxTime=True))):
+            imageList+='file '+fileName+'.%04d'%i+'.'+fileFormat+'\n'
+        compressFile.write(imageList)
+        compressFile.close()
+        import JpyModules
+        ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__))))+'/other/thirdParty/ffmpeg.exe'
+        if not os.path.exists(ffmpegPath):
+            return
+        mydic={'game':15,'film':24,'pal':25,'ntsc':30,'show':48,'palf':50,'ntscf':60}
+        frameRate=cmds.currentUnit(query=True,time=True)
+        if frameRate in mydic:
+            frameRate= mydic[frameRate]
+        else:
+            frameRate=24
+        runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+compressFileName+' -crf 22 -c:v h264   ' +j_ffmpegFile
+        print runStr
+        os.popen(runStr)
+    #图片序列拍屏清理
+
+        time.sleep(2)
+        try:
+            shutil.rmtree(os.path.dirname(j_PbPath))
+            os.remove(compressFileName)
+        except:
+            pass
+        if viewer:
+            os.system(j_ffmpegFile)  
 if __name__=='__main__':
-    J_CFXWorkFlow_CachePb(0.5,'jpg',[640,480],True,False,False)
+    J_CFXWorkFlow_CachePb(1,'','jpg',0,True,False,False)

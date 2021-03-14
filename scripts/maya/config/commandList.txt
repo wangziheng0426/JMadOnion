@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <root> 
   <label>Í¨ÓÃÃüÁî</label>  
   <command>É¾³ı¶àÓàshape Ju_removeShape com/common/Ju_removeShape.mel</command>  

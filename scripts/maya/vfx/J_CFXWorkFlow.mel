@@ -44,17 +44,16 @@ if (`window -ex J_CFXWorkFlow`)
         setParent ..;
         frameLayout -cll 1 -cl 0 -l "mc»º´æÅÄÆÁ"  J_nCacheFrameLayout;
             formLayout  -numberOfDivisions 100  J_nCacheFormLayout;
+                textField -text "0" J_skipFrame;
                 button -l "1±¶»º´æÅÄÆÁ" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast()" J_buCachePB;
                 button -l "2±¶»º´æÅÄÆÁ" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast2()" J_buCachePB2;
                 button -l "4±¶»º´æÅÄÆÁ" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast4()" J_buCachePB4;
+                button -l "ºöÂÔ30Ö¡" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast30()" J_buCachePB30;
+                button -l "ºöÂÔ50Ö¡" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast50()" J_buCachePB50;
+                button -l "ºöÂÔ100Ö¡" -w $ButtonW  -h $ButtonH -c  "J_CreateCachePlayBlast100()" J_buCachePB100;
             setParent ..;
         setParent ..;
-        frameLayout -cll 1 -cl 0 -l "ºóÌ¨½âËã"  J_batchSimFrameLayout;
-            formLayout  -numberOfDivisions 100  J_batchSimFormLayout;
-                textField -text "workerIp&port&id&frameRate" J_ipPort;
-                button -l "²éÑ¯·þÎñÆ÷" -w $ButtonW  -h $ButtonH -c  "J_connectWorker()" J_buConnectWorker;
-                button -l "½âËã&ÅÄÆÁ" -w $ButtonW  -h $ButtonH -c  "J_simAndPlayBlast()" J_buJ_simAndPlayBlast;
-                button -l "ÅúÁ¿½âËã" -w $ButtonW  -h $ButtonH -c  "J_queueSim()" J_buJ_queueSim;
+
     /////////////////////////////////////////////////////////±à¼­´°Ìå  
     formLayout -e 
         -ap J_hairFrameLayout left 0 1
@@ -68,10 +67,7 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_nCacheFrameLayout left 0 1
         -ap J_nCacheFrameLayout right 0 99
         -ac J_nCacheFrameLayout top  1 J_nClothFrameLayout
-        
-        -ap J_batchSimFrameLayout left 0 1
-        -ap J_batchSimFrameLayout right 0 99
-        -ac J_batchSimFrameLayout top  1 J_nCacheFrameLayout
+
     J_cfxWorkFlowMain;
     formLayout -e 
         -ap J_allHairSystemNode left 0 0
@@ -134,37 +130,37 @@ if (`window -ex J_CFXWorkFlow`)
         
         J_nClothFormLayout;
     formLayout -e 
+        -ap J_skipFrame left 0 0
+        -af J_skipFrame top  0
+        -ap J_skipFrame right 0 99
+
         -ap J_buCachePB left 0 0
-        -af J_buCachePB top  0
+        -ac J_buCachePB top  1 J_skipFrame
         -ap J_buCachePB right 0 33
         
         -ap J_buCachePB2 left 0 34
-        -af J_buCachePB2 top  0
+        -ac J_buCachePB2 top  1 J_skipFrame
         -ap J_buCachePB2 right 0 66
         
         -ap J_buCachePB4 left 0 67
-        -af J_buCachePB4 top  0
+        -ac J_buCachePB4 top  1 J_skipFrame
         -ap J_buCachePB4 right 0 100
+
+        -ap J_buCachePB30 left 0 0
+        -ac J_buCachePB30 top  1 J_buCachePB
+        -ap J_buCachePB30 right 0 33
+
+        -ap J_buCachePB50 left 0 34
+        -ac J_buCachePB50 top  1 J_buCachePB
+        -ap J_buCachePB50 right 0 66
+
+        -ap J_buCachePB100 left 0 67
+        -ac J_buCachePB100 top  1 J_buCachePB
+        -ap J_buCachePB100 right 0 100
+
     J_nCacheFormLayout;
     
-    formLayout -e 
-        -ap J_ipPort left 0 0
-        -af J_ipPort top  0
-        -ap J_ipPort right 0 99
-        
-        
-        -ap J_buConnectWorker left 0 0
-        -ac J_buConnectWorker top  1 J_ipPort
-        -ap J_buConnectWorker right 0 33
-        
-        -ap J_buJ_simAndPlayBlast left 0 34
-        -ac J_buJ_simAndPlayBlast top  1 J_ipPort
-        -ap J_buJ_simAndPlayBlast right 0 66
-        
-        -ap J_buJ_queueSim left 0 67
-        -ac J_buJ_queueSim top  1 J_ipPort
-        -ap J_buJ_queueSim right 0 100 
-    J_batchSimFormLayout;
+
 showWindow J_CFXWorkFlow;
 J_CFXWorkFlow_init();
 J_CFXWorkFlow_runScriptJob();
@@ -221,16 +217,35 @@ global proc J_meshRandomColor()
 
 global proc J_CreateCachePlayBlast()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb()");
+    string $frame=`textField -q -text  J_skipFrame`;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'','jpg',"+$frame+")");
 }
 global proc J_CreateCachePlayBlast2()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5)");
+    string $frame=`textField -q -text  J_skipFrame`;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5,'','jpg',"+$frame+")");
 }
 global proc J_CreateCachePlayBlast4()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.25)");
+    string $frame=`textField -q -text  J_skipFrame`;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.25,'','jpg',"+$frame+")");
 }
+
+
+global proc J_CreateCachePlayBlast30()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'','jpg',30)");
+}
+global proc J_CreateCachePlayBlast50()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'','jpg',50)");
+}
+global proc J_CreateCachePlayBlast100()
+{
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'','jpg',100)");
+}
+
+
 
 global proc J_queueSim()
 {
