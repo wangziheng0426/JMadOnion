@@ -13,15 +13,146 @@ global proc J_autoLayer()//主程序
 {
 /////////////////////////////////////////////////////////////生成窗体
 string $checkBoxs[];
+int $ButtonW=80;
+int $ButtonH=20;
 if (`window -ex J_autoLayerWin`)
     deleteUI -window J_autoLayerWin;
     window -w 600 -h 360 -title "批量渲染自动分层" J_autoLayerWin;
     formLayout  -numberOfDivisions 100  J_autoLayerMain;
-    frameLayout -cll 1 -cl 0 -h 140-l "资产"  J_assetsFrameLayout;
+    frameLayout -cll 1 -cl 0 -h 160-l "资产"  J_assetsFrameLayout;
+        formLayout  -numberOfDivisions 100  J_assetsFormLayout;
+            textScrollList  -sc ""  -allowMultiSelection 1 -h 110 J_allReferenceFiles;
+            button -l "换高模" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"Hi\")" J_buLoadHi;
+            button -l "换低模" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"Lo\")" J_buLoadLo;
+            button -l "换毛发资产" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"Fur\")" J_buLoadFur;
+        setParent ..;
+    setParent ..;
 
+    frameLayout -cll 1 -cl 0 -h 500-l "渲染设置"  J_settingFrameLayout;
+        formLayout  -numberOfDivisions 100  J_settingFormLayout;            
+            text -label "灯光文件目录" J_textLight;
+            textField               J_textlightFile;
+            button -l "选择灯光文件" -w $ButtonW  -h $ButtonH J_buSelectLightFile;
+
+            text -label"批量操作目录" J_textQueue;
+            textField               J_textQueuePath;
+            button -l "批量操作目录" -w $ButtonW  -h $ButtonH J_buQueuePath;
+
+            optionMenu -label "renderer:" rendererSelect;
+            menuItem -label "redshit";
+            menuItem -label "mtoa";
+            menuItem -label "vray";
+
+            button -l "读取渲染设置" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"hairSystem\")" J_buReadRenderSetting;
+            button -l "自动分层" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"hairSystem\")" J_buAutoLayer;
+            string $tably = `tabLayout -innerMarginWidth 5 -innerMarginHeight 5  J_renderSettingTableLayout`;
+            setParent ..;
+        setParent ..;
+    setParent ..;
+
+    formLayout -e 
+        -ap J_assetsFrameLayout left 0 1
+        -ap J_assetsFrameLayout right 0 99
+        -af J_assetsFrameLayout top 0
+        
+        -ap J_settingFrameLayout left 0 1
+        -ap J_settingFrameLayout right 0 99
+        -ac J_settingFrameLayout top  1 J_assetsFrameLayout
+    J_autoLayerMain;
+
+    formLayout -e 
+        -ap J_allReferenceFiles left 0 1
+        -ap J_allReferenceFiles right 0 99
+        -af J_allReferenceFiles top 0
+        
+        -ap J_buLoadHi left 0 1
+        -ap J_buLoadHi right 0 33
+        -ac J_buLoadHi top  1 J_allReferenceFiles
+
+        -ap J_buLoadLo left 0 34
+        -ap J_buLoadLo right 0 66
+        -ac J_buLoadLo top  1 J_allReferenceFiles
+
+        -ap J_buLoadFur left 0 67
+        -ap J_buLoadFur right 0 99
+        -ac J_buLoadFur top  1 J_allReferenceFiles
+
+    J_assetsFormLayout;
+
+    formLayout -e 
+        -ap J_textLight left 0 1
+        -ap J_textLight right 0 10
+        -af J_textLight top 1
+
+        -ap J_textlightFile left 0 11
+        -ap J_textlightFile right 0 85
+        -af J_textlightFile top 1
+
+        -ap J_buSelectLightFile left 0 86
+        -ap J_buSelectLightFile right 0 99
+        -af J_buSelectLightFile top 1
+
+        -ap J_textQueue left 0 1
+        -ap J_textQueue right 0 10
+        -ac J_textQueue top  1 J_buSelectLightFile
+
+        -ap J_textQueuePath left 0 11
+        -ap J_textQueuePath right 0 85
+        -ac J_textQueuePath top  1 J_buSelectLightFile
+
+        -ap J_buQueuePath left 0 86
+        -ap J_buQueuePath right 0 99
+        -ac J_buQueuePath top  1 J_buSelectLightFile
+
+        -ap rendererSelect left 0 1
+        -ap rendererSelect right 0 33
+        -ac rendererSelect top  1 J_buQueuePath
+
+        -ap J_buReadRenderSetting left 0 72
+        -ap J_buReadRenderSetting right 0 85
+        -ac J_buReadRenderSetting top  1 J_buQueuePath
+
+        -ap J_buAutoLayer left 0 86
+        -ap J_buAutoLayer right 0 99
+        -ac J_buAutoLayer top  1 J_buQueuePath
+
+        -ap J_renderSettingTableLayout left 0 1
+        -ap J_renderSettingTableLayout right 0 99
+        -ac J_renderSettingTableLayout top  1 rendererSelect
+        -ap J_renderSettingTableLayout bottom 0 99
+
+
+    J_settingFormLayout;    
 showWindow J_autoLayerWin;
+J_autoLayerInit();
 }
+global proc J_autoLayerInit()
+{
+    string $allRef[]=`ls -type reference`;
+    int $currentRender=`optionMenu -q -sl rendererSelect`;
+    textScrollList  -e -ra J_allReferenceFiles;
+    for ($item in $allRef)
+    {
+        if ($item!="_UNKNOWN_REF_NODE_")
+        {string $filePath=`referenceQuery -f $item `;
+        textScrollList -e -a $filePath J_allReferenceFiles;}
+    }
+    //常规渲染参数
+    string $J_autoLayerCommondSet=`formLayout  -numberOfDivisions 100 -p J_renderSettingTableLayout`;
+    textScrollList  J_autoLayerRenderInfo;
+    tabLayout -edit  -tabLabel $J_autoLayerCommondSet "渲染信息" J_renderSettingTableLayout;
+    formLayout -e
+    -ap J_autoLayerRenderInfo left 0 1
+        -ap J_autoLayerRenderInfo right 0 99
+        -ap J_autoLayerRenderInfo top  1 1
+        -ap J_autoLayerRenderInfo bottom 0 99
+        $J_autoLayerCommondSet;
 
+}
+global proc J_autoLayerSwithAssets(string $level)
+{
+
+}
 global proc J_autoLayer_saveSetting()
 {
     string $id=`textField -q -text J_livingQueueId`;
@@ -35,3 +166,6 @@ global proc J_autoLayer_saveSetting()
     fwrite $fileId $info;
     fclose $fileId;
 }
+
+
+//J_autoLayer
