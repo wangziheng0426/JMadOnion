@@ -5,4 +5,5 @@ import compute
 import model
 import public
 import rigid
+import render
 import vfx
