@@ -78,7 +78,7 @@ global proc J_curveTools_convertDir()
     float $a[]=`xform -q -ws -t $p[0]`;
     select $n;
     selectCurveCV("last");
-    string $p[]=`ls -sl`;
+    $p=`ls -sl`;
     float $b[]=`xform -q -ws -t $p[0]`;
     switch ($nn){ 
         case 1:

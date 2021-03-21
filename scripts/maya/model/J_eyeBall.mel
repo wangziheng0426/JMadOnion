@@ -142,7 +142,16 @@ global proc J_eyeBall_breakSelectObjectConnections()//打断所选物体的链接
 {
 	select "*_eye_grp*";
     string $allTransform[]=`ls -l -sl -type transform`;
-	J_unLockAttrs($allTransform);
+	for($item in $allTransform)
+	{
+		string $lockedAttrs[]=`listAttr -l $item`;
+		for($itemA in $lockedAttrs)
+		{
+			setAttr -lock 0 ($item+"."+$itemA);
+		}
+
+	}
+
     string $eyeGrpChTemp[];
     int $allMeshTranCount=0;
 	for($item in $allTransform)
