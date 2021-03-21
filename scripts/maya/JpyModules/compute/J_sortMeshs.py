@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-##  @package J_sortMeshMain
+##  @package J_sortMeshs
 #
 ##  @brief  从新排布mesh按照由远及近，由下级上
 ##  @author 桔
@@ -11,7 +11,7 @@ import os,sys
 import maya.OpenMaya as om
 import maya.cmds as cmds
 sys.setrecursionlimit(5000)
-def J_sortMeshMain():
+def J_sortMeshs():
     allmeshTr=cmds.ls(sl=True)
     ysort= J_sortMesh(allmeshTr,0,(len(allmeshTr)-1),1)
     cmds.select(J_sortMesh(ysort,0,(len(allmeshTr)-1),2))
@@ -42,4 +42,4 @@ def J_sortMesh(meshList,left,right,ch):
     
     return meshList
 if __name__ == '__main__':
-    J_sortMeshMain()
+    J_sortMeshs()

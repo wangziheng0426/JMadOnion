@@ -119,9 +119,9 @@ global proc runRebuildWorld()
 			$tempa=(rand(1,$randSca));
 			float $rr=$tempa+($scale.x);
 			setAttr ($t[0]+".scaleX") $rr;
-			float $rr=$tempa+($scale.y);
+			$rr=$tempa+($scale.y);
 			setAttr ($t[0]+".scaleY") $rr;
-			float $rr=$tempa+($scale.z);
+			$rr=$tempa+($scale.z);
 			setAttr ($t[0]+".scaleZ") $rr;
 			if($par[0]!="")
 			{parent $t[0] $par[0];}

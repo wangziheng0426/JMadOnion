@@ -1595,7 +1595,7 @@ global proc SGdelNuc()
                 $id++;
             }
 
-            int $id=0;
+            $id=0;
             while(1)
             {
                 if(!size(`listConnections ($conNuc+".inputPassive["+$id+"]")`))
@@ -1623,7 +1623,7 @@ global proc SGdelNuc()
                 $id++;
             }
 
-            int $id=0;
+            $id=0;
             while(1)
             {
                 if(!size(`listConnections ($conNuc+".inputStart["+$id+"]")`))

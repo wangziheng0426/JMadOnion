@@ -74,7 +74,7 @@ global proc J_runDistanceCheck()
     string $sel[]=`ls -sl`;
     float $min=`floatSliderGrp -q -v objMinDis`;
     float $max=`floatSliderGrp -q -v objMaxDis`;
-    string $sel[]=`ls -sl`;
+
     string $base=`textField -q -text  baseObj`;
     select $base;
     select -tgl $sel[0];
