@@ -114,7 +114,7 @@ def J_CFXWorkFlow_getChildNodes(currentNode,meshList):
         if cmds.objectType( item, isType='transform' ):
             J_CFXWorkFlow_getChildNodes(item,meshList)
             
-#暂时不用了
+#↓暂时不用了
 def J_CFXWorkFlow_outAbcOrgGeoWithMat():
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     cacheFileName=''
@@ -126,7 +126,7 @@ def J_CFXWorkFlow_outAbcOrgGeoWithMat():
     for item in selectedNodes:
         newobj=cmds.duplicate(item)
     mel.eval('file -force -options "v=0;" -typ "mayaBinary" -pr -es "'+j_clothCachePath+cacheFileName+'.mb";')
-#暂时不用了
+#↑暂时不用了
 def J_CFXWorkFlow_duplicateObj(inGeo):
     cmds.select(inGeo)
     cmds.duplicate(rr=True, smartTransform=True )
