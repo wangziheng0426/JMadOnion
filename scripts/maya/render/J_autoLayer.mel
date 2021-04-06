@@ -1,51 +1,51 @@
-ï»¿/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 ///\file J_autoLayer.mel
 ///
-///\brief    è‡ªåŠ¨åˆ†å±‚  
+///\brief    ×Ô¶¯·Ö²ã  
 ///
-///\author æ¡”
+///\author ½Û
 ///\version 1.0
 ///\date  09:23 2021/3/13
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
-global proc J_autoLayer()//ä¸»ç¨‹åº
+global proc J_autoLayer()//Ö÷³ÌĞò
 {
-/////////////////////////////////////////////////////////////ç”Ÿæˆçª—ä½“
+/////////////////////////////////////////////////////////////Éú³É´°Ìå
 string $checkBoxs[];
 int $ButtonW=80;
 int $ButtonH=20;
 if (`window -ex J_autoLayerWin`)
     deleteUI -window J_autoLayerWin;
-    window -w 600 -h 360 -title "æ‰¹é‡æ¸²æŸ“è‡ªåŠ¨åˆ†å±‚" J_autoLayerWin;
+    window -w 600 -h 360 -title "ÅúÁ¿äÖÈ¾×Ô¶¯·Ö²ã" J_autoLayerWin;
     formLayout  -numberOfDivisions 100  J_autoLayerMain;
-    frameLayout -cll 1 -cl 0 -h 200-l "èµ„äº§"  J_assetsFrameLayout;
+    frameLayout -cll 1 -cl 0 -h 200-l "×Ê²ú"  J_assetsFrameLayout;
         formLayout  -numberOfDivisions 100  J_assetsFormLayout;
-            textScrollList  -sc "J_autoLayerTextScrollAssets(0)"  -allowMultiSelection 1 -h 110 J_allReferenceFiles;
-            text -label "è¦æ›¿æ¢è·¯å¾„" J_autoLayerTextIn;
+            textScrollList  -dcc "J_autoLayerTextScrollAssets(0)"  -allowMultiSelection 1 -h 110 J_allReferenceFiles;
+            text -label "ÒªÌæ»»Â·¾¶" J_autoLayerTextIn;
             textField J_autoLayerTextFieldIn;
             button -l "<" -w 40  -h $ButtonH -c  "J_autoLayerQuickPath(\"J_autoLayerTextFieldIn\")" J_buTextFieldIn;
 
-            text -label "æ›¿æ¢ä¸ºè·¯å¾„" J_autoLayerTextOut;
+            text -label "Ìæ»»ÎªÂ·¾¶" J_autoLayerTextOut;
             textField J_autoLayerTextFieldOut;
             button -l "<" -w 40 -h $ButtonH -c  "J_autoLayerQuickPath(\"J_autoLayerTextFieldOut\")" J_buTextFieldOut;
 
-            button -l "æ›¿æ¢è·¯å¾„" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"Sw\")" J_buLoadSwithAssets;
-            button -l "æ¢é«˜æ¨¡" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"_Hi\")" J_buLoadHi;
-            button -l "æ¢ä½æ¨¡" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"_Lo\")" J_buLoadLo;
-            button -l "æ¢æ¯›å‘èµ„äº§" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"_Fur\")" J_buLoadFur;
+            button -l "Ìæ»»Â·¾¶" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"Sw\")" J_buLoadSwithAssets;
+            button -l "»»¸ßÄ£" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"_Hi\")" J_buLoadHi;
+            button -l "»»µÍÄ£" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"_Lo\")" J_buLoadLo;
+            button -l "»»Ã«·¢×Ê²ú" -w $ButtonW  -h $ButtonH -c  "J_autoLayerSwithAssets(\"_Fur\")" J_buLoadFur;
         setParent ..;
     setParent ..;
 
-    frameLayout -cll 1 -cl 0 -h 300 -l "æ¸²æŸ“è®¾ç½®"  J_settingFrameLayout;
+    frameLayout -cll 1 -cl 0 -h 300 -l "äÖÈ¾ÉèÖÃ"  J_settingFrameLayout;
         formLayout  -numberOfDivisions 100  J_settingFormLayout;            
-            text -label "ç¯å…‰æ–‡ä»¶ç›®å½•" J_autoLayerTextLight;
+            text -label "µÆ¹âÎÄ¼şÄ¿Â¼" J_autoLayerTextLight;
             textField               J_autoLayerTextLightFile;
-            button -l "é€‰æ‹©ç¯å…‰æ–‡ä»¶" -w $ButtonW  -h $ButtonH -c "J_autoLayerLoadFile(\"J_autoLayerTextLightFile\")" J_buSelectLightFile;
+            button -l "Ñ¡ÔñµÆ¹âÎÄ¼ş" -w $ButtonW  -h $ButtonH -c "J_autoLayerLoadFile(\"J_autoLayerTextLightFile\")" J_buSelectLightFile;
 
-            text -label"æ‰¹é‡æ“ä½œç›®å½•" J_textQueue;
+            text -label"ÅúÁ¿²Ù×÷Ä¿Â¼" J_textQueue;
             textField               J_textQueuePath;
-            button -l "æ‰¹é‡æ“ä½œç›®å½•" -w $ButtonW  -h $ButtonH -c "J_autoLayerLoadPath(\"J_textQueuePath\")"  J_buQueuePath;
+            button -l "ÅúÁ¿²Ù×÷Ä¿Â¼" -w $ButtonW  -h $ButtonH -c "J_autoLayerLoadPath(\"J_textQueuePath\")"  J_buQueuePath;
 
             optionMenu -label "renderer:" rendererSelect;
             menuItem -label "redshift";
@@ -53,12 +53,12 @@ if (`window -ex J_autoLayerWin`)
             //menuItem -label "vray";
 
 
-            checkBox -label "æ‹†åˆ†åœºæ™¯" J_checkBoxSeprateScene ;
-            checkBox -label "æ›¿æ¢æ˜ å°„" J_checkBoxReplaceSource ;
+            checkBox -label "²ğ·Ö³¡¾°" J_checkBoxSeprateScene ;
+            checkBox -label "Ìæ»»Ó³Éä" J_checkBoxReplaceSource ;
             textField               J_textFieldReplaceSource;
 
-            button -l "ä¿å­˜æ¸²æŸ“è®¾ç½®" -w $ButtonW  -h $ButtonH -c  "J_autoLayerReadAttr()" J_buReadRenderSetting;
-            button -l "è‡ªåŠ¨åˆ†å±‚" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"hairSystem\")" J_buAutoLayer;
+            button -l "±£´æäÖÈ¾ÉèÖÃ" -w $ButtonW  -h $ButtonH -c  "J_autoLayerReadAttr()" J_buReadRenderSetting;
+            button -l "×Ô¶¯·Ö²ã" -w $ButtonW  -h $ButtonH -c  "J_autoLayerRun()" J_buAutoLayer;
             string $tably = `tabLayout -innerMarginWidth 5 -innerMarginHeight 5  J_renderSettingTableLayout`;
             setParent ..;
         setParent ..;
@@ -185,10 +185,10 @@ if (`window -ex J_autoLayerWin`)
     J_settingFormLayout;    
 showWindow J_autoLayerWin;
 J_autoLayerInit();
-    //å¸¸è§„æ¸²æŸ“å‚æ•°
+    //³£¹æäÖÈ¾²ÎÊı
     string $J_autoLayerCommondSet=`formLayout  -numberOfDivisions 100 -p J_renderSettingTableLayout`;
     textScrollList -p $J_autoLayerCommondSet J_autoLayerRenderInfo;
-    tabLayout -edit  -tabLabel $J_autoLayerCommondSet "æ¸²æŸ“ä¿¡æ¯" J_renderSettingTableLayout;
+    tabLayout -edit  -tabLabel $J_autoLayerCommondSet "äÖÈ¾ĞÅÏ¢" J_renderSettingTableLayout;
     formLayout -e
     -ap J_autoLayerRenderInfo left 0 1
         -ap J_autoLayerRenderInfo right 0 99
@@ -225,12 +225,12 @@ global proc J_autoLayerTextScrollAssets(int $mode)
 }
 global proc J_autoLayerLoadFile(string $contral)
 {
-    string $file[]=`fileDialog2 -fileMode 1 -caption "é€‰æ‹©ä¸€ä¸ªæ–‡ä»¶"`;
+    string $file[]=`fileDialog2 -fileMode 1 -caption "Ñ¡ÔñÒ»¸öÎÄ¼ş"`;
     textField -e -text $file[0] $contral;
 }
 global proc J_autoLayerLoadPath(string $contral)
 {
-    string $file[]=`fileDialog2 -fileMode 2 -caption "é€‰æ‹©ä¸€ä¸ªè·¯å¾„"`;
+    string $file[]=`fileDialog2 -fileMode 2 -caption "Ñ¡ÔñÒ»¸öÂ·¾¶"`;
     textField -e -text $file[0] $contral;
 }
 global proc J_autoLayerQuickPath(string $contral)
@@ -241,6 +241,11 @@ global proc J_autoLayerReadAttr()
 {
     string $renderer="redshift";
     python("JpyModules.render.J_autoLayerRenderSettings('"+$renderer+"','w')");
+}
+global proc J_autoLayerRun()
+{
+    python("JpyModules.render.J_autoLayer()");
+
 }
 global proc J_autoLayerSwithAssets(string $prefx)
 {
@@ -284,9 +289,10 @@ global proc J_autoLayerSwithAssets(string $prefx)
             if (`objExists( $refNode )`)
             {            
                 if (`file -q -exists $newFile`)
-                {file -lr $refNode $newFile ;}
+                {
+                    catch(`file -lr $refNode $newFile `);}
                 else{
-                    $res+=$newFile+"æ–‡ä»¶ä¸å­˜åœ¨\n";
+                    $res+=$newFile+"ÎÄ¼ş²»´æÔÚ\n";
                 }
             }
         }
@@ -309,4 +315,4 @@ global proc J_autoLayer_saveSetting()
 }
 
 
-//J_autoLayer
+/////J_autoLayer
