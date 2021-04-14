@@ -95,7 +95,7 @@ global proc string[] auRvGeoNor (string $geo[])
 		polyNormal -normalMode 2 -userNormalMode 0 -ch 1 $node; //统一法线，在个别面有反转的情况下使用
 		select $node;
 		catchQuiet(doBakeNonDefHistory( 1, {"prePost" }));//将统一法线历史删除，保留变形节点
-//textScrollList -e -append $node $ts;print $node;
+
 		connectAttr -f ($node +".outMesh") cpom.inMesh;
 		setAttr "cpom.inPositionX" ($pos.x);
 		setAttr "cpom.inPositionY" ($pos.y);

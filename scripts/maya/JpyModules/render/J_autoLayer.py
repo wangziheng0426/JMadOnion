@@ -49,7 +49,7 @@ def J_autoLayerSeptateGroup(filePath='',lightFilePath='',replaceRef='',groupName
                 refFile=cmds.referenceQuery(refItem,f=True,wcn=True ) 
                 if  replaceRef!='':
                     
-                    refFile=refFile[:-3]+prefix+refFile[-3:]
+                    refFile=refFile[:-3]+replaceRef+refFile[-3:]
                     if os.path.exists(refFile):
                         try:
                             cmds.file(refFile,lr=refItem)

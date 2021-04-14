@@ -16,16 +16,16 @@ global proc J_modelClearMC()//主程序
 string $checkBoxs[];
 int $winWidth=300;
 int $count=10;
-string $J_modelClearMCcommandName[]={"整理模型","单面显示","错误检查","选择边缘","对称检查","删所有组",
+string $J_modelClearMCcommandName[]={"整理模型","单双面显示切换","错误检查(通用)","检查当前模型","选择边缘","对称检查","删所有组",
                                     "解锁所有属性","删除多余shape","清理无用节点","删除无连接材质",
-                                    "单双面显示切换","删除无用uvset","整理法线"};
-string $J_modelClearMCcommand[]={"runModelClearMC","J_doubleFaceLight","J_modelClear_getInfoA","J_hardEdgeIm","J_symTool","J_deleteAllGroup",
+                                    "删除无用uvset","整理法线","曲面重新排序"};
+string $J_modelClearMCcommand[]={"runModelClearMC","J_doubleFaceLight","J_modelClear_getInfoA","J_checkSelectModel","J_hardEdgeIm","J_symTool","J_deleteAllGroup",
                                     "J_unLockAttrs()","J_removeShape","J_deleteJunkWin","J_deleteMat",
-                                    "J_doubleFaceLight","J_removeUV","J_modelClear_runRNor"};
+                                    "J_removeUV","J_modelClear_runRNor","J_modelSortAndCombin"};
 string $J_modelClearMC_btn[];
 if (`window -ex checkNodesWin`)
     deleteUI -window checkNodesWin;
-    window -w 300 -h ($count*2+200) -title "模型检查" checkNodesWin;
+    window -w 300 -h ($count*2+200) -title "模型检整理" checkNodesWin;
         
         frameLayout -cll 1 -cl 0  -h ($count*20) -l "检查项目"  myColum;
         formLayout  -nd 100  -h ($count*20) checkNodesLayout;
@@ -99,10 +99,9 @@ global proc runModelClearMC()
 
 global proc J_modelClear_ShowInfos()
 {
-string $n="法线  轴心  垃圾历史  无用关键帧  材质球  空组  灯光连接  多余uv";
-$n+="已被清除";
-confirmDialog -title "提示" -message $n;
-
+    string $n="法线  轴心  垃圾历史  无用关键帧  材质球  空组  灯光连接  多余uv";
+    $n+="已被清除";
+    confirmDialog -title "提示" -message $n;
 }
 global proc J_modelClear_upLoad()//上传
 {
@@ -128,23 +127,24 @@ global proc J_modelClear_getInfoA()
 
 global proc J_modelClear_selObj(string $text)
 {
-    select `textScrollList -q -si $text`;
+    string $items[]=`textScrollList -q -si $text`;
+    catch(` select $items`);
 }
 global proc J_modelClear_danmian()
 {
-string $currentPanel = `getPanel -withFocus`;   
-string $panelType = `getPanel -to $currentPanel`;
-if ($panelType ==  "modelPanel") {     int $culling = `modelEditor -query -backfaceCulling $currentPanel`;
-      modelEditor -edit -backfaceCulling (1 - $culling) $currentPanel;  } 
-else if ($panelType ==  "scriptedPanel") 
-   {    
-   scriptedPanelRunTimeCmdBackfaceCulling( $currentPanel ); 
-   }
+    string $currentPanel = `getPanel -withFocus`;   
+    string $panelType = `getPanel -to $currentPanel`;
+    if ($panelType ==  "modelPanel") {     int $culling = `modelEditor -query -backfaceCulling $currentPanel`;
+          modelEditor -edit -backfaceCulling (1 - $culling) $currentPanel;  } 
+    else if ($panelType ==  "scriptedPanel") 
+       {    
+       scriptedPanelRunTimeCmdBackfaceCulling( $currentPanel ); 
+       }
 }
 
 global proc J_modelClear_runRNor()
 {
-J_rebuildNormal;J_softEdges();
+    J_rebuildNormal;J_softEdges();
 }
 
 global proc J_modelClear_getFace()//不规则的边
@@ -196,10 +196,90 @@ global proc J_modelClear_getTexture()//查贴图
             //{textScrollList -e -append ($i+" "+$filePath) $ts;};
             {textScrollList -e -append ($i) $ts;$x++;}
         }
-        
             string $title ="无效贴图"+$x;
             frameLayout -e -l $title $fr;
     }
+    
+global proc J_checkSelectModel()//py版本模型检查
+{
+    string $sel[]=`ls -sl`;
+    string $title[]={"检查三边面",
+                    "检查多边面",
+                    "检查非流形边",
+                    "检查薄边面",
+                    "检查两个边共享一个点的同时两个面共享一个点",
+                    "检查不足面积的面",
+                    "检查边界边",
+                    "检查不足长度的边",
+                    "检查点的世界坐标是否为0.0进而判断点未进行冻结变换",
+                    "检查跨越uv象限的面"};
+    string $command[]={"J_uvTools_find_triangle_edge",
+                    "J_uvTools_find_many_edge",
+                    "J_uvTools_find_non_manifold_edges",
+                    "J_uvTools_find_lamina_faces",
+                    "J_uvTools_find_bivalent_faces",
+                    "J_uvTools_find_zero_area_faces",
+                    "J_uvTools_find_mesh_border_edges",
+                    "J_uvTools_find_zero_length_edges",
+                    "J_uvTools_find_unfrozen_vertices",
+                    "J_uvTools_uv_face_cross_quadrant"};
+    string $frameLayouts[];
+    if (`window -ex J_checkSelectModelWin`)
+        deleteUI -window J_checkSelectModelWin;
+    window -title "节点信息" -wh 370 700 J_checkSelectModelWin;
+        scrollLayout  J_checkSelectModelScrollLayout;            
+            formLayout J_checkSelectModelFormLayout;
+            for ($i=0;$i<size($title);$i++)
+            {
+                $frameLayouts[$i]=`frameLayout -cll 1 -cl 1  -label $title[$i]`;
+                string $ts=`textScrollList -nr 10 -ams 1 `;
+                textScrollList -e -sc ("J_modelClear_selObj "+$ts) $ts;
+                for ($item in $sel)
+                {
+                    string $res[]=`python("JpyModules.model.J_uvTools."+$command[$i]+"('"+$item+"')")`;
+                    for($itema in $res)
+                    {
+                        textScrollList -e -append $itema $ts;
+                    }
+
+                }
+                int $itemsCount=`textScrollList -q -numberOfItems $ts`;
+                if ($itemsCount>0)
+                    {
+                        string $titleT =$title[$i]+":"+$itemsCount;
+                        frameLayout -e -cl 0  -l $titleT $frameLayouts[$i];
+                    }
+                
+                setParent ..;              
+                if ($i==0)
+                    {
+                    formLayout -e 
+                        -ap $frameLayouts[$i] left 0 1
+                        -ap $frameLayouts[$i] right 0 99
+                        -af $frameLayouts[$i] top 0
+                    J_checkSelectModelFormLayout;
+                    }
+                    else{
+                    formLayout -e 
+                        -ap $frameLayouts[$i] left 0 1
+                        -ap $frameLayouts[$i] right 0 99
+                        -ac $frameLayouts[$i] top  1 $frameLayouts[$i-1]
+                    J_checkSelectModelFormLayout;
+                    }
+            }
+            setParent ..;
+        setParent ..;
+  
+    
+    
+//////
+    showWindow J_checkSelectModelWin;
+}
+
+global proc J_modelSortAndCombin()
+{
+    python("JpyModules.compute.J_sortMeshs()");
+}
 global proc J_modelClear_getPath()//设置路径
 {
     string $path=`textField -q -text pathText`;
