@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json,re
-import _winreg,socket
+import winreg,socket
 class J_ConnectWorker:
     def test(self):
         ip_port=("192.168.54.163", 6666)
@@ -34,8 +34,7 @@ class J_ConnectWorker:
         client.send("get_job_list")
         temp = (client.recv(4096)).decode('utf-8').encode('gbk')
         while (temp != "" and temp!="list_ended"):
-            print temp
-            client.send('job_recived');
+            client.send('job_recived')
             temp = (client.recv(4096)).decode('utf-8').encode('gbk')
         client.shutdown(socket.SHUT_RDWR)
         client.close()
@@ -43,8 +42,8 @@ class J_ConnectWorker:
         keys=['job_Id','job_name','job_softWare','job_softWareVersion','job_projectPath','job_workFile','job_scriptFile','job_state','job_args']
         #检查传入数据
         for key in keys:
-            if not job_info.has_key(key):
-                print 'information error'
+            if  key not in job_info:
+                print('information error')
                 return
 
         # 两次交互  第一次 发送任务类型 接收响应  第二次 发送任务内容 接收响应
@@ -53,12 +52,9 @@ class J_ConnectWorker:
 
         client.send(job_type)
         temp = (client.recv(4096)).decode('utf-8').encode('gbk')
-        print "----------"
-        print temp
-        print "----------"
         client.send(json.dumps(job_info))
         res= (client.recv(4096)).decode('utf-8').encode('gbk')
-        print res
+        print(res)
         client.shutdown(socket.SHUT_RDWR)
         client.close()
 

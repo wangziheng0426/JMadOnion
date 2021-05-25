@@ -25,11 +25,15 @@ if (`window -ex J_modelDistanceCheckWin`)
 
         floatSliderGrp -label "最小间距" -field true
             -minValue 0 -maxValue 2
-            -fieldMinValue 0 -fieldMaxValue 180
+            -fieldMinValue 0 -fieldMaxValue 1
+            -s 0.001
+            -v 0
             -value 0 objMinDis;
         floatSliderGrp -label "最大间距" -field true
             -minValue 0.001 -maxValue 5
-            -fieldMinValue 0.001 -fieldMaxValue 1000
+            -fieldMinValue 0.001 -fieldMaxValue 10
+            -s 0.001
+            -v 0.1
             -value 1 objMaxDis;
 
         button -l "读取模型" -c  "addModelsFromSelectC" buttonRead ;
