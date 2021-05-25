@@ -2,15 +2,14 @@
 
 import J_VideoConverterUI,J_VideoConverterCutUI
 import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json,re
-import _winreg
+import winreg
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
+class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     settingFilePath=''
     ffmpegPath='c:/ffmpeg.exe'
     model = QtGui.QStandardItemModel()
@@ -25,9 +24,9 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         # 配置表格属性
 
         # 读取设置文件目录
-        key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                               r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
-        self.settingFilePath = _winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/videoConverterSetting.ini'
+        self.settingFilePath = winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/videoConverterSetting.ini'
         self.listViewInit()
         if not os.path.exists(self.ffmpegPath):
             self.ffmpegPath = os.getcwd() + '/ffmpeg.exe'
@@ -37,7 +36,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.tableView_fileList.setModel(self.model)
         if os.path.exists(self.settingFilePath):
             file = open(self.settingFilePath, 'r')
-            self.lineEdit_inputField.setText(file.readline().decode('utf-8').replace('\n',''))
+            self.lineEdit_inputField.setText(file.readline().replace('\n',''))
             file.close()
             self.listAllVideoFiles()
 
@@ -49,25 +48,26 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     #子窗口功能
     def OpenCutSettingDialog(self,modelIndex):
         self.wChild=J_VideoConverterCutUI.Ui_setTime_win()
-        self.win=QtGui.QDialog(self)
+        self.win=QtWidgets.QDialog(self)
         self.wChild.setupUi(self.win)
-        st=str(self.model.item(modelIndex.row(),1).text()).decode('utf-8')
+        st=str(self.model.item(modelIndex.row(),1).text())
         #读名字
         self.wChild.label_movName.setText(self.model.item(modelIndex.row(),0).text())
         self.wChild.label_movNameP.setText(self.model.item(modelIndex.row(), 6).text())
         #读时间
-        self.wChild.lineEdit_st1.setText(unicode(self.convertStrToTime(st)[0]))
-        self.wChild.lineEdit_st2.setText(unicode(self.convertStrToTime(st)[1]))
-        self.wChild.lineEdit_st3.setText(unicode(self.convertStrToTime(st)[2]))
 
-        et = str(self.model.item(modelIndex.row(), 2).text()).decode('utf-8')
-        self.wChild.lineEdit_et1.setText(unicode(self.convertStrToTime(et)[0]))
-        self.wChild.lineEdit_et2.setText(unicode(self.convertStrToTime(et)[1]))
-        self.wChild.lineEdit_et3.setText(unicode(self.convertStrToTime(et)[2]))
+        self.wChild.lineEdit_st1.setText(str(self.convertStrToTime(st)[0]))
+        self.wChild.lineEdit_st2.setText(str(self.convertStrToTime(st)[1]))
+        self.wChild.lineEdit_st3.setText(str(self.convertStrToTime(st)[2]))
+
+        et = str(self.model.item(modelIndex.row(), 2).text())
+        self.wChild.lineEdit_et1.setText(str(self.convertStrToTime(et)[0]))
+        self.wChild.lineEdit_et2.setText(str(self.convertStrToTime(et)[1]))
+        self.wChild.lineEdit_et3.setText(str(self.convertStrToTime(et)[2]))
         #读crf
-        self.wChild.lineEdit_crf.setText(str(self.model.item(modelIndex.row(),5).text()).decode('utf-8'))
+        self.wChild.lineEdit_crf.setText(str(self.model.item(modelIndex.row(),5).text()))
         #读尺寸
-        ss= str(self.model.item(modelIndex.row(), 3).text()).decode('utf-8')
+        ss= str(self.model.item(modelIndex.row(), 3).text())
         id=0
         if self.wChild.comboBox_resolution.findText(ss)>-1:id=self.wChild.comboBox_resolution.findText(ss)
         self.wChild.comboBox_resolution.setCurrentIndex(id)
@@ -78,7 +78,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             functools.partial(self.saveSettingToTable, modelIndex,True))
         self.wChild.pushButton_delete.clicked.connect(
             functools.partial(self.deleteLine, modelIndex))
-        self.win.exec_()
+        self.win.exec()
         #创建列表
     def createNewJobToList(self,modelIndex):
         self.saveSettingToTable(modelIndex, False)
@@ -124,14 +124,14 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             self.OpenCutSettingDialog(self.model.item(row,0).index())
     #主窗口功能
     def getDirectory(self):
-        temp = QtGui.QFileDialog()
-        temp.setDirectory(str(self.lineEdit_inputField.displayText()).decode('utf-8'))
-        filePath = str(temp.getExistingDirectory(self).replace('\\', '/')).decode('utf-8')
+        temp = QtWidgets.QFileDialog()
+        temp.setDirectory(str(self.lineEdit_inputField.displayText()))
+        filePath = str(temp.getExistingDirectory(self).replace('\\', '/'))
         self.lineEdit_inputField.setText(filePath)
         self.listAllVideoFiles()
 
     def listAllVideoFiles(self):
-        filePath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
+        filePath = str(self.lineEdit_inputField.displayText())
         rowCount=0
         self.model.clear()
         self.model.setHorizontalHeaderLabels(
@@ -187,25 +187,26 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.tableView_fileList.setColumnWidth(7, 360)
 
     def saveListToJfile(self):
-        writeFileAll = open((str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/' + 'saveJob.jm'), 'w')
-        inputPath=str(self.lineEdit_inputField.displayText()).decode('utf-8')
+        writeFileAll = open((str(self.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'), 'w')
+        inputPath=str(self.lineEdit_inputField.displayText())
         allFile=[]
         for iRow in range(0,self.model.rowCount()):
             row={}
             for iCol in range(0,8):
-                row[str(self.model.headerData(iCol,1).toString()).decode('utf-8')]=\
-                    str(self.model.item(iRow,iCol).text()).decode('utf-8')
-                if str(self.model.headerData(iCol,1).toString()).decode('utf-8')=='path':
-                    row[str(self.model.headerData(iCol, 1).toString()).decode('utf-8')] =\
-                        str(self.model.item(iRow, iCol).text()).decode('utf-8').replace(inputPath,'')
+                rrrrr=self.model.headerData(iCol,QtCore.Qt.Horizontal)
+                row[self.model.headerData(iCol,QtCore.Qt.Horizontal)]=\
+                    str(self.model.item(iRow,iCol).text())
+                if self.model.headerData(iCol,QtCore.Qt.Horizontal)=='path':
+                    row[str(self.model.headerData(iCol, QtCore.Qt.Horizontal))] =\
+                        str(self.model.item(iRow, iCol).text()).replace(inputPath,'')
             allFile.append(row)
         writeFileAll.write(json.dumps(allFile))
         writeFileAll.close()
 
     def loadListFromJfile(self):
-        if not os.path.exists(str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/' + 'saveJob.jm'):
+        if not os.path.exists(str(self.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'):
             return
-        readFileAll = open((str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/' + 'saveJob.jm'), 'r')
+        readFileAll = open((str(self.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'), 'r')
         data= json.load(readFileAll)
         readFileAll.close()
         self.model.clear()
@@ -221,7 +222,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 
                 mItem0.setText(item0[item1])
                 if item1=='path':
-                    mItem0.setText(str(self.lineEdit_inputField.displayText()).decode('utf-8')  + str(item0[item1]))
+                    mItem0.setText(str(self.lineEdit_inputField.displayText())  + str(item0[item1]))
                 self.model.setItem(rowCount, colCount, mItem0)
                 colCount=colCount+1
             rowCount=rowCount+1
@@ -234,7 +235,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         self.tableView_fileList.setColumnWidth(6, 40)
         self.tableView_fileList.setColumnWidth(7, 360)
     def connectVideo(self):
-        inPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
+        inPath = str(self.lineEdit_inputField.displayText())
         allFile = ''
         writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w')
         fileDic = self.findSimilarFileInList()
@@ -250,8 +251,8 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     writeCombinFile.write(videoToCombin)
                     writeCombinFile.close()
                     allFile +=(self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n").encode('gbk')
-                    print allFile
-                    print type(allFile)
+                    print (allFile)
+                    print (type(allFile))
         writeFileAll.write(allFile)
         writeFileAll.close()
         return allFile
@@ -262,7 +263,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         res={}
 
         for  item1 in os.listdir(inPath):
-            print item1
+            print (item1)
             if os.path.isfile(inPath+'/'+item1):
                 if re.match(r'\S*_[0-9]*',item1) is not None:
                     if not res.has_key('_'.join(item1.split('_')[0:-1])):
@@ -282,14 +283,14 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 ################################################批量改名功能
     def J_renameFileWithStr(self,jKey,jNewKey,jpPath):
         if len(jKey)==0:
-            temp=str(self.lineEdit_oriName.displayText()).decode('utf-8')
+            temp=str(self.lineEdit_oriName.displayText())
             jKey=[]
             for i in temp.split(','):
                 jKey.append(i)
         if jNewKey=='':
-            jNewKey = str(self.lineEdit_desName.displayText()).decode('utf-8')
+            jNewKey = str(self.lineEdit_desName.displayText())
         if jpPath=='':
-            jpPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
+            jpPath = str(self.lineEdit_inputField.displayText())
         if not os.path.exists(jpPath):
             return
         #print jKey,jNewKey,jpPath
@@ -303,9 +304,9 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 if item != newName:
                     try:
                         os.rename(jpPath + '/' + item, jpPath + '/' + newName)
-                        print  (jpPath + '/' + item+"----"+jpPath + '/' + newName)
+                        print ( (jpPath + '/' + item+"----"+jpPath + '/' + newName))
                     except:
-                        print item
+                        print (item)
             elif (os.path.isdir(jpPath + '/' + item)):
                 if (len(os.listdir(jpPath + '/' + item)) > 0):
                     self.J_renameFileWithStr(jKey, jNewKey, jpPath + '/' + item)
@@ -318,15 +319,15 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                         os.rename(jpPath + '/' + item, jpPath + '/' + newName)
                         print  (item + "-->" + newName)
                     except:
-                        print item
+                        print (item)
         self.listAllVideoFiles()
     def J_renameFileNameFromList(self):
-        inPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
-        jKey=str(self.lineEdit_oriName.displayText()).decode('utf-8').split(',')
-        jNewKey = str(self.lineEdit_desName.displayText()).decode('utf-8')
+        inPath = str(self.lineEdit_inputField.displayText())
+        jKey=str(self.lineEdit_oriName.displayText()).split(',')
+        jNewKey = str(self.lineEdit_desName.displayText())
         for iRow in range(0, self.model.rowCount()):
-            fileName=str(self.model.item(iRow, 0).text()).decode('utf-8')
-            jpPath=str(self.model.item(iRow, 7).text()).replace(fileName,'').decode('utf-8')
+            fileName=str(self.model.item(iRow, 0).text())
+            jpPath=str(self.model.item(iRow, 7).text()).replace(fileName,'')
             newFileName = fileName
             for itemKey in jKey:
                 if fileName.find(itemKey) > -1 and not fileName == itemKey:
@@ -341,7 +342,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     ######################################################################################
     def J_renameFileWithParFolder(self,jpPath):
         if jpPath=='':
-            jpPath = str(self.lineEdit_inputField.displayText()).decode('utf-8')
+            jpPath = str(self.lineEdit_inputField.displayText())
         jpPath = jpPath.replace('\\', '/')
         allch = os.listdir(jpPath)
         count = 0
@@ -358,7 +359,7 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     os.rename(jpPath + '/' + item, jpPath + '/' + newName)
                     print  (item + "-->" + newName)
                 except:
-                    print item
+                    print (item)
             elif (os.path.isdir(jpPath + '/' + item)):
                 if (len(os.listdir(jpPath + '/' + item)) > 0):
                     self.J_renameFileWithParFolder(jpPath + '/' + item)
@@ -371,8 +372,8 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 
         combinId=[0,0]
         for i in range(0,self.tableView_fileList.model().rowCount()):
-            startTimeStr=str(self.model.item(i,1).text()).decode('utf-8')
-            endTimeStr=str(self.model.item(i,2).text()).decode('utf-8')
+            startTimeStr=str(self.model.item(i,1).text())
+            endTimeStr=str(self.model.item(i,2).text())
             #判断如果不是时间就用帧数
             startTime=self.convertStrToTime(startTimeStr)
             startSec=startTime[0]*3600+startTime[1]*60+startTime[2]
@@ -428,9 +429,9 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         if self.checkBox_shutdown.checkState()==2:
             strtowrite+='shutdown -f -s -t 60 \n  -t 0:0:0  '
 
-        if os.path.exists((str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/runAll.bat')):
-            os.remove((str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/runAll.bat'))
-        writeFileAll = open((str(self.lineEdit_inputField.displayText()).decode('utf-8') + '/runAll.bat'), 'w' )
+        if os.path.exists((str(self.lineEdit_inputField.displayText()) + '/runAll.bat')):
+            os.remove((str(self.lineEdit_inputField.displayText()) + '/runAll.bat'))
+        writeFileAll = open((str(self.lineEdit_inputField.displayText()) + '/runAll.bat'), 'w' )
         writeFileAll.write(strtowrite.encode('gbk'))
     def convertStrToTime(self,strs):
         strlist=strs.split(':')
@@ -468,9 +469,9 @@ class J_VideoConverter(QtGui.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     def closeEvent(self, *args, **kwargs):
         self.saveSettings()
 def main():
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     J_Window = J_VideoConverter()
-    J_Window.setAcceptDrops(True)
+    #J_Window.setAcceptDrops(True)
     J_Window.show()
     sys.exit(app.exec_())
 
