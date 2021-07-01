@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-
+import logging
+import numpy
 import J_VideoConverterUI,J_VideoConverterCutUI
 import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json,re
 import winreg
