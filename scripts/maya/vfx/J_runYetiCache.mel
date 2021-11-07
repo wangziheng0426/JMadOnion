@@ -26,7 +26,7 @@ if (`window -ex runYetiCacheWin`)
         frameLayout -cll 1 -cl 0 -h ($count*20) -l "yeti批量缓存"  myColum;
         formLayout  -numberOfDivisions 100  yetiCacheLayout;
         textScrollList -width 300  -h 300 -allowMultiSelection 1 yetiList;
-        radioButtonGrp -numberOfRadioButtons 2 -select 1
+        radioButtonGrp -numberOfRadioButtons 2 -select 2
                 -label "yeti版本" -labelArray2 "2.1.6之前版本"  "2.1.6及之后" rbg;
 
         separator  -w $winWidth -bgc .5 .5 .5 -st "in"  sepx1 ;
@@ -153,36 +153,7 @@ global proc J_runYetiCacheInit()
 //输出列表中所选yeti节点缓存
 global proc runYetiCacheBtn()
 {
-    string $seletedYetiNode[]=`textScrollList -q -si yetiList`;
-    string $yetiCachePath=`textField  -q -text  pathText`;
-    string $yetiSimpale=`textField  -q -text  sampleInputTextField`;
-    int $yetiRunSimpale=$yetiSimpale;
-    $yetiCachePath=substituteAllString($yetiCachePath, "\\", "/");
-    
-    int $optionVersion=`radioButtonGrp -q -select  rbg`;
-    int $startFrame=`textField  -q -tx startFrameInputTextField`;
-    int $endFrame=`textField  -q -tx endFrameInputTextField`;
-    //为每个yeti节点建立子文件夹
-    python( "import sys,os,shutil" );
-    python("if not os.path.exists('"+$yetiCachePath+"'):os.makedirs('"+$yetiCachePath+"')");
-    for ($item in $seletedYetiNode)
-    {
-        python("if not os.path.exists('"+$yetiCachePath+"/"+$item+"'):os.makedirs('"+$yetiCachePath+"/"+$item+"')");
-    }
-    //为每个yeti节点建立子文件夹
-    if(size($seletedYetiNode)&&$optionVersion==1)
-    {
-        for($yetiNode in $seletedYetiNode)
-        {
-        string $yetiFileName=substituteAllString($yetiNode, ":", "_");
-        catch(runYetiCache($yetiNode,$yetiCachePath,$yetiFileName,$startFrame,$endFrame,$yetiRunSimpale));
-        }
-    }
-    else if(size($seletedYetiNode)&&$optionVersion==2)
-    {
-        runYetiCachePlugs($seletedYetiNode,$yetiCachePath,"",$startFrame,$endFrame,$yetiRunSimpale);
-    }
-    J_runYetiCacheSaveLog();
+    python("JpyModules.vfx.J_yetiPlug.J_yetiSaveCache()");
 }
 
 
@@ -191,52 +162,11 @@ global proc runYetiCacheAllBtn()
     string $allYetiNode[]=`textScrollList -q -ai yetiList`;
     for ($i in  $allYetiNode)
     {textScrollList -e -si $i yetiList;}
-    runYetiCacheBtn();
-}
-
-//输出yeti缓存方法（节点名，缓存路径，缓存名，起始时间，结束时间，采样率）
-global proc runYetiCache(string $yetiMayaNode,string $yetiCachePath,string $yetiFileName,int $yetiCacheStartTime,int $yetiCacheEndTime,int $yetiSamples)
-{
-    $yetiCachePath=$yetiCachePath;//+"/"+substituteAllString($yetiMayaNode, ":", "_") ;
-    if(!`file -q -ex $yetiCachePath`)
-    {sysFile -makeDir $yetiCachePath;}
-    select $yetiMayaNode;
-    setAttr ($yetiMayaNode+".fileMode") 0;
-    string $temp=$yetiCachePath+"/"+$yetiMayaNode+"/"+$yetiFileName+"_%04d.fur";
-    pgYetiCommand -writeCache $temp -range $yetiCacheStartTime $yetiCacheEndTime -samples $yetiSamples   ;
-    setAttr -type "string" ($yetiMayaNode+".cacheFileName") $temp;
-    setAttr ($yetiMayaNode+".fileMode") 1;
+    python("JpyModules.vfx.J_yetiPlug.J_yetiSaveCache()");
 }
 
 
-global proc runYetiCachePlugs(string $yetiMayaNode[],string $yetiCachePath,string $yetiFileName,int $yetiCacheStartTime,int $yetiCacheEndTime,int $yetiSamples)
-{
-    if(!`file -q -ex $yetiCachePath`)
-        {sysFile -makeDir $yetiCachePath;}
-    for($i in $yetiMayaNode)
-    {
-        setAttr ($i+".fileMode") 0;
-    }
-    ///////////////////////////////
-    select $yetiMayaNode;
-    string $yetiCacheName=$yetiCachePath+"/<NAME>/"+substituteAllString($yetiFileName, ":", "_")+"<NAME>_%04d.fur";
-    
-    pgYetiCommand -writeCache $yetiCacheName -range $yetiCacheStartTime $yetiCacheEndTime -samples $yetiSamples   ;
-
-    for($i in $yetiMayaNode)
-    {
-        string $finalCacheName=$yetiCachePath+"/"+$i+"/"+substituteAllString($i, ":", "_")+"_%04d.fur";
-        setAttr -type "string" ($i+".cacheFileName") $finalCacheName;
-        setAttr ($i+".fileMode") 1;
-    }
-}
-global proc J_runYetiCacheSaveLog()
-{
-    string $allYeti[]=`ls -type pgYetiMaya`;
-    string $logPath=`textField  -q -text  pathText`+"/yetiLog.txt";
-    python("JpyModules.vfx.J_yetiPlug.J_yetiCache(\""+$logPath+"\",False)");
-}
 global proc J_runYetiCacheImportCache()
 {
-    python("JpyModules.vfx.J_yetiPlug.J_yetiCache(\"\",True)");
+    python("JpyModules.vfx.J_yetiPlug.J_yetiLoadCache()");
 }

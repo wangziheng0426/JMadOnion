@@ -14,7 +14,7 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     settingFilePath=''
     ffmpegPath='c:/ffmpeg.exe'
     model = QtGui.QStandardItemModel()
-    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','.m2ts','.flv','.asf']
+    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','.m2ts','.flv','.asf','.ts']
     def __init__(self):
         super(J_VideoConverter, self).__init__()
         self.setupUi(self)
@@ -141,7 +141,7 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             for item1 in item[2]:
                 videofilePath = '\\'.join((item[0], item1)).replace('\\', '/')
                 for fileType in self.fileTypes:
-                    if videofilePath.endswith(fileType):
+                    if videofilePath.lower().endswith(fileType):
 
                         mItem0 = QtGui.QStandardItem()
                         mItem0.setEditable(False)
@@ -165,7 +165,7 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                         self.model.setItem(rowCount, 4, mItem3)
 
                         mItem3 = QtGui.QStandardItem()
-                        mItem3.setText('18')
+                        mItem3.setText('22')
                         self.model.setItem(rowCount, 5, mItem3)
 
                         mItem4 = QtGui.QStandardItem()
@@ -247,11 +247,11 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     combinFileName = fileDic[key][0]  + key + '_combinJ.mp4'
                     videoToCombin = ''
                     for i in range(1,len(fileDic[key])):
-                        videoToCombin += ('file \'' + fileDic[key][i] + '\'\n').encode('utf-8')
-                    writeCombinFile = open(combinFileListName.encode('gbk'), 'w')
+                        videoToCombin += ('file \'' + fileDic[key][i] + '\'\n')
+                    writeCombinFile = open(combinFileListName, 'w')
                     writeCombinFile.write(videoToCombin)
                     writeCombinFile.close()
-                    allFile +=(self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n").encode('gbk')
+                    allFile +=(self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n")
                     print (allFile)
                     print (type(allFile))
         writeFileAll.write(allFile)
@@ -277,7 +277,7 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             fileName=str(self.model.item(iRow, 0).text())
             filePath = str(self.model.item(iRow, 7).text()).replace(fileName,'')
             if re.match(r'\S*_[0-9]*', fileName) is not None:
-                if not res.has_key('_'.join(fileName.split('_')[0:-1])):
+                if '_'.join(fileName.split('_')[0:-1]) not in res:
                     res['_'.join(fileName.split('_')[0:-1])] = [filePath]
                 res['_'.join(fileName.split('_')[0:-1])].append(fileName)
         return res
@@ -418,10 +418,12 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     videoToCombin += ('file \'' +
                                       '.'.join(str(self.model.item(j,0).text()).split('.')[0:-1]) +
                                       str(self.model.item(j, 6).text())+'.mp4'+
-                                      '\'\n').encode('utf-8')
-                writeCombinFile = open(combinFileListName.encode('gbk'), 'w')
+                                      '\'\n')
+                    videoToCombin+='\n'
+                writeCombinFile = open(combinFileListName, 'w')
                 writeCombinFile.write(videoToCombin)
                 writeCombinFile.close()
+
                 strtowrite += (self.ffmpegPath+' -safe 0 -f concat -i \"' +
                                combinFileListName + '\" -c copy \"' +
                                combinFileName + '\"\n' + "\n")
@@ -433,7 +435,7 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         if os.path.exists((str(self.lineEdit_inputField.displayText()) + '/runAll.bat')):
             os.remove((str(self.lineEdit_inputField.displayText()) + '/runAll.bat'))
         writeFileAll = open((str(self.lineEdit_inputField.displayText()) + '/runAll.bat'), 'w' )
-        writeFileAll.write(strtowrite.encode('gbk'))
+        writeFileAll.write(strtowrite)
     def convertStrToTime(self,strs):
         strlist=strs.split(':')
         res=[0,0,0]
@@ -465,11 +467,12 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
         #保存选择的目录
         strToSave = str(self.lineEdit_inputField.displayText()) + '\n'
         #strToSave = strToSave+ str(self.lineEdit_outPutField.displayText()) + '\n'
-        file.writelines(str(strToSave).encode('utf-8'), )
+        file.writelines(str(strToSave), )
         file.close()
     def closeEvent(self, *args, **kwargs):
         self.saveSettings()
 def main():
+    PyQt5.__version__()
     app = QtWidgets.QApplication(sys.argv)
     J_Window = J_VideoConverter()
     #J_Window.setAcceptDrops(True)
@@ -479,9 +482,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # app = QtGui.QApplication(sys.argv)
-    # MainWindow =QtGui.QMainWindow()
-    # ui = outPutUI.Ui_MainWindow()
-    # ui.setupUi(MainWindow)
-    # MainWindow.show()
-    # sys.exit(app.exec_())

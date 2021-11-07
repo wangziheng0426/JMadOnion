@@ -2,7 +2,7 @@
 import os,re
 import subprocess
 
-J_path=r'D:\temp\ys0626'
+J_path=r'D:\cc'
 def J_connectVideo(inPath):
     inPath=inPath.decode('utf-8').replace('\\','/')
     allFile=''
