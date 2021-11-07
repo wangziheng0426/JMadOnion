@@ -5,7 +5,7 @@ import json
 import codecs
 import shutil
 import getpass
-import _winreg
+import winreg
 import os,functools
 import J_SoftWareManagerUi
 import subprocess
@@ -14,11 +14,10 @@ import binascii, re, math
 import threading
 import sys,math
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
+from PyQt5 import QtCore, QtGui, QtWidgets
+class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
     settingFilePath=''
     modFolderPath=''
     plugInPath=''
@@ -31,20 +30,20 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
         self.getSoftWares()
     def mainUiInit(self):
         ###配置文件
-        key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                               r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
-        self.settingFilePath = _winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/J_softManagerSetting.ini'
-        self.modFolderPath=_winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/mayaMod/'
+        self.settingFilePath = winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/J_softManagerSetting.ini'
+        self.modFolderPath=winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/mayaMod/'
         if os.path.exists(self.modFolderPath):
             shutil.rmtree(self.modFolderPath)
         os.mkdir(self.modFolderPath)
         if os.path.exists(self.settingFilePath):
             fileTemp = open(self.settingFilePath, 'r')
-            line=fileTemp.readline().decode('utf-8').replace('\n','')
+            line=fileTemp.readline().replace('\n','')
             while line !='':
                 if line.find('pluginpath@')>-1:
                     self.plugInPath = line.replace('pluginpath@','')
-                line = fileTemp.readline().decode('utf-8').replace('\n', '')
+                line = fileTemp.readline().replace('\n', '')
             fileTemp.close()
         model =QtGui.QFileSystemModel()
         model.setRootPath('/')
@@ -52,13 +51,13 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
     ######注册表读软件
     def getSoftWares(self):
         #try:
-        keyX = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'Software\\Autodesk\\Maya')
-        for item in range(0, _winreg.QueryInfoKey(keyX)[0]):
-            version=_winreg.EnumKey(keyX, item)
+        keyX = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'Software\\Autodesk\\Maya')
+        for item in range(0, winreg.QueryInfoKey(keyX)[0]):
+            version=winreg.EnumKey(keyX, item)
             temp= ('Software\\Autodesk\\Maya\\'+version+'\\Setup\\InstallPath\\')
             try:
-                keyX1 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, temp)
-                path= _winreg.QueryValueEx(keyX1,'MAYA_INSTALL_LOCATION')[0]
+                keyX1 = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, temp)
+                path= winreg.QueryValueEx(keyX1,'MAYA_INSTALL_LOCATION')[0]
 
                 radioButton = QtGui.QRadioButton(self.groupBox)
                 radioButton.setObjectName('maya'+version)
@@ -136,13 +135,13 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
         #batFile.write(path.encode('gbk'))
         #batFile.close()
         path=path.encode('gbk')
-        print type(path)
+
         subprocess.Popen(path)
 
     #######设置插件路径
     def J_setPluginPath(self):
         temp = QtGui.QFileDialog()
-        self.plugInPath = str(temp.getExistingDirectory(self).replace('\\', '/')).decode('utf-8')
+        self.plugInPath = str(temp.getExistingDirectory(self).replace('\\', '/'))
     #####读取mod 并修改路径
     def J_changeModFilePath(self,selQTreeWidgetItem,):
         strToSave=''
@@ -185,7 +184,7 @@ class J_SoftWareManager(QtGui.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
     #####保存设置
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = J_SoftWareManager()
     window.show()
     sys.exit(app.exec_())
