@@ -1,7 +1,7 @@
 *.pyc
 *.exe
 *.jset
-.idea/*.*
+/.idea/
 /J_Living/J_LivingWorker/.vs/
 /J_Living/J_LivingWorker/bin/
 /J_Living/J_LivingWorker/obj/
