@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
-import logging
+
 import numpy
 import J_VideoConverterUI,J_VideoConverterCutUI
-import sys, os, subprocess, shutil, time, re,xlrd,xlwt,urllib,functools,json,re
+import sys, os,functools,json,re
 import winreg
 
 #reload(sys)
@@ -472,7 +472,6 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
     def closeEvent(self, *args, **kwargs):
         self.saveSettings()
 def main():
-    PyQt5.__version__()
     app = QtWidgets.QApplication(sys.argv)
     J_Window = J_VideoConverter()
     #J_Window.setAcceptDrops(True)

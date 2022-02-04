@@ -75,7 +75,7 @@ def J_exportNcloth_NClothNode(exportPath,exportNodeType):
     allnCloth=cmds.ls(type=exportNodeType)
     if len(allnCloth)>0:
         for item in allnCloth:
-            nClothTempData={'nodeName':'','nodeNameParent':'','attrPresets':'','nculeus':'','inMesh':'','inMeshTr':'','inputAttract':[],'collide':[],'sourceConn':[],'destinationConn':[]}
+            nClothTempData={'nodeName':'','nodeNameParent':'','attrPresets':'','nculeus':'','inMesh':'','inMeshTr':'','inputAttract':[],'collide':[],'sourceConn':[],'destinationConn':[],'nComponents':[],'dynamicConstraint':[]}
             nClothTempData['nodeName']=item
             if cmds.listRelatives(item,parent=True,fullPath=True) is not None:
                 nClothTempData['nodeNameParent']=cmds.listRelatives(item,parent=True,fullPath=True)[0]

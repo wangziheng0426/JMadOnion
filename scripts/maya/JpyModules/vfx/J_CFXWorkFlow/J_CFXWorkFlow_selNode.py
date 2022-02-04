@@ -17,15 +17,8 @@ def J_CFXWorkFlow_selNode(nodeType):
 
 def J_CFXWorkFlow_selHair():
     cmds.select(clear=True)
-    selHairNode=cmds.ls(type='hairSystem')
-    if selHairNode.count>0:
-        for item in selHairNode:
-            hairPfxNode=cmds.listConnections(item,type='pfxHair')
-            cmds.select(hairPfxNode,tgl=True)
+    cmds.select(cmds.ls(cmds.listHistory(cmds.ls(type='hairSystem'),f=True),type='pfxHair',v=True))
 def J_CFXWorkFlow_selCloth():
     cmds.select(clear=True)
-    selclothNode=cmds.ls(type='nCloth')
-    if selclothNode>0:
-        for item in selclothNode:
-            clothMesh=cmds.listConnections(item,type='mesh',source=False)
-            cmds.select(clothMesh,tgl=True)
+    cmds.select(cmds.ls(cmds.listHistory(cmds.ls(type='nCloth'),f=True),type='mesh',v=True))
+            

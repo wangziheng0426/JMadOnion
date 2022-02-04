@@ -8,6 +8,7 @@
 ##############################################
 import maya.cmds as cmds
 import maya.mel as mel
+import os,sys
 def J_exportAbc(model=0):
     selection=cmds.ls(sl=True,long=True)
     if len(selection)<1:
@@ -17,7 +18,8 @@ def J_exportAbc(model=0):
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
     j_abcCachePath=filePath+cacheFileName+'_cache/'
-    
+    if not os.path.exists(j_abcCachePath):
+        os.makedirs(j_abcCachePath)
     if model==0:   
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -dataFormat hdf '    
         for item in selection:
@@ -27,10 +29,9 @@ def J_exportAbc(model=0):
     
     if model==1:
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -dataFormat hdf '
-        for item in selection:
-            itemName=item.split('|')[-1].split(':')[-1]
-            exportStringa=exportString+' -root '+itemName
-
+        for item in selection:            
+            exportStringa=exportString+' -root '+item
+            itemName=item.split('|')[-1].replace(':','@')
             exportStringa+=' -file '+j_abcCachePath+cacheFileName+'_'+itemName+'.abc"'
             mel.eval(exportStringa)
     

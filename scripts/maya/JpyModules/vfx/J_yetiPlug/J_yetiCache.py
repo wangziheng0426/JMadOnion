@@ -67,7 +67,10 @@ def J_yetiSaveCache():
         cmds.select(yetiList)
         cacheFilePathName=yetiCachePath+'<NAME>/'+'<NAME>_%04d.fur'
         strToEval='pgYetiCommand -writeCache "'+cacheFilePathName+'" -range '+startFrame+' '+ endFrame+'  -samples '+yetiSimpale
-        mel.eval(strToEval)
+        try:
+            mel.eval(strToEval)
+        except:
+            pass
         for item in yetiList:
             cmds.setAttr(item+".cacheFileName",logFile['yetiNodes'][item.replace(':','_')],type='string')
             cmds.setAttr(item+".fileMode",1)

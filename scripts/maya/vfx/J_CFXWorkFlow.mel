@@ -313,6 +313,19 @@ global proc J_simAndPlayBlast()
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_LivingSim('"+$ipPort+"')");
 }
 
+global proc J_changeClothDisplayColor()
+{
+    string $sel[]=`ls -sl -type "nCloth"`;
+    for ($item in $sel)
+    {
+        float $r=rand(0.05,1);
+        float $g=abs(rand(0.05,1)-$r);
+        float $b=abs(rand(0.05,1)-$g);
+        setAttr ($item+".solverDisplay") 5;
+        setAttr ($item+".displayColor") -type double3 $r $g $b ;
+    }
+}
+
 
 
 global proc J_CFXWorkFlow_init()

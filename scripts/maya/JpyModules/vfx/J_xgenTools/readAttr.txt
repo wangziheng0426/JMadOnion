@@ -1,0 +1,23 @@
+import xgenm as xg
+import xgenm.xgGlobal as xgg
+import xgenm.XgExternalAPI as xge
+
+if xgg.Maya:
+
+    #palette is collection, use palettes to get collections first.
+    palettes = xg.palettes()
+    for palette in palettes:
+        print "Collection:" + palette
+
+        #Use descriptions to get description of each collection
+        descriptions = xg.descriptions(palette)
+        for description in descriptions:
+            print " Description:" + description
+            objects = xg.objects(palette, description, True)
+
+            #Get active objects,e.g. SplinePrimtives
+            for object in objects:
+                print " Object:" + object
+                attrs = xg.allAttrs(palette, description, object)
+                for attr in attrs:
+                    print " Attribute:" + attr + ", Value:" + xg.getAttr(attr, palette, description, object)

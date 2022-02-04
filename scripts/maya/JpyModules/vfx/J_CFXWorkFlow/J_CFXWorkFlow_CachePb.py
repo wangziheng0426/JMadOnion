@@ -43,7 +43,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],fileFormat='qt',skipFrame=
             j_PbPath=filePath+cacheFileName+'.mov'
         if fileFormat=='tga' or fileFormat=='jpg':
             j_PbPath=filePath+cacheFileName+'_images/'+cacheFileName
-            j_ffmpegFile=filePath+cacheFileName+'.mp4'
+            j_ffmpegFile=filePath+cacheFileName+'.m4v'
     if (len(cmds.ls(sl=True))>0):
         try:
             mel.eval('deleteCacheFile 2 { "keep", "" } ;')

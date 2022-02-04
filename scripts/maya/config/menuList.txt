@@ -22,7 +22,7 @@
   <MainMenu> 特效工具 vfx </MainMenu>  
   #<SubMenu> 粒子烟火工具 J_easyFire vfx/J_easyFire.mel </SubMenu>  
   <SubMenu> 转换粒子替代 J_particleToJoint vfx/J_particleToJoint.mel </SubMenu>  
-  <SubMenu> 布料工具 J_nClothOutPutPro vfx/J_nClothOutPutPro.mel </SubMenu>  
+  <SubMenu> 毛发工具 J_hairTool vfx/J_hairTool.mel </SubMenu>  
   <SubMenu> yeti替换贴图 J_replactYetiTextureWin vfx/J_replactYetiTextureWin.mel </SubMenu>
   <SubMenu> yeti极速缓存 J_runYetiCache vfx/J_runYetiCache.mel </SubMenu>  
   <SubMenu> 解算流程工具 J_CFXWorkFlow vfx/J_CFXWorkFlow.mel </SubMenu>  
