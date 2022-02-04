@@ -1,0 +1,58 @@
+/////////////////////////////////////////////////////////////
+///\file J_hairTool.mel
+///
+///\brief    毛发流程工具  
+///
+///\author 桔
+///\version 1.0
+///\date  15:23 2018/11/2
+///History:  
+///
+///////////////////////////////////////////////////////////////
+global proc J_hairTool()//主程序
+{
+/////////////////////////////////////////////////////////////生成窗体
+string $checkBoxs[];
+if (`window -ex J_hairTool`)
+    deleteUI -window J_hairTool;
+    window -w 300 -h 360 -title "毛发工具" J_hairTool;
+        int $ButtonW=80;
+        int $ButtonH=30;
+        formLayout  -numberOfDivisions 100  J_hairTool_Main;
+        frameLayout -cll 1 -cl 0 -h 140-l "毛发工具"  J_hairToos_FrameLayout;
+            formLayout  -numberOfDivisions 100  J_hairFormLayout;
+                button -l "骨骼转动力学" -w $ButtonW  -h $ButtonH -c  "J_hairTool_selNode(\"hairSystem\")" J_buHairMark;
+                button -l "曲线转骨骼" -w $ButtonW  -h $ButtonH -c  "J_hairTool_hairOut()" J_buHairOut;
+                button -l "曲线编辑" -w $ButtonW  -h $ButtonH -c  "J_hairTool_hairIn()" J_buHairIn;
+            setParent ..;
+        setParent ..;
+
+    /////////////////////////////////////////////////////////编辑窗体  
+    formLayout -e 
+        -ap J_hairToos_FrameLayout left 0 1
+        -ap J_hairToos_FrameLayout right 0 99
+        -af J_hairToos_FrameLayout top 0
+
+
+    J_hairTool_Main;
+    formLayout -e 
+ 
+        
+        -ap J_buHairMark left 0 1
+        -af J_buHairMark top 0
+        -ap J_buHairMark right 0 100
+
+        -ap J_buHairOut left 0 1
+        -ac J_buHairOut top  1 J_buHairMark
+        -ap J_buHairOut right 0 100
+        
+        -ap J_buHairIn left 0 1
+        -ac J_buHairIn top  1 J_buHairOut
+        -ap J_buHairIn right 0 100
+        
+        J_hairFormLayout;
+showWindow J_hairTool;
+}
+
+//J_hairTool;
+

@@ -84,7 +84,7 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
     ////////////////////////////////////////////////////////////////∂¡»°py√¸¡Ó
     /*
     string $JmodulesfilePath[];
-    $JmodulesfilePath[0]=J_getSysPath()+"/Jpymodules";
+    $JmodulesfilePath[0]=J_getSysPath()+"/JpyModules";
     J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
     for ($JmodulesfilePathItem in $JmodulesfilePath)
     {

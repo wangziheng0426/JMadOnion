@@ -1,0 +1,24 @@
+
+import xgenm.xgGlobal as xgg
+import xgenm as xg
+import os
+if xgg.Maya:
+    path='Z:/laoding/anim/dy_sc005_5015b_ani/render'
+    #palette is collection, use palettes to get collections first.
+    palettes = xg.palettes()
+    for palette in palettes:
+        print "Collection:" + palette
+
+        #Use descriptions to get description of each collection
+        descriptions = xg.descriptions(palette)
+        for description in descriptions:
+            xg.setAttr('renderer','Arnold Renderer',palette,description,'RendermanRenderer')
+            cacheFile=path+'/'+description+'.abc'
+            if os.path.exists(cacheFile):
+                xg.setAttr('useCache','true',palette,description,'SplinePrimitive')
+                xg.setAttr('liveMode','false',palette,description,'SplinePrimitive')
+                xg.setAttr('cacheFileName',cacheFile,palette,description,'SplinePrimitive')
+            de = xgg.DescriptionEditor
+            
+            
+            de.refresh("Full")
