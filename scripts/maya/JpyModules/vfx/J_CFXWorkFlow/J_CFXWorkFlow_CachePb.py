@@ -34,7 +34,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],fileFormat='qt',skipFrame=
         cmds.file(rename=fileName)
         cmds.file(save=True)
         
-    cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
+    cacheFileName=fileName
     j_CachePath=''
     j_PbPath=''    
     if (filePath!=''):
@@ -66,7 +66,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],fileFormat='qt',skipFrame=
         compressFileName=j_PbPath+'.list'
         compressFile=open(compressFileName,'w')
         imageList=''
-        for i in range(int(cmds.playbackOptions(query=True,minTime=True)+skipFrame),int(cmds.playbackOptions(query=True,maxTime=True)+1)):
+        for i in range(int(timeLineStart+skipFrame),int(timeLineEnd+1)):
             imageList+='file '+fileName+'.%04d'%i+'.'+fileFormat+'\n'
         compressFile.write(imageList)
         compressFile.close()

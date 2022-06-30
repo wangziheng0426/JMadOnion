@@ -19,7 +19,7 @@ if (`window -ex J_CFXWorkFlow`)
         int $ButtonW=80;
         int $ButtonH=30;
         formLayout  -numberOfDivisions 100  J_cfxWorkFlowMain;
-        frameLayout -cll 1 -cl 0 -h 140-l "毛发工具"  J_hairFrameLayout;
+        frameLayout -cll 1 -cl 0 -l "毛发工具"  J_hairFrameLayout;
             formLayout  -numberOfDivisions 100  J_hairFormLayout;
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allHairSystemNode\")"  -allowMultiSelection 1 -h 110 J_allHairSystemNode;
                 button -l "选择毛发" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"hairSystem\")" J_buHairMark;
@@ -34,12 +34,13 @@ if (`window -ex J_CFXWorkFlow`)
                 textScrollList  -sc "J_CFXWorkFlow_selectitem(\"J_allnNucleusNode\")"  -allowMultiSelection 1 -h 100 J_allnNucleusNode;
                 button -l "选择布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"nCloth\")" J_buNClothMark;
                 button -l "随机颜色" -w $ButtonW  -h $ButtonH -c  "J_meshRandomColor()" J_buRandomColor;
-                button -l "导出变型布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outInBetweenGeo()" J_buNClothOut;
-                button -l "导出abc布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
-                button -l "导出独立abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
+                button -l "布料转bs" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outInBetweenGeo()" J_buNClothOut;
+                button -l "导出布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
+                button -l "单独导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
+                button -l "整体导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoAll()" J_buNClothOutAbcAll;
                 button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
-                button -l "自动适配abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_abcIn()" J_buNAbcIn;
-                button -l "拷贝点动画" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
+                //button -l "自动适配abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_abcIn()" J_buNAbcIn;
+                //button -l "拷贝点动画" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
             setParent ..;
         setParent ..;
         frameLayout -cll 1 -cl 0 -l "mc缓存拍屏"  J_nCacheFrameLayout;
@@ -115,11 +116,15 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_buNClothOutAbcSep left 0 67
         -ac J_buNClothOutAbcSep top  1 J_buNClothOutAbc
         -ap J_buNClothOutAbcSep right 0 100  
-
+        
+        -ap J_buNClothOutAbcAll left 0 67
+        -ac J_buNClothOutAbcAll top  1 J_buNClothOutAbcSep
+        -ap J_buNClothOutAbcAll right 0 100  
+        
         -ap J_buNClothIn left 0 67
-        -ac J_buNClothIn top  1 J_buNClothOutAbcSep
+        -ac J_buNClothIn top  1 J_buNClothOutAbcAll
         -ap J_buNClothIn right 0 100   
-
+        /*
         -ap J_buNAbcIn left 0 67
         -ac J_buNAbcIn top  1 J_buNClothIn
         -ap J_buNAbcIn right 0 100   
@@ -127,7 +132,7 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_buCreateBlend left 0 67
         -ac J_buCreateBlend top  1 J_buNAbcIn
         -ap J_buCreateBlend right 0 100           
-        
+        */
         J_nClothFormLayout;
     formLayout -e 
         -ap J_skipFrame left 0 0
@@ -165,6 +170,8 @@ showWindow J_CFXWorkFlow;
 J_CFXWorkFlow_init();
 J_CFXWorkFlow_runScriptJob();
 catch(loadPlugin("AbcExport.mll"));
+python("JpyModules.public.J_deleteUnknownNode()");
+python("JpyModules.public.J_kick_dajiangjun()");
 }
 
 //J_CFXWorkFlow;
@@ -193,7 +200,11 @@ global proc J_CFXWorkFlow_outAbcGeo()
 }
 global proc J_CFXWorkFlow_outAbcGeoSep()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_outAbcGeo(\"\",1)");
+    python("JpyModules.public.J_exportAbc(1)");
+}
+global proc J_CFXWorkFlow_outAbcGeoAll()
+{
+    python("JpyModules.public.J_exportAbc()");
 }
 global proc J_CFXWorkFlow_nClothIn()
 {

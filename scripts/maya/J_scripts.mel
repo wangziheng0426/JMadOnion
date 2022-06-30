@@ -99,7 +99,9 @@ global proc J_scripts(string $J_mainPath,string $J_menuLabel)
     ////////////////////////////////////////////////////////////////读取py命令
     */
     menuItem -p $J_menuName -label "命令工具集" -c J_madOnionTools -aob 1 flying0; 
-    
+    //添加插件环境变量
+    string $pluginsPath=J_getSysPath()+"/plugins;";
+    putenv "MAYA_PLUG_IN_PATH" ($pluginsPath +`getenv "MAYA_PLUG_IN_PATH"`);
 }
 //递归找文件夹
 global proc J_getFolders(string $resFolders[],string $inPutPath)

@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////
 ///\file  J_createHairConstraint.mel
-///\brief  创建经典毛发约束
+///\brief  鍒涘缓缁忓吀hair纰版挒
 ///
-///\author 桔
+///\author ??
 ///\version 1.0
 ///\date   16:51 2018/1/16
 ///History:  
@@ -12,20 +12,18 @@
 global proc J_createHairConstraint()
 {
     string $sel[]=`ls -sl`;
-    string $J_hairNode="";
-    if (`objectType $sel[0]`=="transform")
-        {
-            string $floS[]=`listRelatives -c -type "follicle" $sel[0]`;
-            string $hairShape[]=`listConnections -type "hairSystem" $floS[0]`;
-            $J_hairNode=$hairShape[0];
+    string $hisNodes[]=`listHistory $sel`;
+    string $hairNodes[]=`ls -type hairSystem $hisNodes`;
+    string $selChild[]=`listRelatives -c $sel`;
+    string $selFollicle[]=`ls -type "follicle" $selChild`;
+    if (size($selFollicle)<1)
+        {   
+            string $hairHis[]=`listHistory $hairNodes[0]`;
+            string $hairfollicles[]=`ls -type "follicle" $hairHis`;
+            select `listRelatives -p $hairfollicles`;
         }
-    if (`objectType $sel[0]`=="follicle")
-        {
-            string $hairShape[]=`listConnections -type "hairSystem" $sel[0]`;
-            $J_hairNode=$hairShape[0];
-        }
-    print $J_hairNode;
-    J_createHairConstraintR(5,$J_hairNode);
+    if (size($hairNodes)>0)
+        J_createHairConstraintR(5,$hairNodes[0]);
 }
 
 global proc J_createHairConstraintR(int $mode,string $J_name)
@@ -73,6 +71,6 @@ global proc J_createHairConstraintR(int $mode,string $J_name)
 		break;
 	}
     string $parTemp[]=`listRelatives -p $hpin`;
-    string $temps=`rename $parTemp[0] ($J_name+"_HC")`;
+    string $temps=`rename $parTemp[0] ($J_name+"_HC#")`;
     select $temps;
 }

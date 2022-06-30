@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##############################################
-# Author        :уег╖╫ш
+# Author        :О©╫О©╫г╖О©╫О©╫
 # Last modified : 15:18 2021/11/06
 # Filename      : J_exportAbc.py
 # Description   :
@@ -28,7 +28,7 @@ def J_exportAbc(model=0):
         mel.eval(exportString)
     
     if model==1:
-        exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -dataFormat hdf '
+        exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -worldSpace -dataFormat hdf '
         for item in selection:            
             exportStringa=exportString+' -root '+item
             itemName=item.split('|')[-1].replace(':','@')

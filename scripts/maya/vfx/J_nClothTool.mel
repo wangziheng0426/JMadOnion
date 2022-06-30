@@ -106,25 +106,7 @@ global proc J_nClothToolInit()
 //  创建布料 
 global proc J_createNCloth()
 {
-    string $rn_obj[]= `ls -sl`;
-    if (size($rn_obj)<1)
-        return;
-    if (`objectType $rn_obj[0]`!="transform"&&`objectType $rn_obj[0]`!="mesh")
-        {print "选择至少一个模型";return;}
-    string $his_list[];
-    string $get_res[];
-    for($obj_nc in $rn_obj)
-        {
-        select $obj_nc;
-        string $nClothNode[]=`createNCloth 0`;  
-        string $tr[]=`listRelatives -p $nClothNode[0]`;  
-        rename $tr[0] ($obj_nc+"_nClo");
-        $get_res= `listHistory $obj_nc`;
-        $his_list=`listRelatives -p $get_res[1]`;
-        rename  $his_list[0] ($obj_nc+"_cloth");
-        rename  $get_res[0] ($obj_nc+"_outcloth");
-            
-        }
+    python("JpyModules.vfx.J_nClothTool.J_clothUtility.J_createNcloth()");
 }   
 
 
@@ -176,7 +158,7 @@ global proc J_diableCollider()
     {
     string $temp0[]=`createNConstraint disableCollision 0`;
     string $temp1[]=`listRelatives -p $temp0[0]`;
-    string $newName="disColl_"+$temp1[0];
+    string $newName="disColl_"+$temp1[0]+"#";
     rename $temp1[0] $newName;
     } 
 /////////////////////////////////////////   选择元素
@@ -187,7 +169,7 @@ global proc J_pointToSuf()
     {
     string $temp0[]=`createNConstraint pointToSurface 0`;
     string $temp1[]=`listRelatives -p $temp0[0]`;
-    string $newName="pointToS_"+$temp1[0];
+    string $newName="pointToSur_#";
     rename $temp1[0] $newName;
     } 
 /////////////////////////////////////////   元素约束

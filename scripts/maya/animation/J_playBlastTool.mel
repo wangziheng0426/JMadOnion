@@ -1,0 +1,204 @@
+/////////////////////////////////////////////////////////////
+///\file  J_playBlastTool.mel
+///\brief  拍屏工具
+///
+///\author 桔
+///\version 1.0
+///\date   2020-2-4
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///打开主界面窗口
+///\return "success";
+global proc string J_playBlastTool()//拍屏工具
+{
+    string $HUDListName[]={"帧信息","摄像机","焦距","用户","工程","日期","状态","尺寸","文件名"};
+    string $HUDListTitle[]={"frameInfo","cameraName","focalLength","username",
+                        "projectPath","date","status","imageSize","fileName"};
+                       
+    //UI
+    string $J_HUDCheckBoxs[];
+    string $J_HUDCheckTextField[];
+    if (`window -ex J_playBlastWin`)
+        deleteUI -window J_playBlastWin;
+        window -w 300 -h (size($HUDListName)*2+200) -title "拍屏工具" J_playBlastWin;
+        formLayout -nd 100 J_playBlastMainFormLayout ;
+        //hud选项界面
+            frameLayout -cll 1 -cl 0 -l "HUD选项"  J_playBlastHUDFrameLayOut;
+                formLayout  -nd 100  -h (size($HUDListName)*20) J_playBlastHUDFormLayOut;        
+                for($i=0;$i<size($HUDListName);$i++)
+                {
+                    $J_HUDCheckBoxs[$i]=`checkBox -v 1 -label $HUDListName[$i]`;
+                    $J_HUDCheckTextField[$i]=`textField -tx  $HUDListTitle[$i]`;
+                    formLayout -e 
+                        -af $J_HUDCheckBoxs[$i] left 8
+                        -af $J_HUDCheckBoxs[$i] top (20*$i)
+                        -ap $J_HUDCheckBoxs[$i] right 0 24
+                        -ac $J_HUDCheckTextField[$i] left 0 $J_HUDCheckBoxs[$i]
+                        -ap $J_HUDCheckTextField[$i] right 0 98
+                        -af $J_HUDCheckTextField[$i] top (20*$i) 
+                    J_playBlastHUDFormLayOut;
+                }
+                setParent ..; 
+            setParent ..; 
+        //按钮摄像机选项
+            frameLayout -cll 1 -cl 0  -l "摄像机信息"  J_playBlastCamFrameLayOut;
+                formLayout  -nd 100  J_playBlastCamFormLayOut;        
+                textScrollList -sc "J_playBlastTool_selectCam()" -h 120 -allowMultiSelection 1 J_playBlastCameraList;
+                button  -h 27 -label "添加摄像机信息" -command "J_playBlastAddCamInfo" J_playBlastAddCamInfoBu;
+                button  -h 27 -label "锁定摄像机" -command "J_playBlastLockCam" J_playBlastLockCamBu;
+                button  -h 27 -label "显示HUD" -command "J_playBlast_showHUD" J_playBlastShowHudBu;
+                button  -h 27 -label "自定义HUD0" -command "J_playBlast_showHUD_0" J_playBlastShowHudBu_0;
+                button  -h 27 -label "自定义HUD1" -command "J_playBlast_showHUD_1" J_playBlastShowHudBu_1;
+                button  -h 27 -label "尺寸切换" -command "J_playBlast_changeSize" J_playBlastSwithSizeBu;
+                formLayout -e 
+                    -af J_playBlastCameraList left 4
+                    -af J_playBlastCameraList top 3
+                    -ap J_playBlastCameraList right 0 50
+                    -ap J_playBlastCameraList bottom 0 100
+                    
+                    -ac J_playBlastAddCamInfoBu left 3 J_playBlastCameraList
+                    -af J_playBlastAddCamInfoBu top 3
+                    -ap J_playBlastAddCamInfoBu right 0 99
+                    
+                    -ac J_playBlastLockCamBu left 3 J_playBlastCameraList
+                    -ac J_playBlastLockCamBu top 3 J_playBlastAddCamInfoBu
+                    -ap J_playBlastLockCamBu right 0 99
+                    
+                    -ac J_playBlastShowHudBu left 3 J_playBlastCameraList
+                    -ac J_playBlastShowHudBu top 3 J_playBlastLockCamBu
+                    -ap J_playBlastShowHudBu right 0 99
+                    
+                    -ac J_playBlastShowHudBu_0 left 3 J_playBlastCameraList
+                    -ac J_playBlastShowHudBu_0 top 3 J_playBlastShowHudBu
+                    -ap J_playBlastShowHudBu_0 right 0 99
+                    
+                    -ac J_playBlastShowHudBu_1 left 3 J_playBlastCameraList
+                    -ac J_playBlastShowHudBu_1 top 3 J_playBlastShowHudBu_0
+                    -ap J_playBlastShowHudBu_1 right 0 99
+                    
+                    -ac J_playBlastSwithSizeBu left 3 J_playBlastCameraList
+                    -ac J_playBlastSwithSizeBu top 3 J_playBlastShowHudBu_1
+                    -ap J_playBlastSwithSizeBu right 0 99
+                J_playBlastCamFormLayOut;
+
+                setParent ..; 
+            setParent ..;
+           //拍屏选项
+            frameLayout -cll 1 -cl 0  -l "拍屏信息"  J_playBlastPBFrameLayOut;
+                formLayout  -nd 100  J_playBlastPBFormLayOut;        
+                checkBox -l  "项目logo" -onCommand ("J_playBlast_loadLogo(\"J_playBlastProLogoCheckBox\")") J_playBlastProLogoCheckBox;
+                checkBox -l "公司logo" -onCommand ("J_playBlast_loadLogo(\"J_playBlastLtdLogoCheckBox\")") J_playBlastLtdLogoCheckBox;
+                checkBox -l "保存路径" -onCommand "J_playBlast_loadVideoPath" J_playBlastSavePathCheckBox;
+                button -h 38 -label "拍" -command "J_playBlastOutPut" J_playBlastRunPBBu;
+                formLayout -e 
+                    -af J_playBlastProLogoCheckBox left 4
+                    -af J_playBlastProLogoCheckBox top 3
+                    -ap J_playBlastProLogoCheckBox right 0 98
+                    -af J_playBlastLtdLogoCheckBox left 4 
+                    -ac J_playBlastLtdLogoCheckBox top 3 J_playBlastProLogoCheckBox
+                    -ap J_playBlastLtdLogoCheckBox right 0 98 
+                    -af J_playBlastSavePathCheckBox left 4 
+                    -ac J_playBlastSavePathCheckBox top 3 J_playBlastLtdLogoCheckBox
+                    -ap J_playBlastSavePathCheckBox right 0 98 
+                    
+                    -af J_playBlastRunPBBu left 3 
+                    -ac J_playBlastRunPBBu top 3 J_playBlastSavePathCheckBox
+                    -ap J_playBlastRunPBBu right 0 99
+                J_playBlastPBFormLayOut;
+
+                setParent ..; 
+            setParent ..; 
+    formLayout -e 
+        -af J_playBlastHUDFrameLayOut left 0
+        -af J_playBlastHUDFrameLayOut top 0
+        -af J_playBlastHUDFrameLayOut right 0 
+        -af J_playBlastCamFrameLayOut left 0
+        -ac J_playBlastCamFrameLayOut top 0 J_playBlastHUDFrameLayOut
+        -af J_playBlastCamFrameLayOut right 0 
+        -af J_playBlastPBFrameLayOut left 0
+        -ac J_playBlastPBFrameLayOut top 0 J_playBlastCamFrameLayOut
+        -af J_playBlastPBFrameLayOut right 0 
+    J_playBlastMainFormLayout;        
+    
+    
+    showWindow J_playBlastWin;
+    python("JpyModules.animation.J_playBlast.J_playBlast_uiInit()");
+    return "success";
+}
+//添加摄像机信息
+global proc J_playBlastAddCamInfo()
+{
+    python("JpyModules.animation.J_playBlast.J_playBlast_addCamInfo()");
+}
+//锁相机
+global proc J_playBlastLockCam()
+{
+    python("JpyModules.animation.J_playBlast.J_playBlast_lockCam()");
+}
+global proc J_playBlastTool_selectCam()
+{
+    string $temp1[]=`textScrollList -q -si J_playBlastCameraList`;
+    select $temp1;
+}
+global proc J_playBlast_changeSize()
+{
+    python("JpyModules.animation.J_playBlast.J_playBlast_changeSize()");
+}
+global proc J_playBlast_showHUD()
+{
+    python("JpyModules.animation.J_playBlast.J_playBlast_showHUD()");
+}
+global proc J_playBlast_loadLogo(string $checkBoxItem)
+{
+    string $file[]=`fileDialog2 -fileMode 1 -fileFilter "PIC Files (*.png *.jpg *.jpeg)"`;
+    checkBox -e -l $file[0] $checkBoxItem;
+}
+global proc J_playBlast_loadVideoPath()
+{
+    string $file[]=`fileDialog2 -fileMode 0 -fileFilter "Video Files (*.mp4 *.mov *.m4v)"`;
+    checkBox -e -l $file[0] J_playBlastSavePathCheckBox;
+}
+global proc J_playBlast_showHUD_0()
+{
+    loadPlugin("J_hud");
+    string $J_hudNodes[]=`ls -type J_hud_a`;
+    if (size($J_hudNodes)>0)
+    {
+        delete `listRelatives -p $J_hudNodes`;
+    }
+    string $J_hudNodes[]=`ls -type J_hud`;
+    if (size($J_hudNodes)>0)
+    {
+        delete `listRelatives -p $J_hudNodes`;
+    }
+    else
+    {
+    string $hunNode=`createNode "J_hud"`;
+    }
+}
+global proc J_playBlast_showHUD_1()
+{
+    loadPlugin("J_hud_a");
+    string $J_hudNodes[]=`ls -type J_hud`;
+    if (size($J_hudNodes)>0)
+    {
+        delete `listRelatives -p $J_hudNodes`;
+    }
+    string $J_hudNodes[]=`ls -type J_hud_a`;
+    if (size($J_hudNodes)>0)
+    {
+        delete `listRelatives -p $J_hudNodes`;
+    }
+    else
+    {
+    string $hunNode=`createNode "J_hud_a"`;
+    }
+}
+global proc J_playBlastOutPut()
+{
+    python("JpyModules.animation.J_playBlast.J_playBlast_outPut()");
+}
+
+

@@ -20,6 +20,8 @@ global proc J_autoInstallMadOnion()
     $runPy+="userSetupFilePath=os.path.dirname(os.path.dirname(os.path.dirname(cmds.internalVar(userScriptDir=True).replace('zh_CN/',''))))+'/scripts/userSetup.mel'\n";
     
     $runPy+="if os.path.exists(userSetupFilePath):\n";
+    $runPy+="    if os.stat(userSetupFilePath).st_mode==33060:\n";
+    $runPy+="        os.chmod(userSetupFilePath,stat.S_IWRITE) \n";
     $runPy+="    os.remove(userSetupFilePath)\n";
     
     $runPy+="userSetupFile=open(userSetupFilePath,'w')\n";

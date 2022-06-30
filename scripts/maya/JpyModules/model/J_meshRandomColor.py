@@ -11,6 +11,7 @@ import maya.mel as mel
 import maya.cmds as cmds
 import maya.api.OpenMaya as om2
 import random
+import math
 
 #模型添加随机颜色
 def J_meshRandomColor():
@@ -22,7 +23,12 @@ def J_meshRandomColor():
         else:            
             vColors=[]
             vertexIds=[]
-            rcolor=om2.MColor([random.random(),random.random(),random.random(),1])
+            x=random.random()
+            r1=math.sqrt(1-x*x)
+            y=random.random()*r1
+            z=math.sqrt(r1*r1-y*y)
+            
+            rcolor=om2.MColor([x,y,z,1])
             for j in range(mfnMesh.numVertices):
                 vColors.append(rcolor)
                 vertexIds.append(j)

@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-##  @package J_createDynCurve
+##  @package J_hairTools
 ##  @author 张千桔
 ##  @brief  创建动力学曲线
 ##  @version 1.0
