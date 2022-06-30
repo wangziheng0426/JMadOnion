@@ -25,7 +25,7 @@ if (`window -ex runYetiCacheWin`)
         int $ButtonH=30;
         frameLayout -cll 1 -cl 0 -h ($count*20) -l "yeti批量缓存"  myColum;
         formLayout  -numberOfDivisions 100  yetiCacheLayout;
-        textScrollList -width 300  -h 300 -allowMultiSelection 1 yetiList;
+        textScrollList -width 300  -h 300 -sc "J_selectYetiNode" -allowMultiSelection 1 yetiList;
         radioButtonGrp -numberOfRadioButtons 2 -select 2
                 -label "yeti版本" -labelArray2 "2.1.6之前版本"  "2.1.6及之后" rbg;
 
@@ -42,6 +42,8 @@ if (`window -ex runYetiCacheWin`)
         button -l "读取路径" -w $ButtonW  -h $ButtonH -c  "J_yetiGetPath" buPath ;
         button -l "为所有yeti建立缓存" -w $ButtonW  -h $ButtonH -c  "runYetiCacheAllBtn" buUp ;
         button -l "为选择的yeti建立缓存" -w $ButtonW  -h $ButtonH -c  "runYetiCacheBtn" buUpS ;
+        button -l "关闭缓存"   -c  "J_runYetiCacheDisableCache" buDisableCache ;
+        button -l "显示yeti节点"   -c  "J_runYetiCacheDisplayYetiMaya" buDisplayYetiMaya ;
         button -l "根据log导入缓存"   -c  "J_runYetiCacheImportCache" buImportCache ;
     /////////////////////////////////////////////////////////
     int $apx=5;
@@ -103,8 +105,16 @@ if (`window -ex runYetiCacheWin`)
         -ac buUpS top $apy startFrameInputText
         -ap buUpS right 0 99
 
+        -af buDisableCache left $apx  
+        -ac buDisableCache top $apy buUpS
+        -ap buDisableCache right 0 99
+
+        -af buDisplayYetiMaya left $apx  
+        -ac buDisplayYetiMaya top $apy buDisableCache
+        -ap buDisplayYetiMaya right 0 99
+
         -af buImportCache left $apx  
-        -ac buImportCache top $apy buUpS
+        -ac buImportCache top $apy buDisplayYetiMaya
         -ap buImportCache right 0 99
 
         yetiCacheLayout;
@@ -169,4 +179,49 @@ global proc runYetiCacheAllBtn()
 global proc J_runYetiCacheImportCache()
 {
     python("JpyModules.vfx.J_yetiPlug.J_yetiLoadCache()");
+}
+global proc J_runYetiCacheDisableCache()
+{
+    string $sel[]=`ls -sl`;
+    string $yetiNodes[]=`ls -type pgYetiMaya`;
+    if (size($sel)>0)
+    {
+        $yetiNodes=`listRelatives -c -type pgYetiMaya`;
+    }
+    if (size($yetiNodes)>0)
+    {
+        int $state=`getAttr ($yetiNodes[0]+".fileMode")`;
+        $state=1-$state;
+        for ($item in $yetiNodes)
+        {
+            setAttr ($item+".fileMode") $state;
+        }
+    }
+}
+
+
+global proc J_runYetiCacheDisplayYetiMaya()
+{
+    string $sel[]=`ls -sl`;
+    string $yetiNodes[]=`ls -type pgYetiMaya`;
+    if (size($sel)>0)
+    {
+        $yetiNodes=`listRelatives -c -type pgYetiMaya`;
+    }
+
+    if (size($yetiNodes)>0)
+    {
+        int $state=`getAttr ($yetiNodes[0]+".displayOutput")`;
+        $state=1-$state;
+        for ($item in $yetiNodes)
+        {
+            setAttr ($item+".displayOutput") $state;
+        }
+    }
+}
+
+global proc J_selectYetiNode()
+{
+    string $yetiNodes[]=`textScrollList -q -si yetiList`;
+    select $yetiNodes;
 }

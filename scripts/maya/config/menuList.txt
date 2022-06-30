@@ -21,17 +21,16 @@
   
   <MainMenu> 特效工具 vfx </MainMenu>  
   #<SubMenu> 粒子烟火工具 J_easyFire vfx/J_easyFire.mel </SubMenu>  
-  <SubMenu> 转换粒子替代 J_particleToJoint vfx/J_particleToJoint.mel </SubMenu>  
-  <SubMenu> 毛发工具 J_hairTool vfx/J_hairTool.mel </SubMenu>  
+  <SubMenu> 转换粒子替代 J_particleToJoint vfx/J_particleToJoint.mel </SubMenu>   
   <SubMenu> yeti替换贴图 J_replactYetiTextureWin vfx/J_replactYetiTextureWin.mel </SubMenu>
   <SubMenu> yeti极速缓存 J_runYetiCache vfx/J_runYetiCache.mel </SubMenu>  
   <SubMenu> 解算流程工具 J_CFXWorkFlow vfx/J_CFXWorkFlow.mel </SubMenu>  
   <SubMenu> 批量解算 J_livingQueue vfx/J_livingQueue.mel </SubMenu> 
   <SubMenu> 布料制作工具 J_nClothTool vfx/J_nClothTool.mel </SubMenu>
-  
+  <SubMenu> 毛发制作工具 J_hairTools vfx/J_hairTools.mel </SubMenu>
     
   <MainMenu> 动画工具 anim </MainMenu>  
-  <SubMenu> 拍平工具 J_playBlastToolWin animation/J_playBlastToolWin.mel </SubMenu>
+  <SubMenu> 拍平工具 J_playBlastTool animation/J_playBlastTool.mel </SubMenu>
   <MainMenu> 渲染工具 render </MainMenu>  
   <SubMenu> 自动分层 J_autoLayer render/J_autoLayer.mel </SubMenu>
   #<SubMenu> 前台渲染 J_perFrameRender render/J_perFrameRender.mel </SubMenu> 

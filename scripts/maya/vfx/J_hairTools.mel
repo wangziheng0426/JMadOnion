@@ -1,0 +1,178 @@
+/////////////////////////////////////////////////////////////
+///\file J_curveTools.mel
+///\brief hair工具
+///
+///\author 桔
+///\version 1.0
+///\date  11:05 2018/1/27
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///工具界面
+///\return success
+global proc string J_hairTools()
+{
+if (`window -ex J_hairTool`)
+	deleteUI -window J_hairTool;
+	window -title "统一曲线方向" -widthHeight 400 148  J_hairTool;
+	formLayout textureNameLayout;	
+     radioButtonGrp -numberOfRadioButtons 3 -sl 2 
+                 -label "方向" -labelArray3 " X" " Y" " Z" radioButton1;
+     radioButtonGrp -numberOfRadioButtons 3  -shareCollection radioButton1
+                  -label "" -labelArray3 "-X" "-Y" "-Z" radioButton2;
+
+    string $bu01=`button -l "改方向"    -c J_curveTools_convertDir `;
+    string $bu02=`button -l "反转曲线方向"  -c  "reverseCurve -ch 1 -rpo 1;"  `;
+	string $bu03=`button -l "poly切曲线"  -c  "J_cutCurByPoly"  `;
+	string $bu04=`button -l "修改曲线轴心"  -c  "J_curPivot"  `;
+	string $bu05=`button -l "删除多余shape"  -c  "J_removeShape"  `;
+    string $bu06=`button -l "删除未知节点"  -c  "J_deleteUnknownNodes"  `;
+    string $bu07=`button -l "曲线转骨骼"  -c  "J_createJointsWithCurve"  `;
+    string $bu08=`button -l "骨骼转曲线"  -c  "J_createCurveWithJoints"  `;
+    string $bu09=`button -l "生成动力学骨骼"  -c "J_createDynCurve"  `;
+    string $bu10=`button -l "创建经典hair碰撞体"  -c  "J_createHairConstraint"  `;
+    
+	formLayout -e
+	    -af  radioButton1 top 5
+        -af  radioButton1 left -70
+		-ac  radioButton2 top 5 radioButton1
+		-af  radioButton2 left -70
+
+            -ap $bu01 left 0 1
+            -ac $bu01 top 5 radioButton2
+            -ap $bu01 right 0 50
+			
+            -ap $bu02 left 0 51
+            -ac $bu02 top 5 radioButton2
+            -ap $bu02 right 1 99
+			
+			-ap $bu03 left 0 1
+            -ac $bu03 top 5 $bu01
+            -ap $bu03 right 0 50
+			
+            -ap $bu04 left 0 51
+            -ac $bu04 top 5 $bu01
+            -ap $bu04 right 1 99
+
+            -ap $bu05 left 0 1
+            -ac $bu05 top 5 $bu03
+            -ap $bu05 right 0 50
+			
+            -ap $bu06 left 0 51
+            -ac $bu06 top 5 $bu03
+            -ap $bu06 right 1 99
+
+            -ap $bu07 left 0 1
+            -ac $bu07 top 5 $bu05
+            -ap $bu07 right 0 50
+			
+            -ap $bu08 left 0 51
+            -ac $bu08 top 5 $bu05
+            -ap $bu08 right 1 99
+
+            -ap $bu09 left 0 1
+            -ac $bu09 top 5 $bu07
+            -ap $bu09 right 0 50
+			
+            -ap $bu10 left 0 51
+            -ac $bu10 top 5 $bu07
+            -ap $bu10 right 1 99
+
+
+		textureNameLayout;
+
+showWindow J_hairTool;
+return "success";
+}
+
+///转换曲线方向
+global proc J_curveTools_convertDir()
+{
+    int $na=`radioButtonGrp -q -sl radioButton1`;
+    int $nb=`radioButtonGrp -q -sl radioButton2`;
+    int $nn;
+    if(!$na==0)
+     $nn=$na;
+    else 
+     $nn=$nb+3;
+    string $sel[]=`filterExpand -sm 9`;
+    for ($n in $sel)
+    {
+    select $n;
+    selectCurveCV("first");
+    string $p[]=`ls -sl`;
+    float $a[]=`xform -q -ws -t $p[0]`;
+    select $n;
+    selectCurveCV("last");
+    $p=`ls -sl`;
+    float $b[]=`xform -q -ws -t $p[0]`;
+    switch ($nn){ 
+        case 1:
+    if($a[0]<$b[0])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+          
+        case 2: 
+    if($a[1]<$b[1])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+          
+        case 3: 
+    if($a[2]<$b[2])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+        case 4: 
+    if($a[0]>$b[0])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+        case 5: 
+    if($a[1]>$b[1])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+        case 6: 
+    if($a[2]>$b[2])
+     {
+      select $n;
+      reverseCurve ;
+      }
+    break;
+           
+    }
+
+    }
+    select -cl;
+}
+global proc J_createJointsWithCurve()
+{
+    python("JpyModules.vfx.J_nHairTool.J_createJointsWithCurve()");
+}
+global proc J_createCurveWithJoints()
+{
+    python("JpyModules.vfx.J_nHairTool.J_createCurveWithJoints()");
+}
+global proc J_createDynCurve()
+{
+    python("JpyModules.vfx.J_nHairTool.J_createDynCurve()");
+}
+
+global proc J_deleteUnknownNodes()
+{
+    python("JpyModules.public.J_deleteUnknownNode()");
+    python("JpyModules.public.J_kick_dajiangjun()");
+}

@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-##  @package J_createJointsWithCurve
+##  @package J_hairTools
 ##  @author 张千桔
 ##  @brief  曲线转骨骼
 ##  @version 1.0

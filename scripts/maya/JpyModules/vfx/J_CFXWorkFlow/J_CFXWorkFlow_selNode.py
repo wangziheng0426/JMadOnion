@@ -20,5 +20,5 @@ def J_CFXWorkFlow_selHair():
     cmds.select(cmds.ls(cmds.listHistory(cmds.ls(type='hairSystem'),f=True),type='pfxHair',v=True))
 def J_CFXWorkFlow_selCloth():
     cmds.select(clear=True)
-    cmds.select(cmds.ls(cmds.listHistory(cmds.ls(type='nCloth'),f=True),type='mesh',v=True))
+    cmds.select(cmds.listRelatives(cmds.ls(cmds.listHistory(cmds.ls(type='nCloth')),type='mesh',v=True),p=True))
             
