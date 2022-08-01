@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////
 ///\file J_blendTools.mel
-///\brief 模型融合变形转换工具 v1.2
+///\brief 模型融合变形转换工具 v1.3
 ///
 ///\author 桔
 ///\version 1.0
-///\date  15:45 2018/3/6
+///\date  15:45 2022/7/30
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
@@ -12,25 +12,27 @@
 
 global proc J_blendTools()
 {
-if(`window -ex "blendToolsWinX"`)deleteUI -wnd blendToolsWinX;
+if(`window -ex "融合变形转换"`)deleteUI -wnd blendToolsWinX;
 
 string $window = `window -title "blendToolsWinX"
        -iconName "Short Name"
        -widthHeight 600 340   blendToolsWinX`;
 columnLayout -adjustableColumn true;
-        string $zuheanniu = `radioButtonGrp   -cw 1 10  -numberOfRadioButtons 2
+        string $rBmode = `radioButtonGrp   -cw 1 10  -numberOfRadioButtons 2
                 -label "    " -labelArray2 "uv模式" "wrap模式" radioBB`;
-       string $textField01=`textField  textN1`;
-       string $button01=`button -label "读取原始模型" -c ("J_blendTools_getGemo1")`;
-       string $textField02=`textField  textN2`;
-       string $button02=`button -label "读取目标模型" -c ("J_blendTools_getGemo2")`;
-       string $textField03=`textScrollList -h 100 textN3`;
-       string $button03=`button -label "读取目标体" -c ("J_blendTools_getGemo3")`;
-       string $button04=`button -label "根据uv包裹转换" -c ("J_blendTools_gogogo(0)")`;
-       string $button05=`button -label "blend变型转换" -c ("J_blendTools_gogogo(1)")`;
-	   string $slider01=`floatSliderGrp -label "融合度" -cc ("J_blendTools_chGemo") -field true sliderX`;
-	   string $button06=`button -label "帮助" -c ("J_blendTools_helpMe")`;
-       //string $button06=`button -label "帮助" -command ("deleteUI -window " + $window)`;
+        string $textField01=`textField  J_blendTools_textN1`;
+        string $button01=`button -label "读取原始模型" -c ("J_blendTools_getGemo1")`;
+        string $textField02=`textField  J_blendTools_textN2`;
+        string $button02=`button -label "读取目标模型" -c ("J_blendTools_getGemo2")`;
+        string $textField03=`textScrollList -h 100 J_blendTools_textN3`;
+        string $button03=`button -label "读取融合模型" -c ("J_blendTools_getGemo3")`;
+        string $button04=`button -label "根据uv包裹转换" -c ("J_blendTools_convertBlendA")`;
+        string $button05=`button -label "blend变型转换" -c ("J_blendTools_convertBlendB")`;
+	    string $slider01=`floatSliderGrp -label "融合度" -cc ("J_blendTools_chGemo") -field true sliderX`;
+        string $button06=`button -label "blendShape合并重塑" -c ("J_blendTools_combinBlend")`;
+        string $button07=`button -label "blendShapeCsv重塑" -c ("")`;
+	    string $button08=`button -label "帮助" -c ("J_blendTools_helpMe")`;
+       
 setParent ..;
 showWindow $window;
 
@@ -39,40 +41,32 @@ showWindow $window;
 global proc J_blendTools_getGemo1()
 {
     string $sss[]=`ls -sl`;
-    textField -e -tx $sss[0] textN1;
+    textField -e -tx $sss[0] J_blendTools_textN1;
     print  $sss;
 }
 global proc J_blendTools_getGemo2()
 {
     string $sss[]=`ls -sl`;
-    textField -e -tx $sss[0] textN2;
+    textField -e -tx $sss[0] J_blendTools_textN2;
     print  $sss;
 }
 
 global proc J_blendTools_getGemo3()
 {
     string $sss[]=`ls -sl`;
-    textScrollList -e -ra textN3;
+    textScrollList -e -ra J_blendTools_textN3;
     for ($i in $sss)
     {
-        textScrollList -e -a $i textN3;
+        textScrollList -e -a $i J_blendTools_textN3;
     }
     print  $sss;
 }
 
-global proc J_blendTools_gogogo(int $ab)
-{
-	if($ab==0)
-	J_blendTools_convertBlendA();
-	else
-	J_blendTools_convertBlendB();
-}
-
 global proc J_blendTools_convertBlendA()
 {
-    string $blendGemoOrg=`textField -q  -text textN1`;
-    string $blendGemoDes=`textField -q  -text textN2`;
-    string $blendGemos[]=`textScrollList -q  -ai textN3`;
+    string $blendGemoOrg=`textField -q  -text J_blendTools_textN1`;
+    string $blendGemoDes=`textField -q  -text J_blendTools_textN2`;
+    string $blendGemos[]=`textScrollList -q  -ai J_blendTools_textN3`;
     int $stateX=`radioButtonGrp -q -sl radioBB`;
     if($blendGemoOrg!=""&&$blendGemoDes!=""&&$blendGemos[0]!="")
     {
@@ -122,9 +116,9 @@ global proc J_blendTools_convertRun(string $blendGemoOrg,string $blendGemoDes,st
 global proc J_blendTools_convertBlendB()
 {
 
-    string $blendGemoOrg=`textField -q  -text textN1`;
-    string $blendGemoDes=`textField -q  -text textN2`;
-    string $blendGemos[]=`textScrollList -q  -ai textN3`;
+    string $blendGemoOrg=`textField -q  -text J_blendTools_textN1`;
+    string $blendGemoDes=`textField -q  -text J_blendTools_textN2`;
+    string $blendGemos[]=`textScrollList -q  -ai J_blendTools_textN3`;
 
  for ($i in $blendGemos)
     {
@@ -157,10 +151,15 @@ global proc J_blendTools_chGemo()
 					+" ";
 		for($k=0;$k<size($getWeight);$k++)
 			{setAttr ($getBlendShape[0]+".weight["+$k+"]") $vel;}
-	
 	}
-	
-	
+}
+global proc J_blendTools_combinBlend()
+{
+
+}
+global proc J_blendTools_combinBlendCsv()
+{
+
 }
 global proc J_blendTools_helpMe()
 {

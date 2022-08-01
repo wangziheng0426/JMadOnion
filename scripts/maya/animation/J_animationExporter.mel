@@ -1,0 +1,471 @@
+/////////////////////////////////////////////////////////////
+///\file animationExporter.mel
+///\brief fbx导出工具
+///
+///\author 桔
+///\version 1.4.2
+///\date  9:45 2022/4/6
+///History:  解决了多take名称问题,优化一键导出功能,增加骨骼搜索机制,角色如果存在Bone_Broom_01,则使用Bone_Broom_01,如果不存在,则查找DeformationSystem下的第一个骨骼
+///
+///////////////////////////////////////////////////////////////
+global proc J_animationExporter()//主窗口
+{
+    if (`window -ex J_animationExporterWin`)
+        deleteUI -window J_animationExporterWin;
+    window -w 300 -h 360 -title "动画导出" J_animationExporterWin;
+    formLayout  -numberOfDivisions 100  J_animationExporterFromLayout;
+        textScrollList  -sc "J_animationExporterSelitem"  -allowMultiSelection 1  J_allCameraNode;
+        textScrollList  -sc "" -allowMultiSelection 1 J_allRefNode;
+        button -l "导出相机" -c  "J_animationExporterExportCamBut" J_expCam;
+        button -l "导出动画" -c  "J_animationExporterExportAniBut" J_expAni;
+        textField    J_tex;
+
+        button -l "批量导出相机" -c  "J_animationExporterExportBatBut(0)" J_expCamBat;
+        button -l "批量导出动画" -c  "J_animationExporterExportBatBut(1)" J_expAniBat;
+    formLayout -e 
+        -ap J_allRefNode left 1 1
+        -ap J_allRefNode right 1 99
+        -af J_allRefNode top 0
+        -ap J_allRefNode bottom 0 50
+        
+        -ap J_allCameraNode left 1 1
+        -ap J_allCameraNode right 1 99
+        -ac J_allCameraNode top  1 J_allRefNode
+        -af J_allCameraNode bottom 80
+        
+        -ap J_expCam left 0 1
+        -ap J_expCam right 0 49
+        -ac J_expCam top  2 J_allCameraNode
+
+        -ap J_expAni left 0 50
+        -ap J_expAni right 0 99
+        -ac J_expAni top  2 J_allCameraNode
+        
+        -ap J_tex left 0 1
+        -ap J_tex right 0 99
+        -ac J_tex top  2 J_expAni
+
+        -ap J_expCamBat left 0 1
+        -ap J_expCamBat right 0 50
+        -ac J_expCamBat top  2 J_tex
+
+        -ap J_expAniBat left 0 51
+        -ap J_expAniBat right 0 99
+        -ac J_expAniBat top  2 J_tex
+    J_animationExporterFromLayout;
+    
+    showWindow J_animationExporterWin;
+    J_animationExporterInit();
+    J_animationExporterRunScriptJob();
+    python("JpyModules.public.J_deleteUnknownNode()");
+    python("JpyModules.public.J_cleanVaccine_gene()");
+}
+
+global proc J_animationExporterInit()
+{
+    string $allCamera[]=`ls -type "camera"`;
+    string $allCamTr[]=`listRelatives  -fullPath -p $allCamera`;
+    string $sysCam[]={"|back","|front","|left","|persp","|side","|top"};
+    textScrollList  -e -ra  J_allCameraNode;
+    textScrollList  -e -ra   J_allRefNode;
+    for ($item0 in $allCamTr)
+    {
+        int $temp=0;
+        for ($item1 in $sysCam)
+        {
+            if ($item0==$item1)$temp=1;
+        }
+        if ($temp==0)
+        textScrollList  -e -a $item0  J_allCameraNode;
+    }
+    string $allRefFile[]=`file -q -r`;
+    for ($item0 in $allRefFile)
+    {   
+        string $refNode=`referenceQuery -referenceNode $item0`;
+
+        textScrollList  -e -a $refNode  J_allRefNode;
+    }
+}
+
+
+global proc J_animationExporterExportCam(string $camName,string $outPath)
+{
+    $newCamNode="|Rootmotion|TimelineCamera";
+    int $startFrame=`playbackOptions -query -minTime`;
+    int $endFrame=`playbackOptions -query -maxTime`+1;
+
+    if ($camName!=$newCamNode)
+    {
+    //创建摄像机
+        if (objExists("|Rootmotion"))
+        {
+            int $count =0; 
+            string $newName="Rootmotion"+$count;
+            while (objExists($newName))
+            { $count++; $newName="Rootmotion"+$count; }
+            rename "Rootmotion" $newName;
+        }
+        string $rootMotionNode=`createNode -n "Rootmotion" "transform"`;
+        string $newCamNode=`createNode "camera"`;
+        parent $newCamNode $rootMotionNode;
+        string $newCmTrNode[]=`listRelatives -p -fullPath $newCamNode`;
+        $newCamNode=`rename $newCmTrNode[0] ("TimelineCamera")`;
+
+        //记录关键帧
+        
+        string $pttemp0[]=`parentConstraint $camName $newCamNode`;
+        bakeResults -t ($startFrame+":"+$endFrame) -s 0 -simulation true $newCamNode;
+        for ($i =$startFrame;$i<=$endFrame;$i++)
+        {
+            currentTime $i;        
+
+            string $camShape[]=`listRelatives -c -type "camera" $camName`;
+            float  $focalLength=`getAttr ($camShape[0]+".focalLength")`;
+            setKeyframe -attribute "focalLength" -v $focalLength $newCamNode;
+            filterCurve ($newCamNode+".rotateX");
+            filterCurve ($newCamNode+".rotateY");
+            filterCurve ($newCamNode+".rotateZ");
+        }
+        delete $pttemp0;
+
+        //设置相机参数
+        setAttr ($newCamNode+".filmFit") 2;
+        setAttr ($newCamNode+".verticalFilmAperture") 0.944882;
+        setAttr ($newCamNode+".horizontalFilmAperture") 1.653543;
+    }
+    //导出fbx
+    select $newCamNode;
+    //配置参数
+    FBXResetExport ;
+    FBXExportInAscii  -v true;
+    FBXExportBakeComplexAnimation -v 1;    
+    FBXExportBakeComplexStart -v $startFrame;
+    FBXExportBakeComplexEnd -v $endFrame;
+    FBXExportBakeResampleAnimation -v 1;
+    FBXExportInAscii -v 1;
+    FBXExportIncludeChildren -v 1;
+    FBXExportSplitAnimationIntoTakes -clear;    
+    FBXExportDeleteOriginalTakeOnSplitAnimation -v true;
+    FBXExportSplitAnimationIntoTakes -v "cam" $startFrame $endFrame;
+    FBXExport -f $outPath -s ;
+}
+//J_animationExporterExportCam("pSphere1","Z:/THD/file.fbx")
+
+//查文件路径,未保存,则以c:/temp为准
+global proc string J_animationExporterGetFilePath()
+{       
+    python("import os");
+    string $filePath=python("os.path.dirname(maya.cmds.file(query=True,sceneName=True))")+"/";
+    if (size ($filePath)<3)
+        return "c:/temp/";
+    return $filePath;
+}
+
+global proc J_animationExporterExportCamBut()
+{
+    string $selCam[]=`textScrollList  -q -si  J_allCameraNode`;
+    string $outPath=J_animationExporterGetFilePath();
+    for ($item in $selCam)
+    {
+        string $buffer[];
+        $numTokens = `tokenize $item "|" $buffer`;
+        
+        string $buffer1[];
+        $numTokens = `tokenize $buffer[size($buffer)-1] ":" $buffer1`;
+        
+        $outPath+=$buffer1[size($buffer1)-1] +".fbx";
+        J_animationExporterExportCam($item,$outPath);
+    }
+    //导出后打开文件夹
+    string $cmd="os.startfile(os.path.dirname(\""+$outPath+"\"))";
+    python($cmd); 
+}
+//随选择修改窗体内容
+global proc J_animationExporterRunScriptJob()
+{
+    int $sjId = `scriptJob -e "SelectionChanged" J_animationExporterScriptJob `;
+    string $temp = ("scriptJob -k "+ $sjId);
+    scriptJob -uid "J_animationExporterWin" $temp;
+
+}
+global proc J_animationExporterScriptJob()
+{
+    J_animationExporterInit();
+    textScrollList -e -deselectAll  J_allCameraNode;
+    string $allListCam[]=`textScrollList  -q -ai  J_allCameraNode`;
+    string $sel[]=`ls -sl -allPaths -l`;
+    for($i in $sel)
+    {
+        if(stringArrayContains( $i, $allListCam))
+        textScrollList -e -si $i J_allCameraNode;
+    }
+}
+/////////
+global proc J_animationExporterSelitem()
+{
+    string $allListCam[]=`textScrollList  -q -si  J_allCameraNode`;
+    select $allListCam;
+}
+//导出动画
+global proc J_animationExporterExportAni(string $refNode,string $outPath)
+{
+    int $startFrame=`playbackOptions -query -minTime`;
+    int $endFrame=`playbackOptions -query -maxTime`+1;
+    if (`objExists $refNode`)
+    {
+        string $refFile=`referenceQuery -filename $refNode`;
+        string $root[]={};
+        if (!`referenceQuery -isLoaded $refNode`)
+        {
+            file -loadReferenceDepth "asPrefs" -loadReference $refNode $refFile;
+        }
+        //搜索根骨
+        $root=J_animationExporterGetRootJoint($refNode);
+        //搜索根骨
+        
+        //导出所选
+        if (!`objExists $root[0]`)
+            $root=`ls -type joint "Bone_Broom_01"`;
+        if (size($root)<1){return;}
+        
+        bakeResults -t ($startFrame+":"+$endFrame)  -hierarchy "below" -simulation true 
+            -sampleBy 1 -oversamplingRate 1 -disableImplicitControl true -preserveOutsideKeys true 
+            -sparseAnimCurveBake false -removeBakedAttributeFromLayer false -removeBakedAnimFromLayer true 
+            -bakeOnOverrideLayer false -minimizeRotation true -controlPoints false -shape true 
+            $root;
+        
+        //导入ref
+        file -importReference $refFile;
+        //卸载其他ref
+        string $allRefFile[]=`file -q -r`;
+        for ($item1 in $allRefFile)
+        {   
+            string $refNode1=`referenceQuery -referenceNode $item1`;
+            if ($refNode1!=$refNode)
+            {
+                if (`referenceQuery -isLoaded $refNode1`)
+                {
+                    file -unloadReference $refNode1 $item1;
+                }
+            }
+        }
+        
+        if (`objExists "|Bone_Broom_01"`) delete "|Bone_Broom_01";
+        //骨骼移到最外侧
+        string $newRoot[];
+        for ($item in $root)
+        {
+            if (`objExists $item`)
+            {
+                string $parentTemp[]=`listRelatives -p $item`;
+                if (size($parentTemp)>0)
+                {
+                    string $temp[]= `parent -w $item`;
+                    for ($itemTemp in $temp)
+                    {
+                        $newRoot[size($newRoot)]=$itemTemp;
+                    }
+                }
+            }
+        }
+        if (size ($newRoot)<1)
+        {
+            print "找不到骨骼";
+            return ;
+        }
+        select $newRoot;
+        //关闭约束
+        delete `ls -type constraint`;
+        //删除名字空间
+        J_animationExporterRemoveAllNameSpace();
+        //羽化动画曲线
+        for ($item2 in `ls -type joint`)
+        {
+            filterCurve ($item2+".rotateX");
+            filterCurve ($item2+".rotateY");
+            filterCurve ($item2+".rotateZ");
+        }
+        //导出动画
+        FBXResetExport ;
+        FBXExportInAscii  -v true;
+        string $takeName= `basenameEx $refFile`;
+        FBXExportBakeComplexAnimation -v 1;    
+        FBXExportShapes -v true;
+        FBXExportBakeComplexStart -v $startFrame;
+        FBXExportBakeComplexEnd -v $endFrame;
+        FBXExportBakeResampleAnimation -v 1;
+        FBXExportInAscii -v 1;
+        FBXExportIncludeChildren -v 1;
+        FBXExportSplitAnimationIntoTakes -clear;    
+        FBXExportDeleteOriginalTakeOnSplitAnimation -v true;
+        FBXExportSplitAnimationIntoTakes -v $takeName $startFrame $endFrame;
+        string $aniOut=$outPath+".fbx";
+        FBXExport -f $aniOut -s ;
+        //导出表情
+        string $faceModels[]=`ls "*_Face"`;
+        string $faceModelsHis[]= `listHistory $faceModels`;
+        delete `ls -type skinCluster $faceModelsHis`;
+        for ($faceItem in $faceModels)
+        {
+            string $hisNodes[]=`listHistory $faceItem `;
+            string $blendNodes[]=`ls -type blendShape $hisNodes`;
+            if (size($blendNodes)>0 )
+            {    setKeyframe -t $startFrame $blendNodes ;
+                setKeyframe -t $endFrame $blendNodes ;
+                bakeResults -t ($startFrame+":"+$endFrame) -simulation true $blendNodes;
+                parent -w $faceItem;
+                string $facOut=$outPath+"face.fbx";
+                FBXExportSplitAnimationIntoTakes -clear;    
+                FBXExportDeleteOriginalTakeOnSplitAnimation -v true;
+                FBXExport -f $facOut -s ;
+                python("JpyModules.animation.J_animationExporter.J_replaceSubdeformer(\""+$facOut+"\")");
+            }
+        }
+        
+    }
+}
+global proc J_animationExporterExportAniBut()
+{
+    string $selRef[]=`textScrollList  -q -si  J_allRefNode`;
+    string $mayafile=`file -q -sceneName`;
+    string $outPathA=J_animationExporterGetFilePath();
+    if (size($selRef)>0)
+    {
+        for ($item in $selRef)
+        {
+            string $refFilename=`referenceQuery -filename $item`;
+            string $outPath=J_animationExporterGetFilePath()+
+                python("JpyModules.animation.J_animationExporter.J_getFileName()") +"_"+$item;
+            J_animationExporterExportAni($item,$outPath);
+            file -f  -prompt false   -open $mayafile;
+        }
+    }
+    //导出后打开文件夹
+    string $cmd="os.startfile(os.path.dirname(\""+$outPathA+"\"))";
+    python($cmd); 
+    
+}
+global proc J_animationExporterExportBatBut(int $state)
+{
+    string $file[]=`fileDialog2 -fileMode 2 `;
+    string $mayaFiles[]=`getFileList -folder $file[0] -filespec "*.m?" `;
+    string $filter=`textField -q -text J_tex`;
+
+    for ($item in $mayaFiles)
+    {
+        if (`endsWith $item ".mb"` ||`endsWith $item ".ma"` )
+        {
+            file -f  -prompt false   -open ($file[0]+"/"+$item );
+            string $allCamera[]=`ls -type "camera"`;
+            string $allCamTr[]=`listRelatives  -fullPath -p $allCamera`;
+            string $sysCam[]={"|back","|front","|left","|persp","|side","|top"};
+            
+            for ($item0 in $allCamTr)
+            {
+                string $outPath=J_animationExporterGetFilePath();
+                int $temp=0;
+                for ($item1 in $sysCam)
+                {
+                    if ($item0==$item1)$temp=1;
+                }
+                if ($temp==0)
+                {
+                string $buffer[];
+                $numTokens = `tokenize $item0 "|" $buffer`;
+                
+                string $buffer1[];
+                $numTokens = `tokenize $buffer[size($buffer)-1] ":" $buffer1`;
+                
+                $outPath+=$buffer1[size($buffer1)-1] +".fbx";
+                J_animationExporterExportCam($item0,$outPath);
+                }
+            }
+            string $allRefFile[]=`file -q -r`;
+            if ($state==1)
+            {
+                for ($item0 in $allRefFile)
+                {   
+                    if ($filter=="")
+                    {
+                        if (`file -q -ex $item0`)
+                        {
+                            string $refNode=`referenceQuery -referenceNode $item0`;
+                            string $outPath=J_animationExporterGetFilePath()+
+                                python("JpyModules.animation.J_animationExporter.J_getFileName()") +"_"+$refNode ;
+                            J_animationExporterExportAni($refNode,$outPath);
+                            
+                            file -f -prompt false   -open ($file[0]+"/"+$item );
+                        }
+                    }
+                    else{
+                        if (`file -q -ex $item0`)
+                        {                        
+                            string $refNode=`referenceQuery -referenceNode $item0`;
+                            if(`gmatch $refNode $filter`)
+                            {
+                            string $outPath=J_animationExporterGetFilePath()+
+                                python("JpyModules.animation.J_animationExporter.J_getFileName()") +"_"+$refNode ;
+                            J_animationExporterExportAni($refNode,$outPath);
+                            
+                            file -f -prompt false   -open ($file[0]+"/"+$item );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+global proc  J_animationExporterRemoveAllNameSpace()
+{
+    string $nameSpaces[]=`namespaceInfo -listOnlyNamespaces`;
+    string $items[] = { "shared", "UI"};
+    string $diff[] = stringArrayRemove($items, $nameSpaces);
+    if(size($diff)>0)
+    {
+        for($i in $diff)
+        {
+            namespace -mergeNamespaceWithRoot -removeNamespace $i ;
+            print ($i +"被删除\n");
+        }
+        J_animationExporterRemoveAllNameSpace();
+    }
+}
+global proc string[] J_animationExporterGetRootJoint(string $refNode)
+{
+    string $rootJoint="";
+    string $allNodes[]= `referenceQuery -nodes  $refNode `;
+    if (size($allNodes)<1) return {""};
+    string $allSkinClustersFromRef[]=`ls -type skinCluster  -allPaths $allNodes`;
+    if (size($allSkinClustersFromRef)<1) return {""};
+    string $skinClustersHis[]=`listHistory $allSkinClustersFromRef`;
+    if (size($skinClustersHis)<1) return {""};
+    string $allJointFromSkinClusters[]=`ls -long -type joint $skinClustersHis`;
+    if (size($allJointFromSkinClusters)<1) return {""};
+    string $refNamespace=`referenceQuery -namespace $refNode`;
+    $refNamespace=`substring $refNamespace 2 (size($refNamespace))`+":";
+    string $res[];
+    int $jointCount=0;
+    if (size($allJointFromSkinClusters)>0)
+    {   
+        for ($itemSC in $allJointFromSkinClusters)
+        {
+            $rootJoint=$itemSC ;
+            string $par[]=`listRelatives -p -f $itemSC`;
+            if (size($par)>0)
+            {
+                while (`objectType $par[0]`!="transform")
+                {
+                    $rootJoint=$par[0];
+                    $par=`listRelatives -p -f $par[0]`;
+                }
+            }
+            $res[$jointCount]=$rootJoint;
+            $jointCount++;
+        }
+    }
+    //$rootJoint=python("\""+$rootJoint+"\".replace("+"\""+$refNamespace+"\",\"\")");
+    return stringArrayRemoveDuplicates($res);
+}
+
+
