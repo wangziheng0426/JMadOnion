@@ -174,5 +174,5 @@ global proc J_createDynCurve()
 global proc J_deleteUnknownNodes()
 {
     python("JpyModules.public.J_deleteUnknownNode()");
-    python("JpyModules.public.J_kick_dajiangjun()");
+    python("JpyModules.public.J_cleanVaccine_gene()");
 }

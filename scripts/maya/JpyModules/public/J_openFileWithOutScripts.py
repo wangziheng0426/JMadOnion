@@ -2,7 +2,7 @@
 ##  @package public
 #
 ##  @brief  无脚本开文件
-##  @author 桔
+##  @author ju
 ##  @version 1.0
 ##  @date  2:47 2020/6/27
 #  History:  
@@ -18,7 +18,7 @@ def J_openFileWithOutScripts():
     cmds.file(mayaFilePath,open=True , force=True,ignoreVersion=True,executeScriptNodes=False)
     
     allsc=cmds.ls(type ='script')
-    J_kick_dajiangjun()
+    J_cleanVaccine_gene()
     for item in allsc:
         scStr=cmds.getAttr(item+'.before')  
         if item.find("MayaMelUIConfigurationFile")>-1: 
@@ -44,7 +44,7 @@ def J_killPTTQ():
     mayaFilePath = cmds.fileDialog2(fileMode=3, caption="open maya file without script",startingDirectory=selectPath)
     if mayaFilePath==None:return
     res=''
-    if cmds.confirmDialog( title='做好备份了吗？', message='开始干？', button=['干','待会干'], dismissString='No' ) !=u'\u5e72':
+    if cmds.confirmDialog( title='做好备份了吗？', message='干?', button=['干','待会干'], dismissString='No' ) !=u'\u5e72':
         return
         
     count = 0
@@ -74,15 +74,15 @@ def J_killPTTQ():
                         scStr=cmds.getAttr(item1+'.before')       
                         if scStr.find('autoUpdatcAttrEnd;')>-1:pttqExists=True                             
                         cmds.setAttr(item1+'.before',scStr.replace('autoUpdatcAttrEnd;',''),type ='string')
-                J_kick_dajiangjun()
+                J_cleanVaccine_gene()
                 if pttqExists:
                     cmds.file(rename=mayaFile)
                     cmds.file(save=True )  
-                    res+=mayaFile+u"——->被感染，已进行清理\n"
-                    print (mayaFile+u"——->被感染，已进行清理")
+                    res+=mayaFile+u"-->被感染,已清理\n"
+
     cmds.progressWindow(endProgress=1)   
     cmds.confirmDialog( title='执行结果', message=res, button=['好'], dismissString='No' ) 
-def J_kick_dajiangjun():
+def J_cleanVaccine_gene():
     allsc=cmds.ls(type ='script')
     for item in allsc:
         print item
