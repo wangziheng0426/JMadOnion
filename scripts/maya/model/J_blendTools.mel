@@ -155,7 +155,7 @@ global proc J_blendTools_chGemo()
 }
 global proc J_blendTools_combinBlend()
 {
-
+    python("JpyModules.model.J_blendTools.J_combinBlendShape()")
 }
 global proc J_blendTools_combinBlendCsv()
 {

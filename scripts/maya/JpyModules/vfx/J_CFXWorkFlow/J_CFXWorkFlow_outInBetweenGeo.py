@@ -31,7 +31,7 @@ def J_CFXWorkFlow_outInBetweenGeo(sample=1,sourceGeo=[],startTime=-1,endTime=0):
                 if cmds.getAttr((item1+'.intermediateObject')):
                     print item1
                     cmds.delete(item1)
-            dupGeo=cmds.rename(dupGeo,dupGeo+str(i))        
+            #dupGeo=cmds.rename(dupGeo,dupGeo+str(i))        
             #dupGeo='|'+cmds.parent( dupGeo, world=True )[0]
             #cmds.select(dupGeo)
             #mel.eval("FreezeTransformations")

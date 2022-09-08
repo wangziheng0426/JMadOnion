@@ -32,6 +32,7 @@
   <MainMenu> 动画工具 anim </MainMenu>  
   <SubMenu> 拍平工具 J_playBlastTool animation/J_playBlastTool.mel </SubMenu>
   <SubMenu> 批量导动画 J_animationExporter animation/J_animationExporter.mel </SubMenu>  
+  <SubMenu> 虚拟人工具 J_visualCharacterTool animation/J_visualCharacterTool.mel </SubMenu>  
   <MainMenu> 渲染工具 render </MainMenu>  
   <SubMenu> 自动分层 J_autoLayer render/J_autoLayer.mel </SubMenu>
   #<SubMenu> 前台渲染 J_perFrameRender render/J_perFrameRender.mel </SubMenu> 
