@@ -1,0 +1,80 @@
+/////////////////////////////////////////////////////////////
+///\file J_visualCharacterTool.mel
+///\brief 动画关键帧浏览工具
+///
+///\author 桔
+///\version 1.0
+///\date  18:45 2019/8/21
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///打开主界面窗口
+///\return success
+global proc  string J_visualCharacterTool()
+{
+    if (`window -ex J_visualCharacterToolWin`)
+        deleteUI -window J_visualCharacterToolWin;
+    window -w 300 -h 250 -title "虚拟角色工具箱" J_visualCharacterToolWin;
+    formLayout  -nd 100   J_visualCharacterToolWin_mainFormLayout;
+
+    string $button01=`button -l "导出fbx" -c "J_visualCharacterTool_exportFbx()"`;
+    string $button02=`button -l "导出abc" -c "J_visualCharacterTool_exportAbc()"`;
+    string $button03=`button -l "导入metaHumanJson" -c "J_visualCharacterTool_importJson()"`;
+
+    
+
+    formLayout  -e
+        -af $button01 top 3
+        -af $button01 left 2
+        -af $button01 right 2
+
+        -ac $button02 top 3 $button01
+        -af $button02 left 2
+        -af $button02 right 2
+
+        -ac $button03 top 3 $button02
+        -af $button03 left 2
+        -af $button03 right 2
+        
+        J_visualCharacterToolWin_mainFormLayout;
+
+    showWindow J_visualCharacterToolWin;
+    return "success";
+}
+global proc J_visualCharacterTool_exportFbx()
+{
+    python("import os");
+    string $filePath=python("os.path.dirname(maya.cmds.file(query=True,sceneName=True))")+"/";
+    if (size ($filePath)<3)
+        $filePath= "c:/temp/";
+    string $sel[]=`ls -sl`;  
+    if (size($sel)>0)
+    {
+    string $outPath=$filePath+$sel[0]+".fbx";
+    print $outPath;
+    int $startFrame=`playbackOptions -query -minTime`;
+    int $endFrame=`playbackOptions -query -maxTime`+1;
+    FBXResetExport ;
+    FBXExportInAscii  -v true;
+    FBXExportBakeComplexAnimation -v 1;    
+    FBXExportBakeComplexStart -v $startFrame;
+    FBXExportBakeComplexEnd -v $endFrame;
+    FBXExportBakeResampleAnimation -v 1;
+    FBXExportInAscii -v 1;
+    FBXExportIncludeChildren -v 1;
+    FBXExportSplitAnimationIntoTakes -clear;    
+    FBXExportDeleteOriginalTakeOnSplitAnimation -v true;
+    FBXExportSplitAnimatiaaaonIntoTakes -v "cam" $startFrame $endFrame;
+    FBXExport -f $outPath -s ;
+    }
+}
+global proc J_visualCharacterTool_exportAbc()
+{
+    python("JpyModules.public.J_exportAbc(1)");
+}
+global proc J_visualCharacterTool_importJson()
+{
+    python("JpyModules.animation.J_visualCharacterTool.J_loadJsonKeyFrame()");
+}
+//J_visualCharacterTool()
