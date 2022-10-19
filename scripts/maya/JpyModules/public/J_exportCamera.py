@@ -71,6 +71,6 @@ def J_excuteSelectionToObj():
         cmds.select(item)
         cmds.file((filePath+item+'.obj'), force=True ,
         options= "groups=1;ptgroups=1;materials=1;smoothing=1;normals=1" ,type ='OBJexport' ,es=True )
-J_excuteSelectionToObj()
+
 if __name__ == '__main__':
     J_exportCamera()

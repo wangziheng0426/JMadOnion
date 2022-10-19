@@ -17,18 +17,20 @@ def J_exportAbc(model=0):
     timeLineEnd=cmds.playbackOptions(query=True,maxTime=True)
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     cacheFileName=cmds.file(query=True,sceneName=True,shortName=True)[0:-3]
+    if filePath=='':filePath='c:/'
+    if cacheFileName=='':cacheFileName='temp'
     j_abcCachePath=filePath+cacheFileName+'_cache/'
     if not os.path.exists(j_abcCachePath):
         os.makedirs(j_abcCachePath)
     if model==0:   
-        exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -dataFormat hdf '    
+        exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -writeFaceSets -worldSpace -dataFormat ogawa '    
         for item in selection:
             exportString+=' -root '+item
         exportString+=' -file '+j_abcCachePath+cacheFileName+'.abc"'
         mel.eval(exportString)
     
     if model==1:
-        exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -worldSpace -dataFormat hdf '
+        exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -writeFaceSets -worldSpace -dataFormat ogawa '
         for item in selection:            
             exportStringa=exportString+' -root '+item
             itemName=item.split('|')[-1].replace(':','@')
