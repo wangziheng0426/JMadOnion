@@ -22,14 +22,24 @@ def J_loadJsonKeyFrame():
         frameRate= mydic[frameRate]
     else:
         frameRate=24
-    for k,v in ss.items():
-        for item in v:
-            ctrlName=item['name'].split('.')
-            if len(ctrlName)<2:continue
-            if cmds.objExists(ctrlName[0]) and ctrlName[1]=='position':
-                #print ctrlName[0]
-                for k1,v1 in item['times'].items():
-                    vId=int(k1)*3
-                    cmds.setKeyframe(ctrlName[0],t=float(v1)*frameRate,v=float(item['values'][str(vId)]),attribute='translateX')
-                    cmds.setKeyframe(ctrlName[0],t=float(v1)*frameRate,v=float(item['values'][str(vId+1)]),attribute='translateY')
-                    cmds.setKeyframe(ctrlName[0],t=float(v1)*frameRate,v=float(item['values'][str(vId+2)]),attribute='translateZ')
+    sel=cmds.ls(sl=True)
+    if len(sel)<1:
+        for k,v in ss.items():
+            for item in v:
+                ctrlName=item['name'].split('.')
+                if len(ctrlName)<2:continue
+                if cmds.objExists(ctrlName[0]) and ctrlName[1]=='position':
+                    #print ctrlName[0]
+                    for k1,v1 in item['times'].items():
+                        vId=int(k1)*3
+                        cmds.setKeyframe(ctrlName[0],t=float(v1)*frameRate,v=float(item['values'][str(vId)]),attribute='translateX')
+                        cmds.setKeyframe(ctrlName[0],t=float(v1)*frameRate,v=float(item['values'][str(vId+1)]),attribute='translateY')
+                        cmds.setKeyframe(ctrlName[0],t=float(v1)*frameRate,v=float(item['values'][str(vId+2)]),attribute='translateZ')
+    else:
+        for obj in sel:
+            blendShapes=cmds.ls(cmds.listHistory(cmds.ls(sl=True)),type='blendShape')
+            for bs in blendShapes:
+                for k,v in ss.items():
+                    if cmds.attributeQuery(k,node=bs,ex=True):
+                        for index in range(0,len(v)-1):
+                            cmds.setKeyframe(bs,t=index,v=v[index])
