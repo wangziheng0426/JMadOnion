@@ -42,4 +42,4 @@ def J_loadJsonKeyFrame():
                 for k,v in ss.items():
                     if cmds.attributeQuery(k,node=bs,ex=True):
                         for index in range(0,len(v)-1):
-                            cmds.setKeyframe(bs,t=index,v=v[index])
+                            cmds.setKeyframe(bs+'.'+k,t=index,v=v[index])

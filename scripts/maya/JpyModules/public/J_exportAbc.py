@@ -36,7 +36,20 @@ def J_exportAbc(model=0):
             itemName=item.split('|')[-1].replace(':','@')
             exportStringa+=' -file '+j_abcCachePath+cacheFileName+'_'+itemName+'.abc"'
             mel.eval(exportStringa)
-    
+    if model==2:        
+        for item in selection: 
+            exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -writeFaceSets -worldSpace -dataFormat ogawa '
+            exportString+=' -root '+item
+            abcOutName=''
+            if cmds.referenceQuery(item,isNodeReferenced=True):     
+                abcOutName='['+os.path.basename(cmds.referenceQuery(cmds.ls(sl=True)[0],filename=True))[0:-3]+']'
+                abcOutName+=cmds.referenceQuery(cmds.ls(sl=True)[0],referenceNode=True) +'@'
+                abcOutName+=item.split('|')[-1].split(':')[-1]
+            else:
+                abcOutName=item.split('|')[-1].replace(':','@')
+
+            exportString+=' -file '+j_abcCachePath+cacheFileName+'_'+abcOutName+'.abc"'
+            mel.eval(exportString)
     
     os.startfile(j_abcCachePath)    
 if __name__ == "__main__":
