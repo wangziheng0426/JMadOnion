@@ -6,4 +6,3 @@ import J_nHairTool
 import J_yetiPlug
 
 from hairFollicleOverAttrRandom import *
-from J_combinAbcCache import *
