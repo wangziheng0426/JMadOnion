@@ -20,8 +20,8 @@ global proc  string J_visualCharacterTool()
 
     string $button01=`button -l "导出fbx" -c "J_visualCharacterTool_exportFbx()"`;
     string $button02=`button -l "导出abc" -c "J_visualCharacterTool_exportAbc()"`;
-    string $button03=`button -l "导入metaHumanJson" -c "J_visualCharacterTool_importJson()"`;
-
+    string $button03=`button -l "导入meta&ak数据" -c "J_visualCharacterTool_importJson()"`;
+    string $button04=`button -l "导入训练数据" -c "J_visualCharacterTool_importAIJson()"`;
     
 
     formLayout  -e
@@ -37,6 +37,10 @@ global proc  string J_visualCharacterTool()
         -af $button03 left 2
         -af $button03 right 2
         
+        -ac $button04 top 3 $button03
+        -af $button04 left 2
+        -af $button04 right 2
+
         J_visualCharacterToolWin_mainFormLayout;
 
     showWindow J_visualCharacterToolWin;
@@ -76,5 +80,9 @@ global proc J_visualCharacterTool_exportAbc()
 global proc J_visualCharacterTool_importJson()
 {
     python("JpyModules.animation.J_visualCharacterTool.J_loadJsonKeyFrame()");
+}
+global proc J_visualCharacterTool_importAIJson()
+{
+    python("JpyModules.animation.J_visualCharacterTool.J_loadAIJsonKeyFrame()");
 }
 //J_visualCharacterTool()
