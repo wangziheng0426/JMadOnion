@@ -24,7 +24,7 @@ def J_CFXWorkFlow_outAbcGeo(selectedNodes=[],cacheFileName='',model=0):
         selectedNodes=J_CFXWorkFlow_getAllMeshUnderSelections(cmds.ls(sl=True,long=True))
     j_clothCachePath=filePath+cacheFileName+'_cache/'
     if not os.path.exists(j_clothCachePath):
-            os.makedirs(j_clothCachePath)
+        os.makedirs(j_clothCachePath)
     logFile=j_clothCachePath+cacheFileName+'.Jcc'
     logStr={}
     logStr[cacheFileName]={}
