@@ -22,9 +22,10 @@ global proc  string J_visualCharacterTool()
     string $button02=`button -l "导出abc" -c "J_visualCharacterTool_exportAbc()"`;
     string $button03=`button -l "导入meta&ak数据" -c "J_visualCharacterTool_importJson()"`;
     string $button04=`button -l "导入训练数据" -c "J_visualCharacterTool_importAIJson()"`;
+    string $button05=`button -l "导入训练数据2" -c "J_visualCharacterTool_importAIJson2()"`;
     textField    J_tex;
-    string $button05=`button -l "读取音视频帧数" -c "J_visualCharacterTool_loadFrame()"`;
-    string $button06=`button -l "过滤动画数据" -c "J_visualCharacterTool_deleteFrame()"`;
+    string $button06=`button -l "读取音视频帧数" -c "J_visualCharacterTool_loadFrame()"`;
+    string $button07=`button -l "过滤动画数据" -c "J_visualCharacterTool_deleteFrame()"`;
 
     formLayout  -e
         -af $button01 top 3
@@ -41,19 +42,23 @@ global proc  string J_visualCharacterTool()
         
         -ac $button04 top 3 $button03
         -af $button04 left 2
-        -af $button04 right 2
+        -af $button04 right 2        
 
-        -ac J_tex top 3 $button04
-        -af J_tex left 2
-        -af J_tex right 2
-
-        -ac $button05 top 3 J_tex
+        -ac $button05 top 3 $button04
         -af $button05 left 2
         -af $button05 right 2
 
-        -ac $button06 top 3 $button05
+        -ac J_tex top 3 $button05
+        -af J_tex left 2
+        -af J_tex right 2
+
+        -ac $button06 top 3 J_tex
         -af $button06 left 2
         -af $button06 right 2
+
+        -ac $button07 top 3 $button06
+        -af $button07 left 2
+        -af $button07 right 2
 
         J_visualCharacterToolWin_mainFormLayout;
 
@@ -99,7 +104,10 @@ global proc J_visualCharacterTool_importAIJson()
 {
     python("JpyModules.animation.J_visualCharacterTool.J_loadAIJsonKeyFrame()");
 }
-
+global proc J_visualCharacterTool_importAIJson2()
+{
+    python("JpyModules.animation.J_visualCharacterTool.J_loadAIJsonKeyFrame2()");
+}
 global proc J_visualCharacterTool_loadFrame()
 {
     python("JpyModules.animation.J_visualCharacterTool.J_loadVideoFrame()");

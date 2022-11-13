@@ -66,5 +66,29 @@ def J_loadAIJsonKeyFrame():
                     for index in range(0,len(v)-1):
                         cmds.setKeyframe(bs+'.'+k,t=index,v=v[index])
 
+
+def J_loadAIJsonKeyFrame2():
+    j_jsonFile = cmds.fileDialog2(fileMode=1, caption="Import keys from json")
+    if j_jsonFile is None:
+        return
+    fileName=j_jsonFile[0]
+    fileI=open(fileName,'r')
+    ss=json.load(fileI)
+    fileI.close()
+    mydic={'game':15,'film':24,'pal':25,'ntsc':30,'show':48,'palf':50,'ntscf':60}
+    frameRate=cmds.currentUnit(query=True,time=True)
+    if frameRate in mydic:
+        frameRate= mydic[frameRate]
+    else:
+        frameRate=24
+    sel=cmds.ls(sl=True)
+    if len(sel)>0:
+        for bs in cmds.ls(cmds.listHistory(sel),type='blendShape'):
+            for k,v in ss.items():
+            	#print k
+                for ki,vi  in v.items():
+                    print (str(ki)+'  '+str(vi))
+                    if cmds.attributeQuery(ki,node=bs,ex=True):
+	                    cmds.setKeyframe(bs+'.'+ki,t=k,v=vi)
 if __name__=='__main__':
     J_loadJsonKeyFrame()
