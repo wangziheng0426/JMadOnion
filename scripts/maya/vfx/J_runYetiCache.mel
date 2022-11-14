@@ -25,7 +25,7 @@ if (`window -ex runYetiCacheWin`)
         int $ButtonH=30;
         frameLayout -cll 1 -cl 0 -h ($count*20) -l "yeti批量缓存"  myColum;
         formLayout  -numberOfDivisions 100  yetiCacheLayout;
-        textScrollList -width 300  -h 300 -sc "J_selectYetiNode" -allowMultiSelection 1 yetiList;
+        textScrollList  -sc "J_selectYetiNode" -allowMultiSelection 1 yetiList;
         radioButtonGrp -numberOfRadioButtons 2 -select 2
                 -label "yeti版本" -labelArray2 "2.1.6之前版本"  "2.1.6及之后" rbg;
 
@@ -45,6 +45,9 @@ if (`window -ex runYetiCacheWin`)
         button -l "关闭缓存"   -c  "J_runYetiCacheDisableCache" buDisableCache ;
         button -l "显示yeti节点"   -c  "J_runYetiCacheDisplayYetiMaya" buDisplayYetiMaya ;
         button -l "根据log导入缓存"   -c  "J_runYetiCacheImportCache" buImportCache ;
+
+        button -l "曲线转groom"   -c  "J_convertCurvesToYetiGroom" buConvertToGroom;
+        button -l "重定向贴图"   -c  "" buReplaceTexture;
     /////////////////////////////////////////////////////////
     int $apx=5;
     int $apy=5;
@@ -53,6 +56,7 @@ if (`window -ex runYetiCacheWin`)
         -ap yetiList left 0 1
         -af yetiList top 0
         -ap yetiList right 0 99
+        -af yetiList bottom 300
 
         -af rbg left -15
         -ac rbg top $apy yetiList
@@ -116,6 +120,14 @@ if (`window -ex runYetiCacheWin`)
         -af buImportCache left $apx  
         -ac buImportCache top $apy buDisplayYetiMaya
         -ap buImportCache right 0 99
+
+        -af buConvertToGroom left $apx  
+        -ac buConvertToGroom top $apy buImportCache
+        -ap buConvertToGroom right 0 99
+
+        -af buReplaceTexture left $apx  
+        -ac buReplaceTexture top $apy buConvertToGroom
+        -ap buReplaceTexture right 0 99
 
         yetiCacheLayout;
 
@@ -224,4 +236,15 @@ global proc J_selectYetiNode()
 {
     string $yetiNodes[]=`textScrollList -q -si yetiList`;
     select $yetiNodes;
+}
+
+global proc J_convertCurvesToYetiGroom()
+{
+    string $sel[]=`ls -sl`;
+    select -d $sel[size($sel)-1];
+    CreateSet;
+    string $sets[]=`listConnections  -type "objectSet" $sel[0]`;
+    string $shape[]=`listRelatives -c -s $sel[size($sel)-1]`;
+    pgYetiConvertGuideSetToGroom($sets[0],$shape[0],0.1);
+
 }
