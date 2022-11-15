@@ -26,6 +26,7 @@ global proc  string J_visualCharacterTool()
     textField    J_tex;
     string $button06=`button -l "读取音视频帧数" -c "J_visualCharacterTool_loadFrame()"`;
     string $button07=`button -l "过滤动画数据" -c "J_visualCharacterTool_deleteFrame()"`;
+    string $button08=`button -l "绑定BS控制器" -c "J_visualCharacterTool_bindBSController()"`;
 
     formLayout  -e
         -af $button01 top 3
@@ -59,6 +60,10 @@ global proc  string J_visualCharacterTool()
         -ac $button07 top 3 $button06
         -af $button07 left 2
         -af $button07 right 2
+
+        -ac $button08 top 3 $button07
+        -af $button08 left 2
+        -af $button08 right 2
 
         J_visualCharacterToolWin_mainFormLayout;
 
@@ -144,5 +149,8 @@ global proc J_visualCharacterTool_deleteFrame()
         }
     }
 }
-
+global proc J_visualCharacterTool_bindBSController()
+{
+    python("JpyModules.animation.J_visualCharacterTool.J_bindBsController()");
+}
 //J_visualCharacterTool()
