@@ -237,7 +237,7 @@ global proc J_selectYetiNode()
     string $yetiNodes[]=`textScrollList -q -si yetiList`;
     select $yetiNodes;
 }
-
+//×ªÇúÏßÎªgroom
 global proc J_convertCurvesToYetiGroom()
 {
     string $sel[]=`ls -sl`;
