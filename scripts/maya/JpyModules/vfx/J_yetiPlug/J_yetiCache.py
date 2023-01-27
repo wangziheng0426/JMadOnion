@@ -28,9 +28,35 @@ def J_yetiLoadCache():
         yetiNode=v['yetiNodeName']
         if not cmds.objExists(yetiNode):
             cmds.createNode('pgYetiMaya',n=yetiNode)
+            cmds.connectAttr('time1.outTime',yetiNode+'.currentTime')
         cmds.setAttr(yetiNode+".cacheFileName",cachePath+'/'+v['yetiCacheName'],type='string')
         cmds.setAttr(yetiNode+".fileMode",1)
-        cmds.connectAttr('time1.outTime',yetiNode+'.currentTime')
+        
+        #导入材质球
+        if cmds.objExists(v['yetiSG']):
+            continue
+        sgNode=cmds.sets(renderable=True,noSurfaceShader=True,empty=True, name=v['yetiSG']);
+        shaderFile=cachePath+'/'+v['yetiShaderPath']
+        shaderFileStr=open(shaderFile,'r')
+        itemInLines=shaderFileStr.readlines()
+        shaderFileStr.close()
+
+        for lineId in range(4,len(itemInLines)-1,1):
+            #print itemInLines[lineId]
+            #print '-----------'
+            try:
+                mel.eval(itemInLines[lineId])
+            except:
+                pass
+        cmds.connectAttr(v['yetiShaderName']+'.outColor',sgNode+'.surfaceShader')
+        cmds.sets(yetiNode,fe='a:aiStandardHair1SG', e=True)
+        #导入预设
+        presetsPath=cmds.internalVar(userPresetsDir=True)+'/attrPresets/pgYetiMaya/'
+        if not os.path.exists(presetsPath):
+            os.makedirs(presetsPath)
+        shutil.copy(cachePath+'/'+v['yetiPreset'],presetsPath)
+        cmds.select(yetiNode)
+        mel.eval('applyAttrPreset '+yetiNode+' '+yetiNode.replace(':','_')+' 1')
 def J_yetiSaveCache():
     logFile={}
     yetiList=cmds.textScrollList('yetiList',q=True ,si=True)
@@ -77,10 +103,13 @@ def J_yetiSaveCache():
             #保存材质
             shaderPath=J_exportYetiShader(yetiCachePath,item)
             logFile[countTemp]['yetiSG']=''
+            logFile[countTemp]['yetiShaderName']=''
             logFile[countTemp]['yetiShaderPath']=''
             if shaderPath !='':
                 logFile[countTemp]['yetiSG']=cmds.ls(cmds.listConnections(item,connections=True,destination=True),type ='shadingEngine')[0]
                 logFile[countTemp]['yetiShaderPath']=shaderPath
+                if cmds.connectionInfo(logFile[countTemp]['yetiSG']+'.surfaceShader', isDestination=1):
+                    logFile[countTemp]['yetiShaderName']=(cmds.listConnections(logFile[countTemp]['yetiSG']+'.surfaceShader',connections=True,destination=True)[1])
             #print logFile
             countTemp=countTemp+1
     if len(yetiList)>0 and optionVersion==2:
@@ -103,10 +132,13 @@ def J_yetiSaveCache():
             #保存材质
             shaderPath=J_exportYetiShader(yetiCachePath,item)
             logFile[countTemp]['yetiSG']=''
+            logFile[countTemp]['yetiShaderName']=''
             logFile[countTemp]['yetiShaderPath']=''
             if shaderPath !='':
                 logFile[countTemp]['yetiSG']=cmds.ls(cmds.listConnections(item,connections=True,destination=True),type ='shadingEngine')[0]
                 logFile[countTemp]['yetiShaderPath']=shaderPath
+                if cmds.connectionInfo(logFile[countTemp]['yetiSG']+'.surfaceShader', isDestination=1):
+                    logFile[countTemp]['yetiShaderName']=(cmds.listConnections(logFile[countTemp]['yetiSG']+'.surfaceShader',connections=True,destination=True)[1])
             countTemp=countTemp+1
         cmds.select(yetiList)
         cacheFilePathName=yetiCachePath+'<NAME>_%04d.fur'
@@ -138,6 +170,7 @@ def J_yetiSaveCache():
 
 #针对yeti材质，仅导出第一个，并返回文件名
 def J_exportYetiShader(yetiCachePath,currentYetiNode):
+    #创建文件夹
     shaderFilePath=yetiCachePath+'shaders/'
     if not os.path.exists(shaderFilePath):        
         os.makedirs(shaderFilePath)
@@ -147,7 +180,10 @@ def J_exportYetiShader(yetiCachePath,currentYetiNode):
     if sgNodes[0]=='initialShadingGroup':return ''
 
     outShaderFIlePath=shaderFilePath+currentYetiNode.replace(':','_')+'.ma'
-    cmds.select(sgNodes[0])
+    #选择surfaceshader对应的材质
+    #if cmds.listConnections(sgNodes[0]+'.surfaceShader',connections=True,destination=True) ==None:return ''
+    if not cmds.connectionInfo(sgNodes[0]+'.surfaceShader', isDestination=1):return ''
+    cmds.select(cmds.listConnections(sgNodes[0]+'.surfaceShader',connections=True,destination=True)[1])
     if os.path.exists(outShaderFIlePath):
         os.remove(outShaderFIlePath)
     cmds.file(outShaderFIlePath,op='v=0;',typ="mayaAscii", es=True)

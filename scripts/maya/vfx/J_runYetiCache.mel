@@ -44,7 +44,7 @@ if (`window -ex runYetiCacheWin`)
         button -l "为选择的yeti建立缓存" -w $ButtonW  -h $ButtonH -c  "runYetiCacheBtn" buUpS ;
         button -l "关闭缓存"   -c  "J_runYetiCacheDisableCache" buDisableCache ;
         button -l "显示yeti节点"   -c  "J_runYetiCacheDisplayYetiMaya" buDisplayYetiMaya ;
-        button -l "根据log导入缓存"   -c  "J_runYetiCacheImportCache" buImportCache ;
+        button -l "导入缓存"   -c  "J_runYetiCacheImportCache" buImportCache ;
 
         button -l "曲线转groom"   -c  "J_convertCurvesToYetiGroom" buConvertToGroom;
         button -l "重定向贴图"   -c  "" buReplaceTexture;
