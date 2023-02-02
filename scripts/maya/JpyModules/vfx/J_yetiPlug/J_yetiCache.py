@@ -28,28 +28,19 @@ def J_yetiLoadCache():
         yetiNode=v['yetiNodeName']
         if not cmds.objExists(yetiNode):
             cmds.createNode('pgYetiMaya',n=yetiNode)
-            cmds.connectAttr('time1.outTime',yetiNode+'.currentTime')
-        cmds.setAttr(yetiNode+".cacheFileName",cachePath+'/'+v['yetiCacheName'],type='string')
-        cmds.setAttr(yetiNode+".fileMode",1)
-        
+            cmds.connectAttr('time1.outTime',yetiNode+'.currentTime')  
         #导入材质球
         if cmds.objExists(v['yetiSG']):
             continue
         sgNode=cmds.sets(renderable=True,noSurfaceShader=True,empty=True, name=v['yetiSG']);
-        shaderFile=cachePath+'/'+v['yetiShaderPath']
-        shaderFileStr=open(shaderFile,'r')
-        itemInLines=shaderFileStr.readlines()
-        shaderFileStr.close()
+        shaderFile=cachePath+'/'+v['yetiShaderPath'] 
+        try:
+            cmds.file(shaderFile,i=1,type="mayaAscii",ignoreVersion=1,ra=1,mergeNamespacesOnClash=1,ns=":")
+        except:
+            pass
 
-        for lineId in range(4,len(itemInLines)-1,1):
-            #print itemInLines[lineId]
-            #print '-----------'
-            try:
-                mel.eval(itemInLines[lineId])
-            except:
-                pass
         cmds.connectAttr(v['yetiShaderName']+'.outColor',sgNode+'.surfaceShader')
-        cmds.sets(yetiNode,fe='a:aiStandardHair1SG', e=True)
+        cmds.sets(yetiNode,fe=sgNode, e=True)
         #导入预设
         presetsPath=cmds.internalVar(userPresetsDir=True)+'/attrPresets/pgYetiMaya/'
         if not os.path.exists(presetsPath):
@@ -57,6 +48,8 @@ def J_yetiLoadCache():
         shutil.copy(cachePath+'/'+v['yetiPreset'],presetsPath)
         cmds.select(yetiNode)
         mel.eval('applyAttrPreset '+yetiNode+' '+yetiNode.replace(':','_')+' 1')
+        cmds.setAttr(yetiNode+".fileMode",1)
+        cmds.setAttr(yetiNode+".cacheFileName",cachePath+'/'+v['yetiCacheName'],type='string')
 def J_yetiSaveCache():
     logFile={}
     yetiList=cmds.textScrollList('yetiList',q=True ,si=True)
