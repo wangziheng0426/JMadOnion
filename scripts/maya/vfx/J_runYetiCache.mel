@@ -175,7 +175,7 @@ global proc J_runYetiCacheInit()
 //输出列表中所选yeti节点缓存
 global proc runYetiCacheBtn()
 {
-    python("JpyModules.vfx.J_yetiPlug.J_yetiSaveCache()");
+    python("JpyModules.vfx.J_yetiTool.J_yetiSaveCache()");
 }
 
 
@@ -184,13 +184,13 @@ global proc runYetiCacheAllBtn()
     string $allYetiNode[]=`textScrollList -q -ai yetiList`;
     for ($i in  $allYetiNode)
     {textScrollList -e -si $i yetiList;}
-    python("JpyModules.vfx.J_yetiPlug.J_yetiSaveCache()");
+    python("JpyModules.vfx.J_yetiTool.J_yetiSaveCache()");
 }
 
 
 global proc J_runYetiCacheImportCache()
 {
-    python("JpyModules.vfx.J_yetiPlug.J_yetiLoadCache()");
+    python("JpyModules.vfx.J_yetiTool.J_yetiLoadCache()");
 }
 global proc J_runYetiCacheDisableCache()
 {

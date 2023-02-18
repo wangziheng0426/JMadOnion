@@ -30,17 +30,17 @@ def J_yetiLoadCache():
             cmds.createNode('pgYetiMaya',n=yetiNode)
             cmds.connectAttr('time1.outTime',yetiNode+'.currentTime')  
         #导入材质球
-        if cmds.objExists(v['yetiSG']):
-            continue
-        sgNode=cmds.sets(renderable=True,noSurfaceShader=True,empty=True, name=v['yetiSG']);
-        shaderFile=cachePath+'/'+v['yetiShaderPath'] 
-        try:
-            cmds.file(shaderFile,i=1,type="mayaAscii",ignoreVersion=1,ra=1,mergeNamespacesOnClash=1,ns=":")
-        except:
-            pass
-
-        cmds.connectAttr(v['yetiShaderName']+'.outColor',sgNode+'.surfaceShader')
-        cmds.sets(yetiNode,fe=sgNode, e=True)
+        if not cmds.objExists(v['yetiSG']):            
+            sgNode=cmds.sets(renderable=True,noSurfaceShader=True,empty=True, name=v['yetiSG']);
+            shaderFile=cachePath+'/'+v['yetiShaderPath'] 
+            if os.path.exists(shaderFile):
+                try:
+                    cmds.file(shaderFile,i=1,type="mayaAscii",ignoreVersion=1,ra=1,mergeNamespacesOnClash=1,ns=":")
+                except:
+                    pass
+            if v['yetiShaderName']!="" and cmds.objExists(v['yetiShaderName']):
+                cmds.connectAttr(v['yetiShaderName']+'.outColor',sgNode+'.surfaceShader')
+            cmds.sets(yetiNode,fe=sgNode, e=True)
         #导入预设
         presetsPath=cmds.internalVar(userPresetsDir=True)+'/attrPresets/pgYetiMaya/'
         if not os.path.exists(presetsPath):
@@ -49,7 +49,10 @@ def J_yetiLoadCache():
         cmds.select(yetiNode)
         mel.eval('applyAttrPreset '+yetiNode+' '+yetiNode.replace(':','_')+' 1')
         cmds.setAttr(yetiNode+".fileMode",1)
-        cmds.setAttr(yetiNode+".cacheFileName",cachePath+'/'+v['yetiCacheName'],type='string')
+        try:
+            cmds.setAttr(yetiNode+".cacheFileName",cachePath+'/'+v['yetiCacheName'],type='string')
+        except:
+            pass
 def J_yetiSaveCache():
     logFile={}
     yetiList=cmds.textScrollList('yetiList',q=True ,si=True)
@@ -152,7 +155,7 @@ def J_yetiSaveCache():
             for k,v in logFile.items():
                 if v["yetiNodeName"]==item:
                     cmds.setAttr(item+".cacheFileName",yetiCachePath+v['yetiCacheName'],type='string')
-                    #cmds.setAttr(item+".fileMode",1)
+                    cmds.setAttr(item+".fileMode",1)
 
     #savelog
     logPath=yetiCachePath+'cacheLog.jyc'
