@@ -5,7 +5,7 @@
 ///\author 桔
 ///\version 1.4.2
 ///\date  9:45 2022/4/6
-///History:  解决了多take名称问题,优化一键导出功能,增加骨骼搜索机制,角色如果存在Bone_Broom_01,则使用Bone_Broom_01,如果不存在,则查找DeformationSystem下的第一个骨骼
+///History:  导出动画工具
 ///
 ///////////////////////////////////////////////////////////////
 global proc J_animationExporter()//主窗口
@@ -13,15 +13,54 @@ global proc J_animationExporter()//主窗口
     if (`window -ex J_animationExporterWin`)
         deleteUI -window J_animationExporterWin;
     window -w 300 -h 360 -title "动画导出" J_animationExporterWin;
-    formLayout  -numberOfDivisions 100  J_animationExporterFromLayout;
-        textScrollList  -sc "J_animationExporterSelitem"  -allowMultiSelection 1  J_allCameraNode;
-        textScrollList  -sc "" -allowMultiSelection 1 J_allRefNode;
-        button -l "导出相机" -c  "J_animationExporterExportCamBut" J_expCam;
-        button -l "导出动画" -c  "J_animationExporterExportAniBut" J_expAni;
-        textField    J_tex;
+    //文件导出设置
+    string $geoSetting[]={"SmoothingGroup","SmoothMesh","SelectionSets","Triangulate",
+     "IncludeChildren","InputConnections","Skin","BlendShape" };
+    string $geoSettingCheckBox[];
 
-        button -l "批量导出相机" -c  "J_animationExporterExportBatBut(0)" J_expCamBat;
-        button -l "批量导出动画" -c  "J_animationExporterExportBatBut(1)" J_expAniBat;
+    tabLayout J_animationExporterTab;
+        formLayout  -numberOfDivisions 100  J_animationExporter_FromLayout0;
+            frameLayout -cll 1 -cl 0 -l "模型选项"  J_animationExporter_frameLayout0;
+                string $formLayout_Temp0=`formLayout -numberOfDivisions 100 `;
+                    for ($iItem=0;$iItem<size($geoSetting);$iItem++)
+                    {
+                        $geoSettingCheckBox[$iItem]=`checkBox -label  $geoSetting[$iItem] `;
+                        formLayout -e 
+                        -ap $geoSettingCheckBox[$iItem] left 0 (1+50*($iItem%2))
+                        -ap $geoSettingCheckBox[$iItem] right 0 (49+50*($iItem%2))
+                        -af $geoSettingCheckBox[$iItem] top (15*floor($iItem/2)) $formLayout_Temp0;
+                    }
+                setParent ..;    
+            setParent ..;
+            frameLayout -cll 1 -cl 0 -l "文件配置"  J_animationExporter_frameLayout1;
+                button;
+            setParent ..;
+        setParent ..;
+        formLayout  -numberOfDivisions 100  J_animationExporter_FromLayout1;
+            textScrollList  -sc "J_animationExporterSelitem"  -allowMultiSelection 1  J_allCameraNode;
+            textScrollList  -sc "" -allowMultiSelection 1 J_allRefNode;
+            button -l "导出相机" -c  "J_animationExporterExportCamBut" J_expCam;
+            button -l "导出动画" -c  "J_animationExporterExportAniBut" J_expAni;
+            textField    J_tex;
+
+            button -l "批量导出相机" -c  "J_animationExporterExportBatBut(0)" J_expCamBat;
+            button -l "批量导出动画" -c  "J_animationExporterExportBatBut(1)" J_expAniBat;
+
+        setParent ..;
+    tabLayout -edit
+         -tabLabel "J_animationExporter_FromLayout0" "模型资产" -tabLabel "J_animationExporter_FromLayout1" "动画导出" J_animationExporterTab;
+        
+    formLayout -e 
+        -ap J_animationExporter_frameLayout0 left 0 1
+        -ap J_animationExporter_frameLayout0 right 0 99
+        -af J_animationExporter_frameLayout0 top 0
+        
+        -ap J_animationExporter_frameLayout1 left 0 1
+        -ap J_animationExporter_frameLayout1 right 0 99
+        -ac J_animationExporter_frameLayout1 top 1 J_animationExporter_frameLayout0
+
+    J_animationExporter_FromLayout0;
+
     formLayout -e 
         -ap J_allRefNode left 1 1
         -ap J_allRefNode right 1 99
@@ -52,7 +91,10 @@ global proc J_animationExporter()//主窗口
         -ap J_expAniBat left 0 51
         -ap J_expAniBat right 0 99
         -ac J_expAniBat top  2 J_tex
-    J_animationExporterFromLayout;
+       
+    J_animationExporter_FromLayout1;
+
+
     
     showWindow J_animationExporterWin;
     J_animationExporterInit();
@@ -469,3 +511,4 @@ global proc string[] J_animationExporterGetRootJoint(string $refNode)
 }
 
 
+//J_animationExporter;
