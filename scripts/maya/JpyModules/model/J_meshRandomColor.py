@@ -23,8 +23,8 @@ def J_meshRandomColor():
         else:            
             vColors=[]
             vertexIds=[]
-            x=random.random()
-            r1=math.sqrt(1-x*x)
+            x=random.random()*0.8
+            r1=math.sqrt(1-x*x)*.5
             y=random.random()*r1
             z=math.sqrt(r1*r1-y*y)
             

@@ -2,7 +2,7 @@
 ##  @package J_animationExporter
 #
 ##  @brief   
-##  @author æ¡”
+##  @author æ¡?
 ##  @version 1.0
 ##  @date   12:03 2022/5/20
 #  History:  
@@ -17,7 +17,7 @@ def J_replaceSubdeformer(fbxFile):
         temp1=line
         temp2=re.search('SubDeformer::\w+.',line)
         if temp2!=None:
-            print temp2.group()
+            print (temp2.group())
             temp1=temp1.replace( temp2.group(), 'SubDeformer::')
         res+=temp1
     filep.close()  

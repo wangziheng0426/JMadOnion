@@ -129,9 +129,9 @@ class Ui_J_2DTransfer(object):
     def retranslateUi(self, J_2DTransfer):
         J_2DTransfer.setWindowTitle(_translate("J_2DTransfer", "J_2DTransfer", None))
         self.comboBox_quality.setItemText(0, _translate("J_2DTransfer", "草稿", None))
-        self.comboBox_quality.setItemText(1, _translate("J_2DTransfer", "低精度", None))
-        self.comboBox_quality.setItemText(2, _translate("J_2DTransfer", "高精度", None))
-        self.comboBox_quality.setItemText(3, _translate("J_2DTransfer", "全尺寸", None))
+        self.comboBox_quality.setItemText(1, _translate("J_2DTransfer", "低精�?", None))
+        self.comboBox_quality.setItemText(2, _translate("J_2DTransfer", "高精�?", None))
+        self.comboBox_quality.setItemText(3, _translate("J_2DTransfer", "全尺�?", None))
         self.label_A.setText(_translate("J_2DTransfer", "精度选择", None))
         self.label_Cam.setText(_translate("J_2DTransfer", "摄像机选择", None))
         self.label_Sq.setText(_translate("J_2DTransfer", "序列名称", None))
@@ -139,7 +139,7 @@ class Ui_J_2DTransfer(object):
         self.label_S.setText(_translate("J_2DTransfer", "软件选择", None))
         self.comboBox_softWare.setItemText(0, _translate("J_2DTransfer", "photoshop", None))
         self.pushButton_setPath.setText(_translate("J_2DTransfer", "设置路径", None))
-        self.pushButton_render2Soft.setText(_translate("J_2DTransfer", "输出并启动软件", None))
+        self.pushButton_render2Soft.setText(_translate("J_2DTransfer", "输出并启动软�?", None))
         self.label_M.setText(_translate("J_2DTransfer", "选择要投射的模型", None))
         self.pushButton_addModel.setText(_translate("J_2DTransfer", "添加投射", None))
         self.pushButton_deleteModel.setText(_translate("J_2DTransfer", "删除投射", None))
@@ -255,15 +255,15 @@ class J_mainWin(QtWidgets.QMainWindow):
         utilityNode=self.createProjNodes('proj3dut','place3dTexture',False,False,True,False)###3d坐标
         #####连接摄像机和投射节点
         cameraTransformNode=cmds.listRelatives(selectedCamera,p=True)[0]
-        cmds.connectAttr(cameraTransformNode+'.translateX',utilityNode+'.translateX')####连接坐标和投射
+        cmds.connectAttr(cameraTransformNode+'.translateX',utilityNode+'.translateX')####连接坐标和投�?
         cmds.connectAttr(cameraTransformNode+'.translateY',utilityNode+'.translateY')
         cmds.connectAttr(cameraTransformNode+'.translateZ',utilityNode+'.translateZ')
-        cmds.connectAttr(cameraTransformNode+'.rotateX',utilityNode+'.rotateX')####连接坐标和投射
+        cmds.connectAttr(cameraTransformNode+'.rotateX',utilityNode+'.rotateX')####连接坐标和投�?
         cmds.connectAttr(cameraTransformNode+'.rotateY',utilityNode+'.rotateY')
         cmds.connectAttr(cameraTransformNode+'.rotateZ',utilityNode+'.rotateZ')
         
         cmds.setAttr( utilityNode+'.J_shadingNetwork',message,type='string')#######################################################
-        cmds.connectAttr(utilityNode+'.wim[0]',projectNode+'.pm')####连接坐标和投射
+        cmds.connectAttr(utilityNode+'.wim[0]',projectNode+'.pm')####连接坐标和投�?
         cmds.connectAttr(seqFileNode+'.outColor',projectNode+'.image')        #################链接贴图
         utility2DNode=self.createProjNodes('proj2dut','place2dTexture',False,False,True,False)###2d坐标
         cmds.setAttr( utility2DNode+'.J_shadingNetwork',message,type='string')#######################################################
@@ -286,9 +286,9 @@ class J_mainWin(QtWidgets.QMainWindow):
         cmds.connectAttr(utility2DNode+'.outUV',seqFileNode+'.uv')
         cmds.connectAttr(utility2DNode+'.outUvFilterSize',seqFileNode+'.uvFilterSize')
         #############
-        fileNodeBase=self.createProjNodes('baseTex','file',False,True,False,True)###基础色贴图
+        fileNodeBase=self.createProjNodes('baseTex','file',False,True,False,True)###基础色贴�?
         cmds.setAttr( fileNodeBase+'.J_shadingNetwork',message,type='string')#######################################################
-        utility2DNodeBase=self.createProjNodes('base2dut','place2dTexture',False,False,True,False)###基础色坐标
+        utility2DNodeBase=self.createProjNodes('base2dut','place2dTexture',False,False,True,False)###基础色坐�?
         cmds.setAttr( utility2DNodeBase+'.J_shadingNetwork',message,type='string')#######################################################
         #############
         cmds.connectAttr(utility2DNodeBase+'.coverage',fileNodeBase+'.coverage')
@@ -319,14 +319,14 @@ class J_mainWin(QtWidgets.QMainWindow):
         myShaderLambert=self.createProjNodes('mat','lambert',True,False,False,False)
         cmds.setAttr( myShaderLambert+'.J_shadingNetwork',message,type='string')#######################################################
         cmds.connectAttr(layerTexNode+'.outColor',myShaderLambert+'.color')
-        print '---------------------------------'
+        print ('---------------------------------')
         self.assignMtlToGeom(myShaderLambert)
-        print '+++++++++++++++++++'
+        print ('+++++++++++++++++++')
     def assignMtlToGeom(self,mat):
         selectedNode=self.listViewSelectGeom()
-        print selectedNode
+        print (selectedNode)
         for item in selectedNode:
-            print item
+            print (item)
             try:
                 cmds.select(item)
                 
@@ -338,10 +338,10 @@ class J_mainWin(QtWidgets.QMainWindow):
         # Kill the ScriptJob prior to closing the dialog.
         cmds.scriptJob( kill=self.scriptJobNum0, force=True )
         cmds.scriptJob( kill=self.scriptJobNum1, force=True )
-        #有bug 目前不影响 super( J_mainWin, self).closeEvent( event )
+        #有bug 目前不影�? super( J_mainWin, self).closeEvent( event )
         
 if   __name__=='__main__':
-    ######直接运行时需要修改编码#######
+    ######直接运行时需要修改编�?#######
     reload(sys)
     sys.setdefaultencoding('utf-8')
     try:
@@ -351,6 +351,6 @@ if   __name__=='__main__':
     except AttributeError:
         def _translate(context, text, disambig):
             return (text).decode('gbk')
-    ######直接运行时需要修改编码#######
+    ######直接运行时需要修改编�?#######
     J_2DTransferIns = J_mainWin()
     J_2DTransferIns.show()
