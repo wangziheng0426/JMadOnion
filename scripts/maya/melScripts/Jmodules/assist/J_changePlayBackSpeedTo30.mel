@@ -1,0 +1,18 @@
+/////////////////////////////////////////////////////////////
+///\file J_changePlayBackSpeedTo30.mel
+///
+///\brief    Ö¡ËÙÂÊ
+///
+///\author ½Û
+///\version 1.0
+///\date  15:44 2018/1/9
+///History:  
+///
+///////////////////////////////////////////////////////////////
+global proc J_changePlayBackSpeedTo30()
+{
+currentUnit -t ntsc;
+int  $temp=`playbackOptions -q -min`;
+playbackOptions -e -min $temp;
+currentTime 1;
+}

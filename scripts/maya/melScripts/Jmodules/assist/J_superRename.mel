@@ -1,0 +1,143 @@
+/////////////////////////////////////////////////////////////
+///\file  J_superRaname.mel
+///\brief  递归重命名
+///
+///\author 桔
+///\version 1.0
+///\date   
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_superRaname(string $baseName)
+{
+string $allNodes[] = `ls`;
+    string $allName[];
+    clear $allName;
+    string $overName[];
+    clear $overName;
+    string $resNames[];
+    int $resCount=0;
+    for($node in $allNodes)
+    {
+        string $buffer[];
+        $numTokens=`tokenize $node "|" $buffer`;
+        if(stringArrayContains($buffer[$numTokens-1],$allName))
+          $overName[size($overName)]=$buffer[$numTokens-1];
+        else
+          $allName[size($allName)]=$buffer[$numTokens-1];
+    }
+    for($node in $allNodes)
+    {
+        string $buffer[];
+        $numTokens=`tokenize $node "|" $buffer`;
+        if(stringArrayContains($buffer[$numTokens-1],$overName))
+        {$resNames[$resCount]=$node;$resCount++;  }
+        
+    }
+    int $objNum[];
+    $objNum[0]=0;
+    J_quickSortSR($resNames);
+    J_runRename($resNames,$baseName,$objNum);
+    print ($resNames);
+}
+///重命名操作实体
+///\param string $resNames 源节点名
+///\param string $baseName 基础名称
+///\param string $objNum 序号
+////////////////////////////////////    
+global proc J_runRename(string $resNames[],string $baseName,int $objNum[])
+{
+    
+    for($i=size($resNames);$i>0;$i--)
+    {
+        if(`objExists $resNames[$i]`)
+        {
+            string $newName=($baseName+$objNum[0]+$resNames[$i]);
+            while(`objExists $newName`)
+                {
+                $objNum[0]=$objNum[0]+1;
+                $newName=($baseName+$objNum[0]+$resNames[$i]);
+                }
+        catch(`rename $resNames[$i] $newName`);
+
+        }
+    }
+}
+
+
+//节点层级数量排序 输入字符数组  排序后输出
+
+global proc J_quickSortSR(string $vIn[])
+{
+    int $a[];
+    int $indexIn[] ;
+    for($k=0;$k<size($vIn);$k++)
+    {
+        string $xx=$vIn[$k];
+        string $buffer[];
+        $numTokens=`tokenize $xx "|" $buffer`;
+        $a[$k]=(size($buffer));
+    }
+    int $count=size($vIn)-1;
+    J_runQuickSort($vIn,$a,$indexIn,0,$count);
+}
+
+///根据层级排序
+///\param string $v 源节点数组 
+///\param string $a 源节点层级数
+///\param string $b 源节点层级数
+///\param string $start 源节点层级数
+///\param string $end 源节点层级数
+global proc J_runQuickSort(string $v[],int $a[],int $b[] ,int $start, int $end)
+        {
+
+            int $left = $start;
+            int $right = $end;
+            int $key = $a[$start];
+            int $keyX = $b[$start];
+            string $keyV=$v[$start];
+            while ($left < $right)
+            {
+                while ($a[$right] >= $key && $left < $right)
+                {
+                    $right--;
+                }
+                while ($a[$left] <= $key && $left < $right)
+                {
+                    $left++;
+                }
+                if ($left < $right)
+                {
+                    int $tempA = $a[$left];
+                    int $tempB = $b[$left];
+                    string $tempV=$v[$left];
+                    $a[$left] = $a[$right];
+                    $b[$left] = $b[$right];
+                    $v[$left] = $v[$right];
+                    $a[$right] = $tempA;
+                    $b[$right] = $tempB;
+                    $v[$right] = $tempV;
+                }
+
+                if ($left == $right)
+                {
+                    $a[$start] = $a[$left];
+                    $b[$start] = $b[$left];
+                    $v[$start] = $v[$left];
+                    $a[$left] = $key;
+                    $b[$left] = $keyX;
+                    $v[$left] = $keyV;
+
+                }
+            }
+
+            if ($start < $left - 1)
+            {
+                J_runQuickSort($v,$a, $b,$start, $left - 1);
+            }
+            if($left< $end)
+            {
+                J_runQuickSort($v,$a,$b, $left+1, $end);
+            }
+        }

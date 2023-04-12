@@ -1,0 +1,37 @@
+/////////////////////////////////////////////////////////////
+///\file J_perFrameRender.mel
+///
+///\brief    «∞Ã®‰÷»æ
+///
+///\author Ω€
+///\version 1.0
+///\date  17:08 2018/3/6
+///History:  
+///
+///////////////////////////////////////////////////////////////
+global proc J_perFrameRender(int $startframe,int $endFrame,string $paths)
+{	
+
+	string $array[];
+	$array = stringToStringArray($paths,"/");
+	string $filePath="";
+	for($i=0;$i<size($array)-1;$i++)
+		{
+			$filePath+=$array[$i]+"/";
+		}
+	if(`gmatch $paths "//*" ` )
+	{$filePath="//"+$filePath;}
+
+    string $arrayN[];
+    $array = stringToStringArray($array[(size($array)-1)],".");
+    string $fileName=$array[0];
+
+	for($i=$startframe;$i<=$endFrame;$i++)
+	{
+	currentTime $i;
+	string $fileJpg=$filePath+$fileName+$i;
+	RenderIntoNewWindow;
+	catch(`renderWindowEditor -e -wi $fileJpg "renderView"`);
+	}
+	
+}

@@ -1,0 +1,111 @@
+/////////////////////////////////////////////////////////////
+///\file J_rename_win.mel
+///\brief  命令列表
+///
+///\author 桔
+///\version 1.0
+///\date  10:43 2023/4/12
+///History:  
+///
+///////////////////////////////////////////////////////////////
+//生成工具列表
+
+global proc  J_madOnionTools()
+{
+/////////////////////////////////////////////////////////////生成窗体
+string $Ju_mainPath=J_getSysPath();
+string $Ju_commandList=$Ju_mainPath+"/config/commandList.txt";
+int $Ju_fileId=`fopen $Ju_commandList "r"`;
+int $loopRun=1;
+    string $Ju_commandName[];
+    string $Ju_commandLabel[];
+    string $Ju_commandPath[];
+    int $Ju_commandCount=0;
+    int $Ju_winC=1;
+    string $Ju_group[];
+    int $Ju_groupCount=0;
+    string $Ju_getWord=`fgetword $Ju_fileId`;
+    
+    string $Ju_frameLayout[];
+    string $Ju_formLayout[];
+    string $Ju_button[];
+    string $Ju_separator[];
+    /////////////////////////////////////////////////////////////////////主窗口
+if (`window -ex J_MadOnionWin`)
+    deleteUI -window J_MadOnionWin;
+    window -w 245 -h 200 -title "J_MadOnion" J_MadOnionWin;
+    frameLayout -w 240-cll 1 -cl 0  -l "工具集" xxForm;
+    scrollLayout scrollLayout;
+    formLayout  -numberOfDivisions 100  JuForm;
+    while ( $loopRun ) 
+    {
+    if($Ju_getWord=="<label>")
+        {
+            $Ju_getWord = `fgetword $Ju_fileId`;
+            $Ju_group[$Ju_groupCount]=$Ju_getWord;          
+            $Ju_frameLayout[$Ju_groupCount]=`frameLayout -w 240 -cll 1 -cl 1  -l $Ju_group[$Ju_groupCount] -p JuForm`;
+            $Ju_formLayout[$Ju_groupCount]=`formLayout  -numberOfDivisions 100 -p $Ju_frameLayout[$Ju_groupCount]`;
+            $Ju_getWord = `fgetword $Ju_fileId`;
+            if($Ju_groupCount==0)
+            {
+            formLayout  -e 
+                -ap $Ju_frameLayout[$Ju_groupCount] left 0 1
+                -af $Ju_frameLayout[$Ju_groupCount] top 0
+                -ap $Ju_frameLayout[$Ju_groupCount] right 0 99
+            JuForm;
+            }
+            else
+            {
+            formLayout  -e 
+                -ap $Ju_frameLayout[$Ju_groupCount] left 0 1
+                -ac $Ju_frameLayout[$Ju_groupCount] top 0 $Ju_frameLayout[$Ju_groupCount-1]
+                -ap $Ju_frameLayout[$Ju_groupCount] right 0 99
+            JuForm;
+            }
+            $Ju_groupCount++;
+            $Ju_winC++;
+            $Ju_commandCount=0;
+        }
+        if($Ju_getWord=="<command>")
+        {
+            $Ju_getWord = `fgetword $Ju_fileId`;
+            $Ju_commandLabel[$Ju_commandCount]=$Ju_getWord;
+            $Ju_getWord = `fgetword $Ju_fileId`;
+            $Ju_commandName[$Ju_commandCount]=$Ju_getWord ;
+            $Ju_getWord = `fgetword $Ju_fileId`;
+            $Ju_commandPath[$Ju_commandCount]=$Ju_getWord ;
+            $Ju_getWord = `fgetword $Ju_fileId`;            
+            $Ju_button[$Ju_commandCount] =`button -l $Ju_commandLabel[$Ju_commandCount] -c  $Ju_commandName[$Ju_commandCount] -p $Ju_formLayout[$Ju_groupCount-1]`; 
+            //if($Ju_commandCount%3==0){separator  -w 300 -bgc .5 .5 .5 -st "in"  -p $Ju_formLayout[$Ju_groupCount-1];}
+            if($Ju_commandCount==0)
+            {
+            formLayout  -e 
+                -ap $Ju_button[$Ju_commandCount] left 0 1
+                -af $Ju_button[$Ju_commandCount] top 0
+                -ap $Ju_button[$Ju_commandCount] right 0 99
+            $Ju_formLayout[$Ju_groupCount-1];
+            }else
+            {
+            formLayout  -e 
+                -ap $Ju_button[$Ju_commandCount] left 0 1
+                -ac $Ju_button[$Ju_commandCount] top 2 $Ju_button[$Ju_commandCount-1]
+                -ap $Ju_button[$Ju_commandCount] right 0 99
+            $Ju_formLayout[$Ju_groupCount-1];
+            }
+            $Ju_winC++;
+            $Ju_commandCount++;
+        }
+        else{ $Ju_getWord = `fgetword $Ju_fileId`;} 
+        
+        if($Ju_getWord==""){$loopRun =0;}       
+    }
+        ////////////////////////////////////////////////////////////////读取命令
+    fclose $Ju_fileId;
+    int $windowHeightV=linstep(0,50,$Ju_winC)*1000;
+    window -e -h $windowHeightV   J_MadOnionWin;
+    print $windowHeightV;
+
+    /////////////////////////////////////////////////////////编辑窗体   
+showWindow J_MadOnionWin;
+
+}

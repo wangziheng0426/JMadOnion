@@ -1,0 +1,43 @@
+/////////////////////////////////////////////////////////////
+///\file  J_ls.mel
+///\brief  列出madOnion所有命令和工具
+///
+///\author 桔
+///\version 1.0
+///\date   16:59 2018/1/16
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+///列出命令和工具
+///\return "success";
+global proc J_ls()
+{
+    string $JmodulesfilePath[];
+    $JmodulesfilePath[0]=J_getSysPath()+"/Jmodules";
+    J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePath)
+    {
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.mel" `;
+        print  ("-----------"+$JmodulesfilePathItem+"\n");
+        for ($J_modelesItem in $J_modules)
+        {
+            print ($J_modelesItem);
+            print "\n";
+        }
+    }
+    
+    string $JmodulesfilePathX[];
+    $JmodulesfilePathX[0]=J_getSysPath()+"/JpyModules";
+    J_getFolders($JmodulesfilePathX,$JmodulesfilePathX[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePathX)
+    {
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.py" `;
+        print  ("-----------"+$JmodulesfilePathItem+"\n");
+        for ($J_modelesItem in $J_modules)
+        {
+            print ($J_modelesItem);
+            print "\n";
+        }
+    }
+}

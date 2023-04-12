@@ -16,28 +16,31 @@
 ///\return success
 global proc string J_sourceScripts(string $inPath)
 {
-    string $J_runScript="source \""+$inPath+"/J_scripts.mel\"";
-    eval($J_runScript);
-    J_scripts(J_getSysPath(),"Mad Onion");
+    string $pluginTitle="Mad Onion";
+    //加载mel工具
+    J_scripts(J_getScriptsPath(),$pluginTitle);
+    //加载python内置模块
     python("import maya.cmds as cmds");
     python("import sys");
     python("import os");
     python("import shutil");
-    python("sys.path.append('"+`J_getSysPath`+""+"')");
-    python("sys.path.append('"+`J_getSysPath`+"/site_packages"+"')");
-    python("import JpyModules");
-    print "PlugIn Loaded\n";
+    //根据maya版本加载py对应模块
+    if (`about -v`==2022||`about -v`==2023)
+    {
+        python("sys.path.append('"+`J_getScriptsPath`+"/J_py3"+"')");
+        python("import JpyModules");
+    }
+    else{
+        python("sys.path.append('"+`J_getScriptsPath`+"/J_py2"+"')");
+        python("import JpyModules");
+    }   
+    
+    print "PlugIn Loaded***********************\n";
     return "success";
 }
-///反馈素材目录
-///\return string 素材文件目录
-global proc string J_getFilePath()
-{
-    return (`J_getSysPath`+"/J_file/");
-} 
-///反馈插件目录
+
 ///\return string 插件文件目录
-global proc string J_getSysPath()
+global proc string J_getScriptsPath()
 {
     string $J_path=`whatIs J_sourceScripts`;
     int $k=sizeBytes($J_path);
@@ -55,5 +58,97 @@ global proc string J_getSysPath()
         {$pluginPath="//"+$pluginPath;}
         return $pluginPath;
     }
-    return("error");
+    return("load plugin failed");
+}
+
+global proc J_scripts(string $J_mainPath,string $J_menuName)
+{
+    ////////////////////////////////////////////////////////////////创建菜单
+    if (`menu -exists  $J_menuName`) deleteUI $J_menuName;
+    string $menu=`menu  -l $J_menuName -p MayaWindow  $J_menuName`; 
+    //读取菜单列表
+    string $J_menuList=$J_mainPath+"/config/menuList.txt";
+    //加载abc插件
+    string $mayapath=`getenv MAYA_LOCATION`+"/bin/plug-ins/AbcExport.mll";
+    loadPlugin( $mayapath); 
+    int $J_fileId=`fopen $J_menuList "r"`;
+    //按照配置文件加载界面
+    fgetline $J_fileId;
+    string $J_getWord=`fgetword $J_fileId`;
+    print "----------------------------------------------------------------";
+    print $J_getWord;
+    print "\n";
+    string $J_mainMenuName="";
+    string $J_mainMenuLabel="";
+    string $J_subInfo[];
+    string $J_menuItems[];
+    int $J_menuItemsCount=0;
+    while ( 1 ) 
+    {
+        if($J_getWord=="<MainMenu>")
+        {
+            $J_getWord = `fgetword $J_fileId`;
+            $J_mainMenuLabel=$J_getWord;
+            $J_getWord = `fgetword $J_fileId`;
+            $J_mainMenuName=$J_getWord ;
+            $J_menuItems[$J_menuItemsCount]=`menuItem -p $menu -subMenu 1 -label $J_mainMenuLabel -to 1 -aob 1 $J_mainMenuName`;
+            $J_menuItemsCount++;
+            $J_getWord = `fgetword $J_fileId`;
+        }
+        else{ $J_getWord = `fgetword $J_fileId`;}                   
+        if($J_getWord=="<SubMenu>")
+        {
+            $J_getWord = `fgetword $J_fileId`;
+            $J_subInfo[0]=$J_getWord;
+            $J_getWord = `fgetword $J_fileId`;
+            $J_subInfo[1]=$J_getWord ;
+            $J_getWord = `fgetword $J_fileId`;
+            $J_subInfo[2]=$J_getWord ;
+            print $J_subInfo[2];print"-------------\n";
+            string $fileToSource="source \""+$J_mainPath+"/melScripts/"+$J_subInfo[2]+"\"";
+            catch(`eval $fileToSource `);
+            menuItem -p $J_mainMenuName -label $J_subInfo[0] -c $J_subInfo[1] -to 1 ;
+            $J_getWord = `fgetword $J_fileId`;
+        }
+        if($J_getWord==""){break;}
+        
+    }
+    fclose $J_fileId;
+    ////////////////////////////////////////////////////////////////创建菜单
+    ////////////////////////////////////////////////////////////////读取mel命令
+    string $JmodulesfilePath[];
+    $JmodulesfilePath[0]=J_getScriptsPath()+"/melScripts/Jmodules";
+    J_getFolders($JmodulesfilePath,$JmodulesfilePath[0]);
+    for ($JmodulesfilePathItem in $JmodulesfilePath)
+    {
+        string $J_modules[]=`getFileList  -folder $JmodulesfilePathItem -filespec "*.mel" `;
+        for ($J_modelesItem in $J_modules)
+        {
+            catch(eval("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\""));
+            print ("source  \"" +$JmodulesfilePathItem+"/"+$J_modelesItem+"\"");
+            print "\n";
+        }
+    }
+    ////////////////////////////////////////////////////////////////读取mel命令
+    
+    //menuItem -p $J_menuName -label "命令工具集" -c J_madOnionTools -aob 1 flying0; 
+    //添加插件环境变量
+    string $pluginsPath=J_getScriptsPath()+"/plugins;";
+    putenv "MAYA_PLUG_IN_PATH" ($pluginsPath +`getenv "MAYA_PLUG_IN_PATH"`);
+}
+//递归找文件夹
+global proc J_getFolders(string $resFolders[],string $inPutPath)
+{
+    string $JmodulesfilePath[]=` getFileList  -folder  $inPutPath`;
+    $orgCount=size($resFolders);
+    $count=0;
+    for ($item in $JmodulesfilePath)
+    {
+        if (size(`getFileList  -folder  ($inPutPath+"/"+$item)`))
+            {
+                $resFolders[$count+$orgCount]=$inPutPath+"/"+$item;
+                $count++;
+                J_getFolders($resFolders,($inPutPath+"/"+$item));
+            }
+    }
 }

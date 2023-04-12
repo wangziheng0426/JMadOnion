@@ -1,0 +1,22 @@
+/////////////////////////////////////////////////////////////
+///\file J_breakConnections.mel
+///
+///\brief    ¶Ï¿ªÁ´½Ó
+///
+///\author ½Û
+///\version 1.0
+///\date  15:44 2018/1/9
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_breakConnections( string $destName )
+{
+	string $allConnections[]=`listConnections -s 1 -d 0 -p  1 -c 1 $destName `;
+	if(size($allConnections))
+	{
+	    for($i=0;$i<(size($allConnections)-1);$i+=2)
+		disconnectAttr $allConnections[$i+1] $allConnections[$i];
+		
+	}
+}

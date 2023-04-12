@@ -1,0 +1,28 @@
+/////////////////////////////////////////////////////////////
+///\file  J_exportObjs.mel
+///\brief  批量导出obj
+///
+///\author 桔
+///\version 1.0
+///\date   
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc J_exportObjs()
+{
+    string $filePath=`file -q -sceneName`;
+    $filePath=`substring $filePath 1 (size($filePath)-3) `;
+    string $sel[]=`ls -sl`;
+    for ($i in $sel)
+    {
+        select $i;
+        print ($filePath+"_"+$i+".obj");
+        file -force -options "groups=1;ptgroups=1;materials=1;smoothing=1;normals=1" -typ "OBJexport" -pr -es ($filePath+"_"+$i+".obj");
+    }
+    
+}
+
+
+
+
