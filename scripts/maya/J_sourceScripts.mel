@@ -16,7 +16,7 @@
 ///\return success
 global proc string J_sourceScripts(string $inPath)
 {
-    string $pluginTitle="Mad Onion";
+    string $pluginTitle="MadOnion";
     //加载mel工具
     J_scripts(J_getScriptsPath(),$pluginTitle);
     //加载python内置模块

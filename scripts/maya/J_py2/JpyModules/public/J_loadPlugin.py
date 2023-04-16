@@ -1,4 +1,4 @@
-# -*- coding:gbk -*-
+# -*- coding:utf-8 -*-
 ##  @package public
 #
 ##  @brief  引入插件，检查插件是否存在，如果存在则加载返回true，不存在返回false

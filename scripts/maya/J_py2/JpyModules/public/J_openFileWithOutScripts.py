@@ -1,4 +1,4 @@
-# -*- coding:gbk -*-
+# -*- coding:utf-8 -*-
 ##  @package public
 #
 ##  @brief  无脚本开文件
