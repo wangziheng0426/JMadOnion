@@ -25,7 +25,7 @@ global proc string J_sourceScripts(string $inPath)
     python("import os");
     python("import shutil");
     //根据maya版本加载py对应模块
-    if (`about -v`==2022||`about -v`==2023)
+    if (`about -v`==2024||`about -v`==2023)
     {
         python("sys.path.append('"+`J_getScriptsPath`+"/J_py3"+"')");
         python("import JpyModules");
