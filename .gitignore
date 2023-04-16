@@ -8,9 +8,6 @@
 /J_Living/J_LivingScript/python/.idea/
 /J_Living/J_LivingScript/.idea/
 
-
-
-/scripts/maya/JpyModules/.idea
 /scripts/*.exe
 /scripts/*.pk
 /python/pyTools/build
