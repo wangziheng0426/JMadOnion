@@ -10,7 +10,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 def J_playBlast_lockCam():    
-    attrToLock=[".tx",".ty",".tz",".rx",".ry",".rz",".sx",".sy",".sz",".v",".hfa",".vfa",".fl",".lsr",".fs",".fd",".sa",".coi"];
+    attrToLock=[".tx",".ty",".tz",".rx",".ry",".rz",".sx",".sy",".sz",".v",".hfa",".vfa",".fl",".lsr",".fs",".fd",".sa",".coi"]
     selectedCam=cmds.textScrollList('J_playBlastCameraList',q=True ,si=True)
     if selectedCam==None:return
     lockCam=not cmds.getAttr(selectedCam[0]+attrToLock[0],lock=True)

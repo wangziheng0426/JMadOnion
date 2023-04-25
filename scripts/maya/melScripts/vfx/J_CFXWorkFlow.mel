@@ -39,7 +39,7 @@ if (`window -ex J_CFXWorkFlow`)
                 button -l "单独导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
                 button -l "整体导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoAll()" J_buNClothOutAbcAll;
                 button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
-                //button -l "自动适配abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_abcIn()" J_buNAbcIn;
+                button -l "显示hud" -w $ButtonW  -h $ButtonH -c  "J_playBlast_showHUD_1()" J_buShowHud;
                 //button -l "拷贝点动画" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
             setParent ..;
         setParent ..;
@@ -124,11 +124,11 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_buNClothIn left 0 67
         -ac J_buNClothIn top  1 J_buNClothOutAbcAll
         -ap J_buNClothIn right 0 100   
+        
+        -ap J_buShowHud left 0 67
+        -ac J_buShowHud top  1 J_buNClothIn
+        -ap J_buShowHud right 0 100   
         /*
-        -ap J_buNAbcIn left 0 67
-        -ac J_buNAbcIn top  1 J_buNClothIn
-        -ap J_buNAbcIn right 0 100   
-
         -ap J_buCreateBlend left 0 67
         -ac J_buCreateBlend top  1 J_buNAbcIn
         -ap J_buCreateBlend right 0 100           

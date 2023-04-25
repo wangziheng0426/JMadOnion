@@ -45,7 +45,7 @@ def J_playBlast_outPut():
     compressFile.write(imageList)
     compressFile.close()
     import JpyModules
-    ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__))))+'/other/thirdParty/ffmpeg.exe'
+    ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__)))))+'/other/thirdParty/ffmpeg.exe'
     if not os.path.exists(ffmpegPath):
         return
     mydic={'game':15,'film':24,'pal':25,'ntsc':30,'show':48,'palf':50,'ntscf':60}

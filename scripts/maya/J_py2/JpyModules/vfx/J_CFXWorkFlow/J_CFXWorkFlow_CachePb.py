@@ -56,7 +56,9 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],fileFormat='qt',skipFrame=
         cmds.playblast(format=fileFormat,quality=100,viewer=viewer,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=res,
         framePadding=4,compression="H.264",percent=100,clearCache=True)
     if fileFormat=='tga' or fileFormat=='jpg':
+        #分辨率必须是2的倍数
         res=[(res[0]+res[0]%2),(res[1]+res[1]%2)]
+        #拍平
         cmds.playblast(format='image',quality=100,viewer=False,offScreen=True,forceOverwrite=True,filename=j_PbPath,widthHeight=res,
         framePadding=4,compression=fileFormat,percent=100,clearCache=True)
         
@@ -71,7 +73,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],fileFormat='qt',skipFrame=
         compressFile.write(imageList)
         compressFile.close()
         import JpyModules
-        ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__))))+'/other/thirdParty/ffmpeg.exe'
+        ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__)))))+'/other/thirdParty/ffmpeg.exe'
         if not os.path.exists(ffmpegPath):
             return
         mydic={'game':15,'film':24,'pal':25,'ntsc':30,'show':48,'palf':50,'ntscf':60}

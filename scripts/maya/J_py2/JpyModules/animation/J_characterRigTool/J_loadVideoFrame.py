@@ -12,7 +12,7 @@ import subprocess
 import JpyModules
 def J_loadVideoFrame():    
     j_vFile = cmds.fileDialog2(fileMode=1, caption="Import video frame")
-    ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__))))+'/other/thirdParty/ffmpeg.exe'
+    ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__)))))+'/other/thirdParty/ffmpeg.exe'
     if j_vFile is None:
         return
     if os.path.exists(os.path.dirname(j_vFile[0])+'/'+'temp.mp4'):

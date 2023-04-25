@@ -163,6 +163,7 @@ global proc J_playBlast_loadVideoPath()
 global proc J_playBlast_showHUD_0()
 {
     loadPlugin("J_hud");
+    catch(`modelEditor -e -locators true modelPanel4`);
     string $J_hudNodes[]=`ls -type J_hud_a`;
     if (size($J_hudNodes)>0)
     {
@@ -181,6 +182,7 @@ global proc J_playBlast_showHUD_0()
 global proc J_playBlast_showHUD_1()
 {
     loadPlugin("J_hud_a");
+    catch(`modelEditor -e -locators true modelPanel4`);
     string $J_hudNodes[]=`ls -type J_hud`;
     if (size($J_hudNodes)>0)
     {

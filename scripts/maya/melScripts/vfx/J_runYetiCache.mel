@@ -133,6 +133,7 @@ if (`window -ex runYetiCacheWin`)
 
 showWindow runYetiCacheWin;
 J_runYetiCacheInit();
+J_runYetiCache_runScriptJob();
 }
 
 
@@ -195,10 +196,11 @@ global proc J_runYetiCacheImportCache()
 global proc J_runYetiCacheDisableCache()
 {
     string $sel[]=`ls -sl`;
-    string $yetiNodes[]=`ls -type pgYetiMaya`;
+    string $yetiNodes[]=`ls -sl -type pgYetiMaya`;
     if (size($sel)>0)
     {
-        $yetiNodes=`listRelatives -c -type pgYetiMaya`;
+        if (`objectType $sel[0]`=="transform")
+        {$yetiNodes=`listRelatives -c -type pgYetiMaya`;}
     }
     if (size($yetiNodes)>0)
     {
@@ -207,6 +209,7 @@ global proc J_runYetiCacheDisableCache()
         for ($item in $yetiNodes)
         {
             setAttr ($item+".fileMode") $state;
+            //setAttr -type "string" ($item+".cacheFileName") "";
         }
     }
 }
@@ -247,4 +250,32 @@ global proc J_convertCurvesToYetiGroom()
     string $shape[]=`listRelatives -c -s $sel[size($sel)-1]`;
     pgYetiConvertGuideSetToGroom($sets[0],$shape[0],0.1);
 
+}
+///启动后台跟踪程序,同步插件中和场景中的选择对象
+global proc J_runYetiCache_runScriptJob()
+{
+    int $sjId = `scriptJob -e "SelectionChanged" J_runYetiCache_selectNode `;
+    string $temp = ("scriptJob -k "+ $sjId);
+    scriptJob -uid "runYetiCacheWin" $temp;
+
+}
+global proc J_runYetiCache_selectNode()
+{
+    
+    textScrollList -e -deselectAll  yetiList;
+    string $sel[]=`ls -sl`;
+    string $listYeti[]=`textScrollList -q -ai yetiList`;
+    
+    
+    //根据选择节点，选中列表节点
+    for($i in $sel)
+    {
+    string $chTemp[]=`listRelatives -c $i`;
+    if(stringArrayContains( $i, $listYeti))
+        textScrollList -e -si $i yetiList;
+
+    if(stringArrayContains( $chTemp[0], $listYeti))
+        textScrollList -e -si $chTemp[0] yetiList;
+
+    }
 }
