@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##############################################
-# Author        :ï¿½ï¿½Ç§ï¿½ï¿½
+# Author        : ½Û×Ó
 # Last modified : 15:18 2021/11/06
 # Filename      : J_exportAbc.py
 # Description   :

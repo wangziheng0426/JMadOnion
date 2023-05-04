@@ -218,10 +218,11 @@ global proc J_runYetiCacheDisableCache()
 global proc J_runYetiCacheDisplayYetiMaya()
 {
     string $sel[]=`ls -sl`;
-    string $yetiNodes[]=`ls -type pgYetiMaya`;
+    string $yetiNodes[]=`ls -sl -type pgYetiMaya`;
     if (size($sel)>0)
     {
-        $yetiNodes=`listRelatives -c -type pgYetiMaya`;
+        if (`objectType $sel[0]`=="transform")
+        {$yetiNodes=`listRelatives -c -type pgYetiMaya`;}
     }
 
     if (size($yetiNodes)>0)

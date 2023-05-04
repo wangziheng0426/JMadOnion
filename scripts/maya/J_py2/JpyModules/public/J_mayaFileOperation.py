@@ -13,6 +13,7 @@ import shutil
 def J_getMayaFileFolder():
     res= os.path.dirname(cmds.file(query=True,sceneName=True))
     if not os.path.exists(outPath):
+        print ("path not found use c:/temp instead")
         outPath='c:/temp'
     if not os.path.exists(outPath):   
         os.makedirs(outPath)
@@ -20,7 +21,9 @@ def J_getMayaFileFolder():
     return res
 def J_getMayaFileName():
     res= os.path.basename(cmds.file(query=True,sceneName=True))
-    if res=="" :return "temp.ma"
+    if res=="" :
+        print ("path not found use temp.ma instead")
+        return "temp.ma"
     return res
 
 def J_getMayaFileNameWithOutExtension():
