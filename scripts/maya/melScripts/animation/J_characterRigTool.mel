@@ -1,32 +1,32 @@
 /////////////////////////////////////////////////////////////
 ///\file J_characterRigTool.mel
-///\brief ¶¯»­¹Ø¼üÖ¡ä¯ÀÀ¹¤¾ß
+///\brief ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ///
-///\author ½Û
+///\author ï¿½ï¿½
 ///\version 1.0
 ///\date  18:45 2019/8/21
 ///History:  
 ///
 ///////////////////////////////////////////////////////////////
 
-///´ò¿ªÖ÷½çÃæ´°¿Ú
+///ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ´°ï¿½ï¿½
 ///\return success
 global proc  string J_characterRigTool()
 {
     if (`window -ex J_characterRigToolWin`)
         deleteUI -window J_characterRigToolWin;
-    window -w 300 -h 250 -title "ÐéÄâ½ÇÉ«¹¤¾ßÏä" J_characterRigToolWin;
+    window -w 300 -h 250 -title "ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" J_characterRigToolWin;
     formLayout  -nd 100   J_characterRigToolWin_mainFormLayout;
 
-    string $button01=`button -l "µ¼³öfbx" -c "J_characterRigTool_exportFbx()"`;
-    string $button02=`button -l "µ¼³öabc" -c "J_characterRigTool_exportAbc()"`;
-    string $button03=`button -l "µ¼Èëmeta&akÊý¾Ý" -c "J_characterRigTool_importJson()"`;
-    string $button04=`button -l "µ¼ÈëÑµÁ·Êý¾Ý" -c "J_characterRigTool_importAIJson()"`;
-    string $button05=`button -l "µ¼ÈëÑµÁ·Êý¾Ý2" -c "J_characterRigTool_importAIJson2()"`;
+    string $button01=`button -l "ï¿½ï¿½ï¿½ï¿½fbx" -c "J_characterRigTool_exportFbx()"`;
+    string $button02=`button -l "ï¿½ï¿½ï¿½ï¿½abc" -c "J_characterRigTool_exportAbc()"`;
+    string $button03=`button -l "ï¿½ï¿½ï¿½ï¿½meta&akï¿½ï¿½ï¿½ï¿½" -c "J_characterRigTool_importJson()"`;
+    string $button04=`button -l "ï¿½ï¿½ï¿½ï¿½Ñµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" -c "J_characterRigTool_importAIJson()"`;
+    string $button05=`button -l "ï¿½ï¿½ï¿½ï¿½Ñµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2" -c "J_characterRigTool_importAIJson2()"`;
     textField    J_tex;
-    string $button06=`button -l "¶ÁÈ¡ÒôÊÓÆµÖ¡Êý" -c "J_characterRigTool_loadFrame()"`;
-    string $button07=`button -l "¹ýÂË¶¯»­Êý¾Ý" -c "J_characterRigTool_deleteFrame()"`;
-    string $button08=`button -l "°ó¶¨BS¿ØÖÆÆ÷" -c "J_characterRigTool_bindBSController()"`;
+    string $button06=`button -l "ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ÆµÖ¡ï¿½ï¿½" -c "J_characterRigTool_loadFrame()"`;
+    string $button07=`button -l "ï¿½ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" -c "J_characterRigTool_deleteFrame()"`;
+    string $button08=`button -l "ï¿½ï¿½BSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" -c "J_characterRigTool_bindBSController()"`;
 
     formLayout  -e
         -af $button01 top 3

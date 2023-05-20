@@ -14,7 +14,6 @@ import maya.cmds as cmds
 import os
 import stat
 scriptPath=os.path.dirname(os.path.dirname(os.path.dirname(cmds.internalVar(userScriptDir=True))))+'/scripts/'
-
 if os.path.exists(scriptPath+'userSetup.py'):
     fileTemp=open(scriptPath+'userSetup.py','r')
     frl=fileTemp.read()
