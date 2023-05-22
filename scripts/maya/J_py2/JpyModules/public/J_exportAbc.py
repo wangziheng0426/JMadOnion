@@ -44,6 +44,65 @@ def J_exportAbc(mode=0,nodesToExport=[],cacheFileName='',importRef=False):
             mel.eval(exportStringa)
 
     os.startfile(j_abcCachePath)    
+#指定面集
+def J_addFaceSet(nodesToAddFaceSet=[]):
+    #为模型添加面集,并在mesh节点和父层节点写入面集名称
+    cmds.lockNode("initialShadingGroup", l=0, lu=0)
+    if len(nodesToAddFaceSet)<1:
+        nodesToAddFaceSet=cmds.ls(sl=True)
+    if len(nodesToAddFaceSet)<1:
+        print u"选点什么吧"
+        return
+    for nodeItem in nodesToAddFaceSet:
+        shapeNodes=cmds.ls(nodeItem,dag=True,ni=True,type="mesh")    
+        shadingEngineNodes = list(set(cmds.listConnections(shapeNodes,type="shadingEngine")))
+        #将面集信息写入模型变换节点和shape节点
+        if not cmds.attributeQuery('SGInfo',node=nodeItem,ex=1):
+            cmds.addAttr(nodeItem,longName='SGInfo',dt='string')
+        cmds.setAttr(nodeItem+'.SGInfo',",".join(shadingEngineNodes),type='string')
+        for sItem in shapeNodes:
+            if not cmds.attributeQuery('SGInfo',node=sItem,ex=1):
+                cmds.addAttr(sItem,longName='SGInfo',dt='string')
+            cmds.setAttr(sItem+'.SGInfo',",".join(shadingEngineNodes),type='string')
+        for seItem in shadingEngineNodes:
+            mat= cmds.listConnections(seItem + ".surfaceShader")
+            if mat!= None:
+                cmds.hyperShade( objects=mat[0] )
+                objsFromMat=cmds.ls( sl=True)
+                if objsFromMat==None:continue
+                if len(objsFromMat)<1:continue
+                for meshItem in objsFromMat:
+                    #判断出转换选择后的是元素,则认为已经含有面集,则直接添加面集信息,否则添加面集
+                    if meshItem.find('.')<1:
+                        #转换选择到面,创建面集
+                        cmds.ConvertSelectionToVertexFaces()
+                        cmds.ConvertSelectionToFaces()
+                    cmds.sets(fe="initialShadingGroup", e=True)
+                    cmds.sets(fe=seItem, e=True)
+    cmds.select(nodesToAddFaceSet)
+#查找选择对象下所有的mesh
+def J_getAllMeshUnderSelections(meshTrNodes):
+    allMesh=[]
+    for item in meshTrNodes:
+        J_getChildNodes(item,allMesh)
+    allMeshParents=[]
+    for item in allMesh:
+        if cmds.listRelatives(item,fullPath=True,parent=True)[0]!=None:
+            allMeshParents.append(cmds.listRelatives(item,fullPath=True,parent=True)[0])
+    
+    return allMeshParents
+
+#递归找mesh
+def J_getChildNodes(currentNode,meshList):   
+    childNodes=cmds.listRelatives(currentNode,fullPath=True,children=True)
+    for item in childNodes:
+        if cmds.objectType( item, isType='mesh' ):
+            if cmds.getAttr((item+".intermediateObject"))==0:
+                meshList.append(item)
+        if cmds.objectType( item, isType='transform' ):
+            J_getChildNodes(item,meshList)     
+
+        
 def J_exportAbcWithFaceSet(mode=0,meshNodes=[],cacheFileName=''):   
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
@@ -114,26 +173,7 @@ def J_exportAbcWithFaceSet(mode=0,meshNodes=[],cacheFileName=''):
             mel.eval(exportStringA)
     os.startfile(abcOutPath)  
 
-def J_getAllMeshUnderSelections(meshTrNodes):
-    allMesh=[]
-    for item in meshTrNodes:
-        J_getChildNodes(item,allMesh)
-    allMeshParents=[]
-    for item in allMesh:
-        if cmds.listRelatives(item,fullPath=True,parent=True)[0]!=None:
-            allMeshParents.append(cmds.listRelatives(item,fullPath=True,parent=True)[0])
-    
-    return allMeshParents
 
-#递归找mesh
-def J_getChildNodes(currentNode,meshList):   
-    childNodes=cmds.listRelatives(currentNode,fullPath=True,children=True)
-    for item in childNodes:
-        if cmds.objectType( item, isType='mesh' ):
-            if cmds.getAttr((item+".intermediateObject"))==0:
-                meshList.append(item)
-        if cmds.objectType( item, isType='transform' ):
-            J_getChildNodes(item,meshList)     
     #如果文件来自于映射文件则导入映射,删除名字空间,并添加属性
 def J_importReferencesAndAddNamespaceAttr():
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
@@ -182,42 +222,7 @@ def J_duplicateObj(inGeo):
     if (cmds.listRelatives(resGeo,parent=True)==None):
         return resGeo
     return cmds.parent(resGeo,world=True)[0]
-#指定面集
-def J_addFaceSet(nodesToAddFaceSet=[]):
-    #为模型添加面集,并在mesh节点和父层节点写入面集名称
-    cmds.lockNode("initialShadingGroup", l=0, lu=0)
-    if len(nodesToAddFaceSet)<1:
-        nodesToAddFaceSet=cmds.ls(sl=True)
-    if len(nodesToAddFaceSet)<1:
-        print u"选点什么吧"
-        return
-    for nodeItem in nodesToAddFaceSet:
-        shapeNodes=cmds.ls(nodeItem,dag=True,ni=True,type="mesh")    
-        shadingEngineNodes = list(set(cmds.listConnections(shapeNodes,type="shadingEngine")))
-        #将面集信息写入模型变换节点和shape节点
-        if not cmds.attributeQuery('SGInfo',node=nodeItem,ex=1):
-            cmds.addAttr(nodeItem,longName='SGInfo',dt='string')
-        cmds.setAttr(nodeItem+'.SGInfo',",".join(shadingEngineNodes),type='string')
-        for sItem in shapeNodes:
-            if not cmds.attributeQuery('SGInfo',node=sItem,ex=1):
-                cmds.addAttr(sItem,longName='SGInfo',dt='string')
-            cmds.setAttr(sItem+'.SGInfo',",".join(shadingEngineNodes),type='string')
-        for seItem in shadingEngineNodes:
-            mat= cmds.listConnections(seItem + ".surfaceShader")
-            if mat!= None:
-                cmds.hyperShade( objects=mat[0] )
-                objsFromMat=cmds.ls( sl=True)
-                if objsFromMat==None:continue
-                if len(objsFromMat)<1:continue
-                for meshItem in objsFromMat:
-                    #判断出转换选择后的是元素,则认为已经含有面集,则直接添加面集信息,否则添加面集
-                    if meshItem.find('.')<1:
-                        #转换选择到面,创建面集
-                        cmds.ConvertSelectionToVertexFaces()
-                        cmds.ConvertSelectionToFaces()
-                    cmds.sets(fe="initialShadingGroup", e=True)
-                    cmds.sets(fe=seItem, e=True)
-    cmds.select(nodesToAddFaceSet)
+
 def J_renameShadingEngine():
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
     #提前检查是否有重复的材质名字.有就删 
