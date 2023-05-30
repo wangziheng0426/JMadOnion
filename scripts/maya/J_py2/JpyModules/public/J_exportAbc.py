@@ -28,13 +28,14 @@ def J_exportAbc(mode=0,nodesToExport=[],cacheFileName='',importRef=False):
     j_abcCachePath=filePath+"/"+cacheFileName+'_cache/'
     if not os.path.exists(j_abcCachePath):
         os.makedirs(j_abcCachePath)
+    #整体导出一个abc    
     if mode==0:   
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -writeFaceSets -worldSpace -dataFormat ogawa '    
         for item in nodesToExport:
             exportString+=' -root '+item
         exportString+=' -file '+j_abcCachePath+cacheFileName+'.abc"'
         mel.eval(exportString)
-    
+    #按照选择的对象每个单独导出一个abc
     if mode==1:
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)+' -uvWrite -writeFaceSets -worldSpace -dataFormat ogawa '
         for item in nodesToExport:            
@@ -42,8 +43,17 @@ def J_exportAbc(mode=0,nodesToExport=[],cacheFileName='',importRef=False):
             itemName=item.split('|')[-1].replace(':','@')
             exportStringa+=' -file '+j_abcCachePath+cacheFileName+'_'+itemName+'.abc"'
             mel.eval(exportStringa)
+    #输出abc材质log，并导出材质球
 
     os.startfile(j_abcCachePath)    
+#为模型添加自定义属性，并将材质信息写入，最后导出材质球，
+def J_exportMaterail(exportPath,inputNode):
+    if inputNode==""or exportPath=="":
+        return
+    if cmds.objExists(inputNode):
+        meshNodes=cmds.listRelatives(cmds.ls(sl=1),c=1,ni=1)
+
+
 #指定面集
 def J_addFaceSet(nodesToAddFaceSet=[]):
     #为模型添加面集,并在mesh节点和父层节点写入面集名称
@@ -102,7 +112,7 @@ def J_getChildNodes(currentNode,meshList):
         if cmds.objectType( item, isType='transform' ):
             J_getChildNodes(item,meshList)     
 
-        
+ #######################################################################################################################       
 def J_exportAbcWithFaceSet(mode=0,meshNodes=[],cacheFileName=''):   
     filePath=cmds.file(query=True,sceneName=True).replace(cmds.file(query=True,sceneName=True,shortName=True),'')
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
