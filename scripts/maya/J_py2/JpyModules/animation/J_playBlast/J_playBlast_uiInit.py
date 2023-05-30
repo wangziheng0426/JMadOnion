@@ -54,12 +54,10 @@ def J_playBlast_uiInit():
         cmds.textScrollList('J_playBlastCameraList',e=True ,a=item)
         
     #logo
-    if os.path.exists(cmds.workspace(query=True,rd=True)+'/ltdLogo.png'):
-        cmds.checkBox('J_playBlastLtdLogoCheckBox',edit=True,l=(cmds.workspace(query=True,rd=True)+'/ltdLogo.png') )
-        cmds.checkBox('J_playBlastLtdLogoCheckBox',edit=True,v =1)
-    if os.path.exists(cmds.workspace(query=True,rd=True)+'/proLogo.png'):
-        cmds.checkBox('J_playBlastProLogoCheckBox',edit=True,l=(cmds.workspace(query=True,rd=True)+'/proLogo.png') )
-        cmds.checkBox('J_playBlastProLogoCheckBox',edit=True,v =1)
+    if os.path.exists(cmds.workspace(query=True,rd=True)+'/waterMark.png'):
+        cmds.checkBox('J_playBlastWaterMarkCheckBox',edit=True,l=(cmds.workspace(query=True,rd=True)+'/waterMark.png') )
+        cmds.checkBox('J_playBlastWaterMarkCheckBox',edit=True,v =1)
+
 def J_playBlast_changeSize():
     items=cmds.formLayout('J_playBlastHUDFormLayOut',query=True,childArray=True )
     curWidth=cmds.textField(items[15],text=True,query=True).split('/')[0].split('*')[0]

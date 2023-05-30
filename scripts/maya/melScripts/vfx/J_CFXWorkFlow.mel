@@ -229,31 +229,31 @@ global proc J_meshRandomColor()
 global proc J_CreateCachePlayBlast()
 {
     string $frame=`textField -q -text  J_skipFrame`;
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'','jpg',"+$frame+")");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',"+$frame+")");
 }
 global proc J_CreateCachePlayBlast2()
 {
     string $frame=`textField -q -text  J_skipFrame`;
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5,'','jpg',"+$frame+")");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5,'',"+$frame+")");
 }
 global proc J_CreateCachePlayBlast4()
 {
     string $frame=`textField -q -text  J_skipFrame`;
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.25,'','jpg',"+$frame+")");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.25,'',"+$frame+")");
 }
 
 
 global proc J_CreateCachePlayBlast30()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'','jpg',30)");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',30)");
 }
 global proc J_CreateCachePlayBlast50()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'','jpg',50)");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',50)");
 }
 global proc J_CreateCachePlayBlast100()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'','jpg',100)");
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',100)");
 }
 
 
