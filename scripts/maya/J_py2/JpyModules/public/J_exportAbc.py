@@ -36,6 +36,7 @@ def J_exportAbc(mode=0,nodesToExport=[],cacheFileName='',exportAttr=[],importRef
         #写log倒材质↓
         logStr[count]={}
         logStr[count]['abcFile']=cacheFileName+'.abc'
+        logStr[count]['selectedNode']=','.join(nodesToExport)
         logStr[count]['meshs']={}
         #导出材质球，添加信息
         for meshItem in J_getAllMeshUnderSelections(nodesToExport):
@@ -64,10 +65,11 @@ def J_exportAbc(mode=0,nodesToExport=[],cacheFileName='',exportAttr=[],importRef
         for item in nodesToExport:             
             exportStringa=exportString+' -root '+item
             itemName=item.split('|')[-1].replace(':','@')
-            print itemName
+            #print itemName
             #log
             logStr[count]={}
             logStr[count]['abcFile']=cacheFileName+'_'+itemName+'.abc'
+            logStr[count]['selectedNode']=item
             logStr[count]['meshs']={}        
             #导出材质球，添加信息
             for meshItem in J_getAllMeshUnderSelections([item]):

@@ -200,11 +200,11 @@ global proc J_CFXWorkFlow_outAbcGeo()
 }
 global proc J_CFXWorkFlow_outAbcGeoSep()
 {
-    python("JpyModules.public.J_exportAbc(1)");
+    python("JpyModules.public.J_exportAbc(mode=1,exportAttr=[\"SGInfo\"])");
 }
 global proc J_CFXWorkFlow_outAbcGeoAll()
 {
-    python("JpyModules.public.J_exportAbc()");
+    python("JpyModules.public.J_exportAbc(mode=0,exportAttr=[\"SGInfo\"])");
 }
 global proc J_CFXWorkFlow_nClothIn()
 {
