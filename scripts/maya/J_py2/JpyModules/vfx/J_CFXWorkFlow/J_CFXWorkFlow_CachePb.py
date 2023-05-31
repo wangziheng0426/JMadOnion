@@ -36,8 +36,8 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],skipFrame=0,viewer=True,re
         runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(frameRate)+'", "1","0","1","mcx" } ;'
         mel.eval(runStr)
     waterMark=''
-    if os.path.exists(cmds.workspace(query=True,rd=True)+'/waterMark.png'):
-        waterMark=(cmds.workspace(query=True,rd=True)+'/waterMark.png') 
+    if os.path.exists(cmds.workspace(query=True,rd=True)+'waterMark.png'):
+        waterMark=(cmds.workspace(query=True,rd=True)+'waterMark.png') 
     JpyModules.animation.J_playBlast.J_playBlast_outPut(res=res,skipFrame=skipFrame,waterMark=waterMark)
 if __name__=='__main__':
-    J_CFXWorkFlow_CachePb(1,'','jpg')
+    J_CFXWorkFlow_CachePb()
