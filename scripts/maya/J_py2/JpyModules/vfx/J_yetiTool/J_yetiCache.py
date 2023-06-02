@@ -182,7 +182,7 @@ def J_exportYetiShader(yetiCachePath,currentYetiNode):
     cmds.select(cmds.listConnections(sgNodes[0]+'.surfaceShader',connections=True,destination=True)[1])
     if os.path.exists(outShaderFIlePath):
         os.remove(outShaderFIlePath)
-    cmds.file(outShaderFIlePath,op='v=0;',typ="mayaAscii", es=True)
+    cmds.file(outShaderFIlePath,op='v=0;',typ="mayaAscii", es=True,constructionHistory=1)
 
     return ('shaders/'+outShaderFIlePath.split('shaders/')[1])
 

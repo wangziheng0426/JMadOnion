@@ -44,7 +44,7 @@ def J_exportAbc(mode=0,nodesToExport=[],exportAttr=[],importRef=False):
         logStr[count]['selectedNode']=','.join(nodesToExport)
         logStr[count]['meshs']={}
         #导出材质球，添加信息
-        for meshItem in J_getAllMeshUnderSelections(nodesToExport):
+        for meshItem in J_getAllMeshs(nodesToExport):
             logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem)
         #log↑
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)
@@ -77,7 +77,7 @@ def J_exportAbc(mode=0,nodesToExport=[],exportAttr=[],importRef=False):
             logStr[count]['selectedNode']=item
             logStr[count]['meshs']={}        
             #导出材质球，添加信息
-            for meshItem in J_getAllMeshUnderSelections([item]):
+            for meshItem in J_getAllMeshs([item]):
                 logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem)   
             exportStringa+=' -file '+j_abcCachePath+cacheFileName+'_'+itemName+'.abc"'
             mel.eval(exportStringa)
@@ -85,6 +85,7 @@ def J_exportAbc(mode=0,nodesToExport=[],exportAttr=[],importRef=False):
         outFile=open(j_abcCachePath+'abcLog.jcl','w')
         outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False)) 
         outFile.close()
+    cmds.select(nodesToExport)
     os.startfile(j_abcCachePath)    
 #为模型添加自定义属性，并将材质信息写入，最后导出材质球，返回导出文件
 def J_exportMaterail(exportPath,meshTrNode):
@@ -94,10 +95,41 @@ def J_exportMaterail(exportPath,meshTrNode):
     if cmds.objExists(meshTrNode):
         shapeNodes=cmds.ls(meshTrNode,dag=True,ni=True,type="mesh",ap=1)    
         shadingEngineNodes = list(set(cmds.listConnections(shapeNodes,type="shadingEngine")))
+        #sg节点数小于1说明没有材质，不导出
+        if len(shadingEngineNodes)<1 :return ''
+        matFileList=[]
+        matList=[]
+        #创建文件夹导出材质
+        shaderFilePath=exportPath+'/Materials/'
+        if not os.path.exists(shaderFilePath):        
+            os.makedirs(shaderFilePath)
+        #导出surfaceshader对应的材质
+        for sgItem in shadingEngineNodes:
+            mat= cmds.listConnections(sgItem+ ".surfaceShader")
+            matList.append(mat[0])
+            outMatFIlePath=shaderFilePath+mat[0].replace("|",'_').replace(":","@")+'_mat.ma'
+            #为材质添加信息，以防导入后名字发生变化无法对应
+            if not cmds.attributeQuery('SGInfo',node=mat[0],ex=1):
+                cmds.addAttr(mat[0],longName='SGInfo',dt='string')
+            cmds.setAttr(mat[0]+'.SGInfo',sgItem,type='string')
+            if not cmds.attributeQuery('NodeName',node=mat[0],ex=1):
+                cmds.addAttr(mat[0],longName='NodeName',dt='string')
+            cmds.setAttr(mat[0]+'.NodeName',meshTrNode,type='string')
+            #文件存在则删除后导出
+            if os.path.exists(outMatFIlePath):
+                os.remove(outMatFIlePath)
+            cmds.select(mat)
+            cmds.file(outMatFIlePath,op='v=0;',force=1,typ="mayaAscii", es=True,constructionHistory=1)
+            matFileList.append(mat[0].replace("|",'_').replace(":","@")+'_mat.ma')
+        
         #将sg节点名称写入模型属性
         if not cmds.attributeQuery('SGInfo',node=meshTrNode,ex=1):
             cmds.addAttr(meshTrNode,longName='SGInfo',dt='string')
         cmds.setAttr(meshTrNode+'.SGInfo',",".join(shadingEngineNodes),type='string')
+        #每个sg对应的材质信息
+        if not cmds.attributeQuery('MatInfo',node=meshTrNode,ex=1):
+            cmds.addAttr(meshTrNode,longName='MatInfo',dt='string')
+        cmds.setAttr(meshTrNode+'.MatInfo',",".join(matList),type='string')
         #原节点名写入节点属性
         if not cmds.attributeQuery('NodeName',node=meshTrNode,ex=1):
             cmds.addAttr(meshTrNode,longName='NodeName',dt='string')
@@ -107,35 +139,25 @@ def J_exportMaterail(exportPath,meshTrNode):
             if not cmds.attributeQuery('SGInfo',node=sItem,ex=1):
                 cmds.addAttr(sItem,longName='SGInfo',dt='string')
             cmds.setAttr(sItem+'.SGInfo',",".join(shadingEngineNodes),type='string')
+            if not cmds.attributeQuery('MatInfo',node=sItem,ex=1):
+                cmds.addAttr(sItem,longName='MatInfo',dt='string')
+            cmds.setAttr(sItem+'.MatInfo',",".join(matList),type='string')
             if not cmds.attributeQuery('NodeName',node=sItem,ex=1):
                 cmds.addAttr(sItem,longName='NodeName',dt='string')
-            cmds.setAttr(sItem+'.NodeName',sItem,type='string')
-        #创建文件夹导出材质
-        shaderFilePath=exportPath+'/Materials/'
-        if not os.path.exists(shaderFilePath):        
-            os.makedirs(shaderFilePath)
-        #sg节点数小于1说明没有材质，不导出
-        if len(shadingEngineNodes)<1 :return ''
-        matFileList=[]
-        for sgItem in shadingEngineNodes:
-            mat= cmds.listConnections(sgItem+ ".surfaceShader")
-            outMatFIlePath=shaderFilePath+mat[0].replace("|",'_').replace(":","@")+'_mat.ma'
-            #文件存在则删除后导出
-            if os.path.exists(outMatFIlePath):
-                os.remove(outMatFIlePath)
-            cmds.select(mat)
-            cmds.file(outMatFIlePath,op='v=0;',typ="mayaAscii", es=True)
-            matFileList.append(mat[0].replace("|",'_').replace(":","_")+'_mat.ma')
-        #选择surfaceshader对应的材质
+            cmds.setAttr(sItem+'.NodeName',sItem,type='string') 
+        
+        
+        
         return (','.join(matFileList))
 
-def J_importAbc(useLambert=False):
+def J_importAbc():
     #读取jcl日志
     jclFile = cmds.fileDialog2(fileMode=1, caption="Import clothInfo")[0]
     jclDir=os.path.dirname(jclFile)
     fileId=open(jclFile,'r')
     abcInfo=json.load(fileId)
     fileId.close()
+    importlog=''
     cmds.currentUnit(time=abcInfo["settings"]["frameRate"])
     cmds.playbackOptions(minTime=abcInfo["settings"]["frameRange"][0])
     cmds.playbackOptions(maxTime=abcInfo["settings"]["frameRange"][1])
@@ -151,24 +173,61 @@ def J_importAbc(useLambert=False):
         groupNode=cmds.createNode('transform',name=('J_abc_'+str(k0)+"_"+abcFile[:-4].split("@")[len(abcFile.split("@"))-1]))
         if os.path.exists(abcFile):
             mel.eval('AbcImport -mode import -reparent '+groupNode+' \"'+abcFile +'\";')
-        #第二层字典关键字mesh包含模型名称和材质名称，导入材质球，并链接    
+        #第二层字典关键字mesh包含模型名称和材质名称，导入材质球  
         for k1,v1 in v0['meshs'].items():
             newMeshTrName=[]
             for nItem1 in k1.split("|"):
                 newMeshTrName.append(nItem1.split(":")[-1])
             newMeshTrName='|'+groupNode+('|'.join(newMeshTrName))[len(selectedNodeParent):]
-            if cmds.objExists(newMeshTrName):     
-                if v1!='':
-                    for matFileName in v1.split(","):
-                        matFileName=jclDir+'/Materials/'+matFileName
-                        if os.path.exists(matFileName):
-                            try:
-                                cmds.file(matFileName,i=1,type="mayaAscii",ignoreVersion=1,ra=1,mergeNamespacesOnClash=1,ns=":")
-                            except:
-                                pass
-                        # if v['yetiShaderName']!="" and cmds.objExists(v['yetiShaderName']):
-                        #     cmds.connectAttr(v['yetiShaderName']+'.outColor',sgNode+'.surfaceShader')
-                        # cmds.sets(yetiNode,fe=sgNode, e=True)
+
+            #if cmds.objExists(newMeshTrName):  
+            # 导入材质球   
+            if v1!='':
+                for matFileName in v1.split(","):
+                    matFileName=jclDir+'/Materials/'+matFileName
+                    if os.path.exists(matFileName):
+                        try:
+                            cmds.file(matFileName,i=1,type="mayaAscii",ignoreVersion=1,ra=1,mergeNamespacesOnClash=1,ns=":")
+                        except:
+                            pass
+        #搜索新建组下所有mesh，根据mesh属性链接材质球
+        for meshItem in J_getAllMeshs([groupNode]):
+            #读取模型带有的原始信息
+            meshSGInfo=''
+            if  cmds.attributeQuery('SGInfo',node=meshItem,ex=1):
+                meshSGInfo =cmds.getAttr(meshItem+'.SGInfo')
+            meshMatInfo=''
+            if  cmds.attributeQuery('MatInfo',node=meshItem,ex=1):
+                meshMatInfo =cmds.getAttr(meshItem+'.MatInfo')
+            meshTrName=''
+            if  cmds.attributeQuery('NodeName',node=meshItem,ex=1):
+                meshTrName =cmds.getAttr(meshItem+'.NodeName')
+            if meshTrName =="":continue
+            #查询物体是否自带sg节点，如果带，就直接按记录链接材质球，否则不管
+            shapeNodes=cmds.ls(meshItem,dag=True,ni=True,type="mesh",ap=1)    
+            shadingEngineNodes = list(set(cmds.listConnections(shapeNodes,type="shadingEngine")))
+            for matItem in cmds.ls(mat=1):
+                #读取模型带有的原始信息
+                matSGInfo=''
+                if  cmds.attributeQuery('SGInfo',node=matItem,ex=1):
+                    matSGInfo =cmds.getAttr(matItem+'.SGInfo')
+                matMeshTrName=''
+                if  cmds.attributeQuery('NodeName',node=matItem,ex=1):
+                    matMeshTrName =cmds.getAttr(matItem+'.NodeName')
+                if meshTrName==matMeshTrName and matSGInfo in meshSGInfo.split(','):
+                    #材质球比对成功后，判断模型是否有多个sg，或者不是链接的默认sg说明模型是分面给的材质，包含面集，这种状况，直接把材质球连到sg上
+                    if len(shadingEngineNodes)>1:
+                        for SGitem in shadingEngineNodes:
+                            if SGitem.find(matSGInfo.split(':')[-1])>-1:
+                                cmds.connectAttr(matItem+'.outColor',SGitem+'.surfaceShader')
+                    if len(shadingEngineNodes)==1:
+                        if shadingEngineNodes[0]!="'initialShadingGroup'":
+                            if shadingEngineNodes[0].find(matSGInfo.split(':')[-1])>-1:
+                                cmds.connectAttr(matItem+'.outColor',shadingEngineNodes[0]+'.surfaceShader')
+                        else:
+                            sgNode=cmds.sets(renderable=True,noSurfaceShader=True,empty=True, name=matItem+"SG#")
+                            cmds.connectAttr(matItem+'.outColor',sgNode+'.surfaceShader')
+                            cmds.sets(meshItem,fe=sgNode, e=True)
 #指定面集
 def J_addFaceSet(nodesToAddFaceSet=[]):
     #为模型添加面集,并在mesh节点和父层节点写入面集名称
@@ -206,7 +265,7 @@ def J_addFaceSet(nodesToAddFaceSet=[]):
                     cmds.sets(fe=seItem, e=True)
     cmds.select(nodesToAddFaceSet)
 #查找选择对象下所有的mesh
-def J_getAllMeshUnderSelections(meshTrNodes):
+def J_getAllMeshs(meshTrNodes):
     allMesh=[]
     for item in meshTrNodes:
         J_getChildNodes(item,allMesh)
@@ -219,14 +278,14 @@ def J_getAllMeshUnderSelections(meshTrNodes):
 
 #递归找mesh
 def J_getChildNodes(currentNode,meshList): 
-    print   currentNode
     childNodes=cmds.listRelatives(currentNode,fullPath=True,children=True)
-    for item in childNodes:
-        if cmds.objectType( item, isType='mesh' ):
-            if cmds.getAttr((item+".intermediateObject"))==0:
-                meshList.append(item)
-        if cmds.objectType( item, isType='transform' ):
-            J_getChildNodes(item,meshList)     
+    if childNodes is not None:
+        for item in childNodes:
+            if cmds.objectType( item, isType='mesh' ):
+                if cmds.getAttr((item+".intermediateObject"))==0:
+                    meshList.append(item)
+            if cmds.objectType( item, isType='transform' ):
+                J_getChildNodes(item,meshList)     
 
  #######################################################################################################################       
 def J_exportAbcWithFaceSet(mode=0,meshNodes=[],cacheFileName=''):   
@@ -243,7 +302,7 @@ def J_exportAbcWithFaceSet(mode=0,meshNodes=[],cacheFileName=''):
         cmds.confirmDialog(title=u'错误',message=u'   未选中任何节点   ',button='666')
         return
     else:
-        meshNodes=J_getAllMeshUnderSelections(meshNodes)
+        meshNodes=J_getAllMeshs(meshNodes)
     
     abcOutPath=filePath+cacheFileName+'_abc/'
     if not os.path.exists(abcOutPath):
@@ -295,7 +354,7 @@ def J_exportAbcWithFaceSet(mode=0,meshNodes=[],cacheFileName=''):
                 refName='_'+cmds.getAttr(item+".nameSpaceAttr")+'_'
             exportStringA+=' -root '+newObj   
             exportStringA+=' -file \\\"'+abcOutPath+cacheFileName+refName+newObj.replace(':',"_").split('|')[-1]+'.abc\\\""'
-            print exportStringA
+
             mel.eval(exportStringA)
     os.startfile(abcOutPath)  
 
@@ -303,7 +362,7 @@ def J_exportAbcWithFaceSet(mode=0,meshNodes=[],cacheFileName=''):
     #如果文件来自于映射文件则导入映射,删除名字空间,并添加属性
 def J_importReferencesAndAddNamespaceAttr():
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
-    selection=J_getAllMeshUnderSelections(cmds.ls(sl=True,ap=True))
+    selection=J_getAllMeshs(cmds.ls(sl=True,ap=True))
     cmds.select(selection)
     sel=om2.MGlobal.getActiveSelectionList() 
     namespaceOfSelections=[]
@@ -405,5 +464,5 @@ def J_renameShadingEngine():
                     cmds.rename(seItem,mat[0])
 if __name__ == "__main__":
     #J_exportAbc(exportAttr=["SGInfo"])
-    J_exportAbc(mode=1,exportAttr=["SGInfo","NodeName"])
+    J_exportAbc(mode=1,exportAttr=["SGInfo","NodeName",'MatInfo'])
     

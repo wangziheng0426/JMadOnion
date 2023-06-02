@@ -1,6 +1,7 @@
 *.pyc
 *.exe
 *.jset
+*.rar
 /.idea/
 /J_Living/J_LivingWorker/.vs/
 /J_Living/J_LivingWorker/bin/

@@ -200,11 +200,11 @@ global proc J_CFXWorkFlow_outAbcGeo()
 }
 global proc J_CFXWorkFlow_outAbcGeoSep()
 {
-    python("JpyModules.public.J_exportAbc(mode=1,exportAttr=['SGInfo','NodeName'])");
+    python("JpyModules.public.J_exportAbc(mode=1,exportAttr=['SGInfo','NodeName','MatInfo'])");
 }
 global proc J_CFXWorkFlow_outAbcGeoAll()
 {
-    python("JpyModules.public.J_exportAbc(mode=0,exportAttr=['SGInfo','NodeName'])");
+    python("JpyModules.public.J_exportAbc(mode=0,exportAttr=['SGInfo','NodeName','MatInfo'])");
 }
 global proc J_CFXWorkFlow_nClothIn()
 {
