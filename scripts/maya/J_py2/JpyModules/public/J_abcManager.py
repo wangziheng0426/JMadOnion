@@ -161,6 +161,8 @@ def J_importAbc():
     cmds.currentUnit(time=abcInfo["settings"]["frameRate"])
     cmds.playbackOptions(minTime=abcInfo["settings"]["frameRange"][0])
     cmds.playbackOptions(maxTime=abcInfo["settings"]["frameRange"][1])
+    #添加材质记录，避免重复导入
+    matImportedList=[]
     for k0,v0 in abcInfo.items():
         if k0=='settings':continue
         selectedNodeParent=[]
@@ -186,7 +188,9 @@ def J_importAbc():
                 for matFileName in v1.split(","):
                     matFileName=jclDir+'/Materials/'+matFileName
                     if os.path.exists(matFileName):
+                        if matFileName in matImportedList:continue
                         try:
+                            matImportedList.append(matFileName)
                             cmds.file(matFileName,i=1,type="mayaAscii",ignoreVersion=1,ra=1,mergeNamespacesOnClash=1,ns=":")
                         except:
                             pass
@@ -211,22 +215,23 @@ def J_importAbc():
                 matSGInfo=''
                 if  cmds.attributeQuery('SGInfo',node=matItem,ex=1):
                     matSGInfo =cmds.getAttr(matItem+'.SGInfo')
-                matMeshTrName=''
-                if  cmds.attributeQuery('NodeName',node=matItem,ex=1):
-                    matMeshTrName =cmds.getAttr(matItem+'.NodeName')
-                if meshTrName==matMeshTrName and matSGInfo in meshSGInfo.split(','):
+                # matMeshTrName=''
+                # if  cmds.attributeQuery('NodeName',node=matItem,ex=1):
+                #     matMeshTrName =cmds.getAttr(matItem+'.NodeName')
+                #if meshTrName==matMeshTrName and matSGInfo in meshSGInfo.split(','):
+                if  matSGInfo in meshSGInfo.split(','):
                     #材质球比对成功后，判断模型是否有多个sg，或者不是链接的默认sg说明模型是分面给的材质，包含面集，这种状况，直接把材质球连到sg上
                     if len(shadingEngineNodes)>1:
                         for SGitem in shadingEngineNodes:
-                            if SGitem.find(matSGInfo.split(':')[-1])>-1:
-                                cmds.connectAttr(matItem+'.outColor',SGitem+'.surfaceShader')
+                            if SGitem.find(matSGInfo.split(':')[-1])>-1:                                
+                                cmds.connectAttr(matItem+'.outColor',SGitem+'.surfaceShader',f=1)
                     if len(shadingEngineNodes)==1:
-                        if shadingEngineNodes[0]!="'initialShadingGroup'":
+                        if shadingEngineNodes[0]!='initialShadingGroup':
                             if shadingEngineNodes[0].find(matSGInfo.split(':')[-1])>-1:
-                                cmds.connectAttr(matItem+'.outColor',shadingEngineNodes[0]+'.surfaceShader')
+                                cmds.connectAttr(matItem+'.outColor',shadingEngineNodes[0]+'.surfaceShader',f=1)
                         else:
                             sgNode=cmds.sets(renderable=True,noSurfaceShader=True,empty=True, name=matItem+"SG#")
-                            cmds.connectAttr(matItem+'.outColor',sgNode+'.surfaceShader')
+                            cmds.connectAttr(matItem+'.outColor',sgNode+'.surfaceShader',f=1)
                             cmds.sets(meshItem,fe=sgNode, e=True)
 #指定面集
 def J_addFaceSet(nodesToAddFaceSet=[]):
