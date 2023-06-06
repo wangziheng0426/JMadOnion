@@ -19,7 +19,6 @@
   
   <MainMenu> 特效工具 vfx </MainMenu>  
   <SubMenu> 转换粒子替代 J_particleToJoint vfx/J_particleToJoint.mel </SubMenu>   
-  <SubMenu> yeti替换贴图 J_replactYetiTextureWin vfx/J_replactYetiTextureWin.mel </SubMenu>
   <SubMenu> yeti极速缓存 J_runYetiCache vfx/J_runYetiCache.mel </SubMenu>  
   <SubMenu> 解算流程工具 J_CFXWorkFlow vfx/J_CFXWorkFlow.mel </SubMenu>  
   <SubMenu> 批量解算 J_livingQueue vfx/J_livingQueue.mel </SubMenu> 
@@ -29,7 +28,7 @@
   <MainMenu> 动画工具 anim </MainMenu>  
   <SubMenu> 拍平工具 J_playBlastTool animation/J_playBlastTool.mel </SubMenu>
   <SubMenu> 批量导动画 J_animationExporter animation/J_animationExporter.mel </SubMenu>  
-  <SubMenu> 绑定工具 J_characterRigTool animation/J_characterRigTool.mel </SubMenu>  
+
   <MainMenu> 渲染工具 render </MainMenu>  
   <SubMenu> 自动分层 J_autoLayer render/J_autoLayer.mel </SubMenu>
   #<SubMenu> 前台渲染 J_perFrameRender render/J_perFrameRender.mel </SubMenu> 

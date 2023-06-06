@@ -35,10 +35,10 @@ if (`window -ex J_CFXWorkFlow`)
                 button -l "选择布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"nCloth\")" J_buNClothMark;
                 button -l "随机颜色" -w $ButtonW  -h $ButtonH -c  "J_meshRandomColor()" J_buRandomColor;
                 button -l "布料转bs" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outInBetweenGeo()" J_buNClothOut;
-                button -l "导出布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
+                //button -l "导出布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
                 button -l "单独导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
                 button -l "整体导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoAll()" J_buNClothOutAbcAll;
-                button -l "导入布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
+                button -l "导入abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
                 button -l "显示hud" -w $ButtonW  -h $ButtonH -c  "J_playBlast_showHUD_1()" J_buShowHud;
                 //button -l "拷贝点动画" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
             setParent ..;
@@ -108,13 +108,10 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_buNClothOut left 0 67
         -ac J_buNClothOut top  1 J_buRandomColor
         -ap J_buNClothOut right 0 100
-        
-        -ap J_buNClothOutAbc left 0 67
-        -ac J_buNClothOutAbc top  1 J_buNClothOut
-        -ap J_buNClothOutAbc right 0 100
+    
         
         -ap J_buNClothOutAbcSep left 0 67
-        -ac J_buNClothOutAbcSep top  1 J_buNClothOutAbc
+        -ac J_buNClothOutAbcSep top  1 J_buNClothOut
         -ap J_buNClothOutAbcSep right 0 100  
         
         -ap J_buNClothOutAbcAll left 0 67
@@ -208,7 +205,7 @@ global proc J_CFXWorkFlow_outAbcGeoAll()
 }
 global proc J_CFXWorkFlow_nClothIn()
 {
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_nClothIn()");
+    python("JpyModules.public.J_importAbc()");
 }
 global proc J_CFXWorkFlow_abcIn()
 {
