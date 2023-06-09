@@ -18,7 +18,7 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     renderPrefix=renderPath+"/"+renderFileName
     cmds.setAttr("defaultRenderGlobals.imageFilePrefix",renderPrefix,type='string')
     #当前相机
-    if camera=='':
+    if camera!='':
         camera=cmds.modelPanel("modelPanel4",query=True,camera=True)
         for camItem in cmds.ls(type='camera'):
             cmds.setAttr(camItem+".renderable",0)
@@ -59,7 +59,7 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     #渲染文件设置
     cmds.setAttr("defaultRenderGlobals.imfPluginKey",'png',type='string')
     cmds.setAttr("defaultRenderGlobals.imageFormat",32)
-    mel.eval('RenderSequence')
+    #mel.eval('RenderSequence')
 def renderImages():
     pass
 if __name__=='__main__':
