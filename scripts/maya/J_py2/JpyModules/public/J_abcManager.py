@@ -96,10 +96,19 @@ def J_exportMaterail(exportPath,meshTrNode,attrList=['SGInfo','MatInfo','NodeNam
     if meshTrNode==""or exportPath=="":
         return ''
     if cmds.objExists(meshTrNode):
-        shapeNodes=cmds.ls(meshTrNode,dag=True,ni=True,type="mesh",ap=1)    
-        shadingEngineNodes = list(set(cmds.listConnections(shapeNodes,type="shadingEngine")))
+        shapeNodes=cmds.ls(meshTrNode,dag=True,ni=True,type="mesh",ap=1)  
+        if   shapeNodes==None:
+            print (meshTrNode+u"缺少shape节点")
+            return ''
+        sgTemp=cmds.listConnections(shapeNodes,type="shadingEngine")
+        if sgTemp==None:
+            print (",".join(shapeNodes)+u"没有sg节点链接")
+            return ''
+        shadingEngineNodes = list(set(sgTemp))
         #sg节点数小于1说明没有材质，不导出
-        if len(shadingEngineNodes)<1 :return ''
+        if len(shadingEngineNodes)<1 :
+            print (meshTrNode +"未连接sg节点")
+            return ''
         matFileList=[]
         matList=[]
         #创建文件夹导出材质
@@ -109,6 +118,9 @@ def J_exportMaterail(exportPath,meshTrNode,attrList=['SGInfo','MatInfo','NodeNam
         #导出surfaceshader对应的材质
         for sgItem in shadingEngineNodes:
             mat= cmds.listConnections(sgItem+ ".surfaceShader")
+            if mat is None:
+                print (sgItem+u"没有链接材质球")
+                continue
             matList.append(mat[0])
             outMatFIlePath=shaderFilePath+mat[0].replace("|",'_').replace(":","@")+'_mat.ma'
             #为材质添加信息，以防导入后名字发生变化无法对应
