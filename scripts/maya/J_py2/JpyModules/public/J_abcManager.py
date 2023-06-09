@@ -11,7 +11,10 @@ import maya.mel as mel
 import os,sys,json
 #导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
 #模式2单独导出每个模型文件
-def J_exportAbc(mode=0,nodesToExport=[],exportAttr=[],importRef=False):
+def J_exportAbc(mode=1,nodesToExport=[],exportAttr=[],importRef=False):
+    attrList=['SGInfo','MatInfo','NodeName','NodeVisibility']
+    if len(exportAttr)<1:
+        exportAttr=attrList
     import JpyModules
     if len(nodesToExport)<1:
         nodesToExport=cmds.ls(sl=True,long=True)
@@ -45,7 +48,7 @@ def J_exportAbc(mode=0,nodesToExport=[],exportAttr=[],importRef=False):
         logStr[count]['meshs']={}
         #导出材质球，添加信息
         for meshItem in J_getAllMeshs(nodesToExport):
-            logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem)
+            logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem,exportAttr)
         #log↑
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)
         if(len(exportAttr)>0):            
@@ -88,7 +91,7 @@ def J_exportAbc(mode=0,nodesToExport=[],exportAttr=[],importRef=False):
     cmds.select(nodesToExport)
     os.startfile(j_abcCachePath)    
 #为模型添加自定义属性，并将材质信息写入，最后导出材质球，返回导出文件
-def J_exportMaterail(exportPath,meshTrNode):
+def J_exportMaterail(exportPath,meshTrNode,attrList=['SGInfo','MatInfo','NodeName','NodeVisibility']):
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
     if meshTrNode==""or exportPath=="":
         return ''
@@ -121,20 +124,19 @@ def J_exportMaterail(exportPath,meshTrNode):
             cmds.select(mat)
             cmds.file(outMatFIlePath,op='v=0;',force=1,typ="mayaAscii", es=True,constructionHistory=1)
             matFileList.append(mat[0].replace("|",'_').replace(":","@")+'_mat.ma')
-        
+        #未模型添加属性        
+        for attrItem in attrList:
+            if not cmds.attributeQuery(attrItem,node=meshTrNode,ex=1):
+                cmds.addAttr(meshTrNode,longName=attrItem,dt='string')
         #将sg节点名称写入模型属性
-        if not cmds.attributeQuery('SGInfo',node=meshTrNode,ex=1):
-            cmds.addAttr(meshTrNode,longName='SGInfo',dt='string')
         cmds.setAttr(meshTrNode+'.SGInfo',",".join(shadingEngineNodes),type='string')
         #每个sg对应的材质信息
-        if not cmds.attributeQuery('MatInfo',node=meshTrNode,ex=1):
-            cmds.addAttr(meshTrNode,longName='MatInfo',dt='string')
         cmds.setAttr(meshTrNode+'.MatInfo',",".join(matList),type='string')
         #原节点名写入节点属性
-        if not cmds.attributeQuery('NodeName',node=meshTrNode,ex=1):
-            cmds.addAttr(meshTrNode,longName='NodeName',dt='string')
         cmds.setAttr(meshTrNode+'.NodeName',meshTrNode,type='string')
-        #
+        #显示属性
+        cmds.setAttr(meshTrNode+'.NodeVisibility',cmds.getAttr(meshTrNode+".visibility"),type='string')
+        print cmds.getAttr(meshTrNode+".visibility")
         for sItem in shapeNodes:
             if not cmds.attributeQuery('SGInfo',node=sItem,ex=1):
                 cmds.addAttr(sItem,longName='SGInfo',dt='string')
@@ -197,16 +199,19 @@ def J_importAbc():
         #搜索新建组下所有mesh，根据mesh属性链接材质球
         for meshItem in J_getAllMeshs([groupNode]):
             #读取模型带有的原始信息
+            meshTrName=''
+            if  cmds.attributeQuery('NodeName',node=meshItem,ex=1):
+                meshTrName =cmds.getAttr(meshItem+'.NodeName')
+            if meshTrName =="":continue
             meshSGInfo=''
             if  cmds.attributeQuery('SGInfo',node=meshItem,ex=1):
                 meshSGInfo =cmds.getAttr(meshItem+'.SGInfo')
             meshMatInfo=''
             if  cmds.attributeQuery('MatInfo',node=meshItem,ex=1):
-                meshMatInfo =cmds.getAttr(meshItem+'.MatInfo')
-            meshTrName=''
-            if  cmds.attributeQuery('NodeName',node=meshItem,ex=1):
-                meshTrName =cmds.getAttr(meshItem+'.NodeName')
-            if meshTrName =="":continue
+                meshMatInfo =cmds.getAttr(meshItem+'.MatInfo')            
+            #之前场景中隐藏的模型依旧隐藏
+            if  cmds.attributeQuery('NodeVisibility',node=meshItem,ex=1):
+                cmds.setAttr(meshItem+'.visibility',cmds.getAttr(meshItem+'.NodeVisibility')=='True')  
             #查询物体是否自带sg节点，如果带，就直接按记录链接材质球，否则不管
             shapeNodes=cmds.ls(meshItem,dag=True,ni=True,type="mesh",ap=1)    
             shadingEngineNodes = list(set(cmds.listConnections(shapeNodes,type="shadingEngine")))
@@ -469,5 +474,5 @@ def J_renameShadingEngine():
                     cmds.rename(seItem,mat[0])
 if __name__ == "__main__":
     #J_exportAbc(exportAttr=["SGInfo"])
-    J_exportAbc(mode=1,exportAttr=["SGInfo","NodeName",'MatInfo'])
+    J_exportAbc()
     
