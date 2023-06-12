@@ -17,28 +17,36 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     renderPath=filePath+'/render_'+renderFileName
     renderPrefix=renderPath+"/"+renderFileName
     cmds.setAttr("defaultRenderGlobals.imageFilePrefix",renderPrefix,type='string')
-    #当前相机
+    #改相机
     if camera!='':
         #camera=cmds.modelPanel("modelPanel4",query=True,camera=True)
         for camItem in cmds.ls(type='camera'):
             cmds.setAttr(camItem+".renderable",0)
         cmds.setAttr(camera+".renderable",1)
+    #前台渲染相机设置
+    cmds.renderWindowEditor(cmds.getPanel(scriptType="renderWindowPanel")[0],e=1,currentCamera='camera1')
     #清理场景
     #关闭所有灯光
     lightTypes=['aiAreaLight','aiSkyDomeLight','light']
     for item in lightTypes:
         for lightItem in cmds.ls(type=item):
             cmds.setAttr(lightItem+".visibility",0)
-    #导入灯光文件
-    if lightFile=='':
+    #映射灯光文件，可传入完整路径，或者传入文件名，传入文件名则直接再工程目录下寻找，如果已经发现有名字空间未lightRef的映射灯光文件，则不再映射
+    if not os.path.exists(lightFile):
         if os.path.exists(cmds.workspace(query=True,rd=True)+'lightPresets.ma'):
             lightFile=(cmds.workspace(query=True,rd=True)+'lightPresets.ma') 
-    if os.path.exists(lightFile):
-        cmds.file(lightFile,i=1,type="mayaAscii",ignoreVersion=1,ra=1,mergeNamespacesOnClash=1,ns=":")
+    hasLightFile=False
+    for reItem in cmds.ls(type ='reference'):            
+        if cmds.referenceQuery(reItem,namespace=True).find('J_lightPresets')>-1:
+            hasLightFile=True
+    if os.path.exists(lightFile) and not hasLightFile:
+        cmds.file(lightFile,r=1,type="mayaAscii",ignoreVersion=1,mergeNamespacesOnClash=0,ns=":J_lightPresets")
     #改分辨率
     if (len(resolution)==2):
         cmds.setAttr("defaultResolution.width",resolution[0])
         cmds.setAttr("defaultResolution.height",resolution[1])
+        mel.eval('AEadjustDeviceAspect defaultResolution.deviceAspectRatio defaultResolution.width defaultResolution.height;')
+        mel.eval('AEadjustPixelAspect defaultResolution.deviceAspectRatio defaultResolution.width defaultResolution.height;')
     #开启动画
     cmds.setAttr("defaultRenderGlobals.animation",1)
     cmds.setAttr("defaultRenderGlobals.animationRange",1)
@@ -67,10 +75,10 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
         cmds.setAttr("defaultRenderGlobals.currentRenderer",renderer,type='string')
     if renderer=='arnold':
         cmds.setAttr("defaultArnoldDriver.ai_translator", "png", type="string")
-        cmds.setAttr("defaultArnoldDriver.pre", "file_name", type="string")
+        cmds.setAttr("defaultArnoldDriver.pre", renderPrefix, type="string")
 
-    #mel.eval('RenderSequence')
+    mel.eval('RenderSequence')
 def renderImages():
     pass
 if __name__=='__main__':
-    J_renderPreview(resolution=[1280,400],camera='camera1',animationRange=[4,25,1])                   
+    J_renderPreview(resolution=[1280,400],camera='camera1',animationRange=[25,35,1])                   

@@ -6,28 +6,31 @@
 # Filename      : J_exportAbc.py
 # Description   :
 ##############################################
-import maya.cmds as cmds
-import maya.mel as mel
-import os,sys,json
-import maya.api.OpenMaya as om2
+import os,sys,json,time,shutil
+
 #导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
 #模式2单独导出每个模型文件
-def J_ffmpeg(fileList=[],frameRate=24):
-    if len(fileList)<1:
-        print (u'文件列表为空')
+def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',outName='comp.m4v'):
+    if not os.path.exists(compressPath):
+        print ("path not exists!")
+        print (__file__.split('/scripts/maya')[0]+'/other/thirdParty/ffmpeg.exe')
         return
+    #如果未指定文件列表，则搜索文件下的所有图片进行压缩
+    if len(fileList)<1:
+        print (u'文件列表为空，搜索目录下文件进行压缩')
+        
     import JpyModules
     #序列帧文件列表
-    compressFileName=playBlastPath+'.list'
+    compressFileName=compressPath+'/compress.list'
     compressFile=open(compressFileName,'w')
     imageList=''
-    for i in range(int(timeLineStart+skipFrame),int(timeLineEnd+1)):
-        imageList+='file '+fileName+'.%04d'%i+'.'+'png'+'\n'
+    for fileItem in fileList:
+        imageList+='file '+fileItem+'\n'
     compressFile.write(imageList)
     compressFile.close()
 
-    
-    ffmpegPath= os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(JpyModules.__file__)))))+'/other/thirdParty/ffmpeg.exe'
+    #ffmpeg路径
+    ffmpegPath= __file__.split('/scripts/maya')[0]+'/other/thirdParty/ffmpeg.exe'
     if not os.path.exists(ffmpegPath):
         print ("ffmpeg is missing!")
         return
@@ -40,20 +43,14 @@ def J_ffmpeg(fileList=[],frameRate=24):
             runStr+=' -filter_complex '
             runStr+=' overlay=0:0'
             runStr+=',overlay=main_w-overlay_w:0 '
-    runStr+=' -crf 20 -c:v h264   ' +j_ffmpegFile
+    runStr+=' -crf 20 -c:v h264   ' +compressPath+'/'+outName
 
     os.popen(runStr)
     time.sleep(2)
 
-    try:
-        shutil.rmtree(os.path.dirname(playBlastPath))
-        os.remove(compressFileName)
-    except:
-        pass
-    if (viewer):
-        os.system(j_ffmpegFile)  
+    os.system(j_ffmpegFile)  
 
 if __name__ == "__main__":
     #J_exportAbc(exportAttr=["SGInfo"])
-    J_exportAbc()
+    compressFileSeqTovideo()
    
