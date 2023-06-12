@@ -10,7 +10,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import os
-def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],renderer=""):
+def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],renderer="arnold"):
     import JpyModules
     filePath=JpyModules.public.J_getMayaFileFolder()
     renderFileName=JpyModules.public.J_getMayaFileNameWithOutExtension()
@@ -19,7 +19,7 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     cmds.setAttr("defaultRenderGlobals.imageFilePrefix",renderPrefix,type='string')
     #当前相机
     if camera!='':
-        camera=cmds.modelPanel("modelPanel4",query=True,camera=True)
+        #camera=cmds.modelPanel("modelPanel4",query=True,camera=True)
         for camItem in cmds.ls(type='camera'):
             cmds.setAttr(camItem+".renderable",0)
         cmds.setAttr(camera+".renderable",1)
@@ -47,9 +47,7 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
         cmds.setAttr("defaultRenderGlobals.animationRange",0)
         cmds.setAttr("defaultRenderGlobals.startFrame",animationRange[0])
         cmds.setAttr("defaultRenderGlobals.endFrame",animationRange[1])
-    #渲染器设置 arnold software
-    if renderer!="":
-        cmds.setAttr("defaultRenderGlobals.currentRenderer",renderer)
+    
     #关闭光线跟宗
     cmds.setAttr("defaultRenderQuality.enableRaytracing",0)
     #关闭运动模糊
@@ -57,8 +55,20 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     #抗锯齿
     cmds.setAttr("defaultRenderQuality.shadingSamples",1)
     #渲染文件设置
-    cmds.setAttr("defaultRenderGlobals.imfPluginKey",'png',type='string')
     cmds.setAttr("defaultRenderGlobals.imageFormat",32)
+    cmds.setAttr("defaultRenderGlobals.imfPluginKey",'png',type='string')
+
+    cmds.setAttr("defaultRenderGlobals.outFormatControl",0)
+    cmds.setAttr("defaultRenderGlobals.putFrameBeforeExt",1)
+    cmds.setAttr("defaultRenderGlobals.extensionPadding",4)
+
+    #渲染器设置 arnold software
+    if renderer!="":
+        cmds.setAttr("defaultRenderGlobals.currentRenderer",renderer,type='string')
+    if renderer=='arnold':
+        cmds.setAttr("defaultArnoldDriver.ai_translator", "png", type="string")
+        cmds.setAttr("defaultArnoldDriver.pre", "file_name", type="string")
+
     #mel.eval('RenderSequence')
 def renderImages():
     pass

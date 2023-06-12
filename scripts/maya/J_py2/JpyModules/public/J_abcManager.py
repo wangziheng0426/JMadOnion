@@ -9,6 +9,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import os,sys,json
+import maya.api.OpenMaya as om2
 #导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
 #模式2单独导出每个模型文件
 def J_exportAbc(mode=1,nodesToExport=[],exportAttr=[],importRef=False):
@@ -148,7 +149,7 @@ def J_exportMaterail(exportPath,meshTrNode,attrList=['SGInfo','MatInfo','NodeNam
         cmds.setAttr(meshTrNode+'.NodeName',meshTrNode,type='string')
         #显示属性
         cmds.setAttr(meshTrNode+'.NodeVisibility',cmds.getAttr(meshTrNode+".visibility"),type='string')
-        print cmds.getAttr(meshTrNode+".visibility")
+        print (cmds.getAttr(meshTrNode+".visibility"))
         for sItem in shapeNodes:
             if not cmds.attributeQuery('SGInfo',node=sItem,ex=1):
                 cmds.addAttr(sItem,longName='SGInfo',dt='string')
@@ -257,7 +258,7 @@ def J_addFaceSet(nodesToAddFaceSet=[]):
     if len(nodesToAddFaceSet)<1:
         nodesToAddFaceSet=cmds.ls(sl=True)
     if len(nodesToAddFaceSet)<1:
-        print u"选点什么吧"
+        print (u"选点什么吧")
         return
     for nodeItem in nodesToAddFaceSet:
         shapeNodes=cmds.ls(nodeItem,dag=True,ni=True,type="mesh")    
@@ -331,7 +332,7 @@ def J_exportAbcWithFaceSet(mode=0,meshNodes=[],cacheFileName=''):
         os.makedirs(abcOutPath)
     timeLineStart=cmds.playbackOptions(query=True,minTime=True)
     timeLineEnd=cmds.playbackOptions(query=True,maxTime=True)
-    J_deleteUnknownNode()
+
     #时间线切换
     cmds.currentTime(timeLineStart)
     #整体出abc模型
@@ -487,4 +488,4 @@ def J_renameShadingEngine():
 if __name__ == "__main__":
     #J_exportAbc(exportAttr=["SGInfo"])
     J_exportAbc()
-    
+   

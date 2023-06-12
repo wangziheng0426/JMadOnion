@@ -33,6 +33,7 @@ def J_playBlast_outPut(Extension='.m4v',res=['1920','1080'],skipFrame=0,viewer=T
         framePadding=4,compression='png',percent=100,clearCache=True)
     timeLineStart=cmds.playbackOptions(query=True,minTime=True)
     timeLineEnd=cmds.playbackOptions(query=True,maxTime=True)
+    #序列帧文件列表
     compressFileName=playBlastPath+'.list'
     compressFile=open(compressFileName,'w')
     imageList=''

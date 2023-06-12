@@ -2,6 +2,7 @@
 from J_deleteNode import *
 from J_deleteUnknownNode import *
 from J_abcManager import *
+from J_ffmpeg import *
 
 from J_renameDefaultRenderLayer import *
 from J_loadPlugin import *
