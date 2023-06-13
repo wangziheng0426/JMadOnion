@@ -50,12 +50,14 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
         cmds.setAttr("defaultResolution.pixelAspect",1)
     #开启动画
     cmds.setAttr("defaultRenderGlobals.animation",1)
-    cmds.setAttr("defaultRenderGlobals.animationRange",1)
+    cmds.setAttr("defaultRenderGlobals.animationRange",0)
+    cmds.setAttr("defaultRenderGlobals.startFrame",cmds.playbackOptions(query=True,minTime=True))
+    cmds.setAttr("defaultRenderGlobals.endFrame",cmds.playbackOptions(query=True,maxTime=True))
     #animationRange=[0,10,1]起始帧，结束帧，帧间隔
     if (len(animationRange)==3):
-        cmds.setAttr("defaultRenderGlobals.animationRange",0)
         cmds.setAttr("defaultRenderGlobals.startFrame",animationRange[0])
         cmds.setAttr("defaultRenderGlobals.endFrame",animationRange[1])
+        cmds.setAttr("defaultRenderGlobals.byFrameStep",animationRange[2])
     
     #关闭光线跟宗
     cmds.setAttr("defaultRenderQuality.enableRaytracing",0)

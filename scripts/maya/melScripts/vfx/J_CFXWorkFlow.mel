@@ -40,6 +40,7 @@ if (`window -ex J_CFXWorkFlow`)
                 button -l "整体导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoAll()" J_buNClothOutAbcAll;
                 button -l "导入abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
                 button -l "显示hud" -w $ButtonW  -h $ButtonH -c  "J_playBlast_showHUD_1()" J_buShowHud;
+                button -l "解算&渲染" -w $ButtonW  -h $ButtonH -c  "J_CreateCacheRender()" J_buSimAndRender;
                 //button -l "拷贝点动画" -w $ButtonW  -h $ButtonH -c  "J_JoinBlend()" J_buCreateBlend;
             setParent ..;
         setParent ..;
@@ -125,11 +126,11 @@ if (`window -ex J_CFXWorkFlow`)
         -ap J_buShowHud left 0 67
         -ac J_buShowHud top  1 J_buNClothIn
         -ap J_buShowHud right 0 100   
-        /*
-        -ap J_buCreateBlend left 0 67
-        -ac J_buCreateBlend top  1 J_buNAbcIn
-        -ap J_buCreateBlend right 0 100           
-        */
+        
+        -ap J_buSimAndRender left 0 67
+        -ac J_buSimAndRender top  1 J_buShowHud
+        -ap J_buSimAndRender right 0 100           
+        
         J_nClothFormLayout;
     formLayout -e 
         -ap J_skipFrame left 0 0
@@ -221,7 +222,11 @@ global proc J_meshRandomColor()
 {
     python("JpyModules.model.J_meshRandomColor()");
 }
-
+global proc J_CreateCacheRender()
+{
+    string $frame=`textField -q -text  J_skipFrame`;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',"+$frame+",True)");
+}
 
 global proc J_CreateCachePlayBlast()
 {
