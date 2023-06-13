@@ -45,8 +45,9 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     if (len(resolution)==2):
         cmds.setAttr("defaultResolution.width",resolution[0])
         cmds.setAttr("defaultResolution.height",resolution[1])
-        mel.eval('AEadjustDeviceAspect defaultResolution.deviceAspectRatio defaultResolution.width defaultResolution.height;')
-        mel.eval('AEadjustPixelAspect defaultResolution.deviceAspectRatio defaultResolution.width defaultResolution.height;')
+        
+        cmds.setAttr("defaultResolution.deviceAspectRatio",(resolution[0]/(resolution[1]*1.0)))
+        cmds.setAttr("defaultResolution.pixelAspect",1)
     #开启动画
     cmds.setAttr("defaultRenderGlobals.animation",1)
     cmds.setAttr("defaultRenderGlobals.animationRange",1)
@@ -78,6 +79,7 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
         cmds.setAttr("defaultArnoldDriver.pre", renderPrefix, type="string")
 
     mel.eval('RenderSequence')
+    JpyModules.public.J_ffmpeg.compressFileSeqTovideo(renderPath)
 def renderImages():
     pass
 if __name__=='__main__':
