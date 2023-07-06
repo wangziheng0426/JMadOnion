@@ -224,24 +224,24 @@ global proc J_meshRandomColor()
 }
 global proc J_CreateCacheRender()
 {
-    string $frame=`textField -q -text  J_skipFrame`;
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',"+$frame+",True)");
+    string $skipFrame=`textField -q -text  J_skipFrame`;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',"+$skipFrame+",True)");
 }
 
 global proc J_CreateCachePlayBlast()
 {
-    string $frame=`textField -q -text  J_skipFrame`;
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',"+$frame+")");
+    string $skipFrame=`textField -q -text  J_skipFrame`;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(1,'',"+$skipFrame+")");
 }
 global proc J_CreateCachePlayBlast2()
 {
-    string $frame=`textField -q -text  J_skipFrame`;
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5,'',"+$frame+")");
+    string $skipFrame=`textField -q -text  J_skipFrame`;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.5,'',"+$skipFrame+")");
 }
 global proc J_CreateCachePlayBlast4()
 {
-    string $frame=`textField -q -text  J_skipFrame`;
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.25,'',"+$frame+")");
+    string $skipFrame=`textField -q -text  J_skipFrame`;
+    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_CachePb(0.25,'',"+$skipFrame+")");
 }
 
 

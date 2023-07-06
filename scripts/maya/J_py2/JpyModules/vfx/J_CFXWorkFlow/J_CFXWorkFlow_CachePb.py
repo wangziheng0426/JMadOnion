@@ -41,7 +41,7 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],skipFrame=0,render=False):
 
     if render:
          JpyModules.render.J_renderPreview(
-             animationRange=[cmds.playbackOptions(query=True,minTime=True)+skipFrame,
+             animationRange=[cmds.playbackOptions(query=True,minTime=True)+int(skipFrame),
                              cmds.playbackOptions(query=True,maxTime=True),1])    
     else:
         JpyModules.animation.J_playBlast.J_playBlast_outPut(res=res,skipFrame=skipFrame,waterMark=waterMark)
