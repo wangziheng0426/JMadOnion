@@ -10,7 +10,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import os
-def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],renderer="arnold"):
+def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],renderer="arnold",renderMode=1):
     import JpyModules
     filePath=JpyModules.public.J_getMayaFileFolder()
     renderFileName=JpyModules.public.J_getMayaFileNameWithOutExtension()
@@ -63,26 +63,7 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
         needLight=False   
     #场景中没有灯光,则创建默认灯光
     if needLight:
-        lightGroup=cmds.createNode('transform')
-        mainLightNode=cmds.shadingNode('directionalLight',asLight=1,n='MainLight')
-        cmds.parent(mainLightNode,lightGroup)
-        cmds.setAttr(mainLightNode+'.rotateX',-60)
-        cmds.setAttr(mainLightNode+'.rotateY',30)
-        cmds.setAttr(mainLightNode+'.intensity',1.1)
-        cmds.setAttr(mainLightNode+'.aiAngle',30)
-        rimLightNode=cmds.shadingNode('directionalLight',asLight=1,n='RimLight')
-        cmds.parent(rimLightNode,lightGroup)
-        cmds.setAttr(rimLightNode+'.rotateX',-50)
-        cmds.setAttr(rimLightNode+'.rotateY',130)
-        cmds.setAttr(rimLightNode+'.intensity',0.8)
-        cmds.setAttr(rimLightNode+'.aiAngle',30)
-        fillLightNode=cmds.shadingNode('directionalLight',asLight=1,n='FillLight')
-        cmds.parent(fillLightNode,lightGroup)
-        cmds.setAttr(fillLightNode+'.rotateX',-50)
-        cmds.setAttr(fillLightNode+'.rotateY',-50)
-        cmds.setAttr(fillLightNode+'.intensity',0.7)
-        cmds.setAttr(fillLightNode+'.aiAngle',30)
-        cmds.setAttr(lightGroup+'.rotateY',cmds.getAttr(camera+'.rotateY'))
+        createPreviewRenderLight(camera)
 
     #改分辨率
     if (len(resolution)==2):
@@ -123,18 +104,45 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
         cmds.setAttr("defaultArnoldDriver.ai_translator", "png", type="string")
         cmds.setAttr("defaultArnoldDriver.prefix", renderPrefix, type="string")
 
-    mel.eval('RenderSequence')
-    #整理文件列表
-    fileList=[]
-    for item in range(int(cmds.getAttr("defaultRenderGlobals.startFrame")),
-                      int(cmds.getAttr("defaultRenderGlobals.endFrame")),
-                      int(cmds.getAttr("defaultRenderGlobals.byFrameStep"))):
-        fileList.append(os.path.basename(renderPrefix)+"_1.%04d.png"%item)
-    JpyModules.public.J_ffmpeg.compressFileSeqTovideo(renderPath,fileList)
-    print fileList
+    if renderMode==1:
+        mel.eval('RenderSequence')
+    if renderMode==2:
+        mel.eval('BatchRender')
+    if renderMode>0:
+        #整理文件列表
+        fileList=[]
+        for item in range(int(cmds.getAttr("defaultRenderGlobals.startFrame")),
+                        int(cmds.getAttr("defaultRenderGlobals.endFrame")),
+                        int(cmds.getAttr("defaultRenderGlobals.byFrameStep"))):
+            fileList.append(os.path.basename(renderPrefix)+"_1.%04d.png"%item)
+        JpyModules.public.J_ffmpeg.compressFileSeqTovideo(renderPath,fileList,outName=renderFileName)
+        print fileList
     #删除渲染图
 
-def renderImages():
+def addRandomMatToSelections():
     pass
+def createPreviewRenderLight(camera=''):
+    if camera=='':
+        camera=cmds.modelPanel("modelPanel4",query=True,camera=True)
+    lightGroup=cmds.createNode('transform')
+    mainLightNode=cmds.shadingNode('directionalLight',asLight=1,n='MainLight')
+    cmds.parent(mainLightNode,lightGroup)
+    cmds.setAttr(mainLightNode+'.rotateX',-60)
+    cmds.setAttr(mainLightNode+'.rotateY',30)
+    cmds.setAttr(mainLightNode+'.intensity',1.1)
+    cmds.setAttr(mainLightNode+'.aiAngle',30)
+    rimLightNode=cmds.shadingNode('directionalLight',asLight=1,n='RimLight')
+    cmds.parent(rimLightNode,lightGroup)
+    cmds.setAttr(rimLightNode+'.rotateX',-50)
+    cmds.setAttr(rimLightNode+'.rotateY',130)
+    cmds.setAttr(rimLightNode+'.intensity',0.8)
+    cmds.setAttr(rimLightNode+'.aiAngle',30)
+    fillLightNode=cmds.shadingNode('directionalLight',asLight=1,n='FillLight')
+    cmds.parent(fillLightNode,lightGroup)
+    cmds.setAttr(fillLightNode+'.rotateX',-50)
+    cmds.setAttr(fillLightNode+'.rotateY',-50)
+    cmds.setAttr(fillLightNode+'.intensity',0.7)
+    cmds.setAttr(fillLightNode+'.aiAngle',30)
+    cmds.setAttr(lightGroup+'.rotateY',cmds.getAttr(camera+'.rotateY'))
 if __name__=='__main__':
     J_renderPreview()                   

@@ -82,7 +82,7 @@ def J_exportAbc(mode=1,nodesToExport=[],exportAttr=[],importRef=False):
             logStr[count]['meshs']={}        
             #导出材质球，添加信息
             for meshItem in J_getAllMeshs([item]):
-                logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem)   
+                logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem,exportAttr)   
             exportStringa+=' -file '+j_abcCachePath+cacheFileName+'_'+itemName+'.abc"'
             mel.eval(exportStringa)
             count=count+1
@@ -142,14 +142,18 @@ def J_exportMaterail(exportPath,meshTrNode,attrList=['SGInfo','MatInfo','NodeNam
             if not cmds.attributeQuery(attrItem,node=meshTrNode,ex=1):
                 cmds.addAttr(meshTrNode,longName=attrItem,dt='string')
         #将sg节点名称写入模型属性
-        cmds.setAttr(meshTrNode+'.SGInfo',",".join(shadingEngineNodes),type='string')
+        if cmds.attributeQuery('SGInfo',node=meshTrNode,ex=1):
+            cmds.setAttr(meshTrNode+'.SGInfo',",".join(shadingEngineNodes),type='string')
         #每个sg对应的材质信息
-        cmds.setAttr(meshTrNode+'.MatInfo',",".join(matList),type='string')
+        if cmds.attributeQuery('MatInfo',node=meshTrNode,ex=1):
+            cmds.setAttr(meshTrNode+'.MatInfo',",".join(matList),type='string')
         #原节点名写入节点属性
-        cmds.setAttr(meshTrNode+'.NodeName',meshTrNode,type='string')
+        if cmds.attributeQuery('NodeName',node=meshTrNode,ex=1):
+            cmds.setAttr(meshTrNode+'.NodeName',meshTrNode,type='string')
         #显示属性
-        cmds.setAttr(meshTrNode+'.NodeVisibility',cmds.getAttr(meshTrNode+".visibility"),type='string')
-        print (cmds.getAttr(meshTrNode+".visibility"))
+        if cmds.attributeQuery('NodeVisibility',node=meshTrNode,ex=1):
+            cmds.setAttr(meshTrNode+'.NodeVisibility',cmds.getAttr(meshTrNode+".visibility"),type='string')
+        #print (cmds.getAttr(meshTrNode+".visibility"))
         for sItem in shapeNodes:
             if not cmds.attributeQuery('SGInfo',node=sItem,ex=1):
                 cmds.addAttr(sItem,longName='SGInfo',dt='string')
