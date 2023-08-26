@@ -29,6 +29,7 @@ if (`window -ex J_hairTool`)
     $but[3]=`button -l "修改曲线轴心"  -c  "J_curPivot"  `;
     $but[4]=`button -l "删除多余shape"  -c  "J_removeShape"  `;
     $but[5]=`button -l "删除未知节点"  -c  "J_deleteUnknownNodes"  `;
+    intSliderGrp -field 1 -label "曲线分段数" -minValue 3 -maxValue 20 -value 8 segcount;
     $but[6]=`button -l "曲线转骨骼"  -c  "J_createJointsWithCurve"  `;
     $but[7]=`button -l "骨骼转曲线"  -c  "J_createCurveWithJoints"  `;
     $but[8]=`button -l "生成动力学骨骼"  -c "J_createDynCurve"  `;
@@ -36,7 +37,7 @@ if (`window -ex J_hairTool`)
     
     formLayout -e
 
-        -af  radioButton1 top 5
+        -af  radioButton1 top 25
         -af  radioButton1 left -70
         -ac  radioButton2 top 5 radioButton1
         -af  radioButton2 left -70
@@ -46,7 +47,7 @@ if (`window -ex J_hairTool`)
         {
             formLayout -e
             -ap $but[$item] left 0 (1+50*($item%2))
-            -af $but[$item] top (25*($item/2) +60)
+            -af $but[$item] top (25*($item/2) +90)
             -ap $but[$item] right 0 (49+50*($item%2))
             textureNameLayout;
         }
@@ -128,7 +129,7 @@ global proc J_curveTools_convertDir()
 }
 global proc J_createJointsWithCurve()
 {
-    python("JpyModules.vfx.J_nHairTool.J_createJointsWithCurve()");
+    python("JpyModules.vfx.J_nHairTool.J_createJointsWithCurve("+`intSliderGrp -q -value segcount`+")");
 }
 global proc J_createCurveWithJoints()
 {

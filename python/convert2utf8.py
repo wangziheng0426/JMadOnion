@@ -21,7 +21,7 @@ def J_convert2utf8(J_inPath,J_outPath):
             try:
                 shutil.rmtree(J_outPath)
             except:
-                print "fail"
+                print ("fail")
     for i in os.walk(J_inPath):
         if not i[0].replace(J_inPath, '').find('.git') == 1: #git库文件夹排除掉
             os.makedirs(i[0].replace(J_inPath, J_outPath))
@@ -44,10 +44,10 @@ def J_convertFile(J_sourceFile,J_destinationFile):
         print ('file copy' +J_destinationFile)
         
 ##设置输出路径 转换并输出文档
-J_madOnionPath=r'D:/Projects/JmadOnionGit'
+J_madOnionPath=os.path.dirname(os.getcwd())+'/scripts'
 outPath=r'd:/madOnionHelp'
 J_convert2utf8(J_madOnionPath,outPath)
-doxygenPath=J_madOnionPath+r'\other\thirdParty\doxygen\doxygen.exe  '+outPath+r'\other\thirdParty\doxygen\madonion'
+doxygenPath=os.path.dirname(os.getcwd())+r'\other\thirdParty\doxygen\doxygen.exe  '+outPath+r'\other\thirdParty\doxygen\madonion'
 doxygenConfigPathOrg=J_madOnionPath+r'\other\thirdParty\doxygen\madonionOrig'
 doxygenConfigPath=outPath+r'\other\thirdParty\doxygen\madonion'
 file_data=''
@@ -60,5 +60,5 @@ with open(doxygenConfigPathOrg,'r') as doxygenConfigOrg:
         file_data+=lines
 with open(doxygenConfigPath,'w') as doxygenConfig:
     doxygenConfig.write(file_data)
-print doxygenPath
+print (doxygenPath)
 os.system(doxygenPath)
