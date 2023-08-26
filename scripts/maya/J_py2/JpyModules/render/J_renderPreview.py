@@ -62,8 +62,8 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     if (len(cmds.ls(type="light"))>0):
         needLight=False   
     #场景中没有灯光,则创建默认灯光
-    if needLight:
-        createPreviewRenderLight(camera)
+    #if needLight:
+        #createPreviewRenderLight(camera)
 
     #改分辨率
     if (len(resolution)==2):

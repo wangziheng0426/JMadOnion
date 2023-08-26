@@ -29,7 +29,7 @@ def J_CFXWorkFlow_outInBetweenGeo(sample=1,sourceGeo=[],startTime=-1,endTime=0):
             childNodes=cmds.listRelatives(dupGeo,children=True,fullPath=True)
             for item1 in childNodes:
                 if cmds.getAttr((item1+'.intermediateObject')):
-                    print item1
+                    #print item1
                     cmds.delete(item1)
             #dupGeo=cmds.rename(dupGeo,dupGeo+str(i))        
             #dupGeo='|'+cmds.parent( dupGeo, world=True )[0]
