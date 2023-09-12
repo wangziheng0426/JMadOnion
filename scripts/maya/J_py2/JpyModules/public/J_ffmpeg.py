@@ -59,6 +59,7 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     return compressedVideo
     #os.startfile(compressPath)  
     #os.system(compressedVideo)  
+#创建字幕文件，
 def createAssFile(assFilePath,frameRate=24,resX=1280,resY=720,infodic={}):
     assFile=open(assFilePath,'w')
     strsToWrite=''
@@ -89,8 +90,8 @@ def createAssFile(assFilePath,frameRate=24,resX=1280,resY=720,infodic={}):
         #0层 帧数
         strsToWrite+='Dialogue: 0,'
         #起始结束时间
-        strsToWrite+=convertFrameToSrtTime(i)+','
-        strsToWrite+=convertFrameToSrtTime(i+1)+','
+        strsToWrite+=convertFrameToSrtTime(i,frameRate)+','
+        strsToWrite+=convertFrameToSrtTime(i+1,frameRate)+','
         #样式设置(Actor Effect为空)
         strsToWrite+='chs,,0000,0000,0000,,'
         #字幕信息
