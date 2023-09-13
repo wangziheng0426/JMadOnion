@@ -60,7 +60,7 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     #os.startfile(compressPath)  
     #os.system(compressedVideo)  
 #创建字幕文件，
-def createAssFile(assFilePath,frameRate=24,resX=1280,resY=720,infodic={}):
+def createAssFile(assFilePath,frameRate=24,frameRange=[0,1],resX=1280,resY=720,fontsize=22,infodic={}):
     assFile=open(assFilePath,'w')
     strsToWrite=''
     #script info字段为固定内容,仅需写入宽高比
@@ -69,11 +69,11 @@ def createAssFile(assFilePath,frameRate=24,resX=1280,resY=720,infodic={}):
     strsToWrite+='Original Script: 桔\n'
     strsToWrite+='Collisions: Normal\n'
     strsToWrite+='PlayResX:'+str(resX)+'\n'
-    strsToWrite+='PlayResY:'+str(resX)+'\n'
+    strsToWrite+='PlayResY:'+str(resY)+'\n'
     strsToWrite+='Timer: 100.0000\n\n'
     #样式信息 这一部分包含了所有样式的定义。每一个被脚本使用的样式都应该在这里定义
     #用字典设置对应关系
-    settingDic={'Name': 'chs', ' Fontname': '\xce\xa2\xc8\xed\xd1\xc5\xba\xda', ' Fontsize': '20', ' PrimaryColour': '&H00c0c0c0', ' SecondaryColour': '&Hf0000000', ' OutlineColour': '&H00000000', ' BackColour': '&H32000000',' Bold': '0', ' Italic': '0', ' Underline': '0', ' StrikeOut': '0',' ScaleX': '100.00', ' ScaleY': '100.00',' Spacing': '0.00',' Angle': '0.00',' BorderStyle': '1', ' Outline': '2.00', ' Shadow': '1.00', ' Alignment': '2', ' Fontsize': '20',   ' MarginL': '5',   ' MarginR': '5', ' MarginV': '2',  ' Encoding': '134'} 
+    settingDic={'Name': 'chs', ' Fontname': '\xce\xa2\xc8\xed\xd1\xc5\xba\xda', ' Fontsize': str(fontsize), ' PrimaryColour': '&H2300EFFF', ' SecondaryColour': '&H2300CFFF', ' OutlineColour': '&H23007FAF', ' BackColour': '&H13002D4D',' Bold': '0', ' Italic': '0', ' Underline': '0', ' StrikeOut': '0',' ScaleX': '100.00', ' ScaleY': '100.00',' Spacing': '0.50',' Angle': '0.00',' BorderStyle': '1', ' Outline': '1.00', ' Shadow': '2.00', ' Alignment': '1',   ' MarginL': '5',   ' MarginR': '5', ' MarginV': '2',  ' Encoding': '134'} 
     assFormat=[]
     assStyle=[]
     for k,v in settingDic.items():
@@ -86,16 +86,16 @@ def createAssFile(assFilePath,frameRate=24,resX=1280,resY=720,infodic={}):
     #event 字幕部分
     strsToWrite+='[Events]\n'
     strsToWrite+='Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text\n'
-    for i in range(0,375):
+    for i in range(frameRange[0],frameRange[1]):
         #0层 帧数
         strsToWrite+='Dialogue: 0,'
         #起始结束时间
-        strsToWrite+=convertFrameToSrtTime(i,frameRate)+','
-        strsToWrite+=convertFrameToSrtTime(i+1,frameRate)+','
+        strsToWrite+=convertFrameToSrtTime(i-frameRange[0],frameRate)+','
+        strsToWrite+=convertFrameToSrtTime(i-frameRange[0]+1,frameRate)+','
         #样式设置(Actor Effect为空)
         strsToWrite+='chs,,0000,0000,0000,,'
         #字幕信息
-        strsToWrite+='{\\fs55\pos(400,1200)}'+str(i+101)+'\n'
+        strsToWrite+='{\\pos(50,700)}'+'Frame:'+str(i)+'\n'
     assFile.write(strsToWrite)
     assFile.close()
     return assFilePath
