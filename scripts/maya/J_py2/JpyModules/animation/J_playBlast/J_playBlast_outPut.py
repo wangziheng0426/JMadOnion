@@ -61,15 +61,17 @@ def J_playBlast_outPut(res=['1920','1080'],skipFrame=0,viewer=True,waterMark="")
     else:
         frameRate=24
     #根据是否开启了hud和场景中是否有j_hud判断是否生成ass
+    
     if 'frameInfoHud' not in cmds.headsUpDisplay(query=True,listHeadsUpDisplays=True):
         if len(cmds.ls(type='J_hud'))<1 and len(cmds.ls(type='J_hud_a'))<1 :
-            camInfo={'FrameRate':frameRate,'FileName':fileName}
+            camInfo={'FrameRate':frameRate,'FileName':fileName,'author':mel.eval('getenv "USERNAME"')}
             JpyModules.public.J_ffmpeg.createAssFile(filePath+fileName+'_pbimages/'+fileName+'.ass',frameRate,[int(timeLineStart+skipFrame),
-                                int(timeLineEnd)],[res[0],res[1],1,0.08,0.95],camInfo)
+                                int(timeLineEnd)],[res[0],res[1],1,0.08,0.95],camInfo,)
     #配置ffmpeg运行命令
-    m4vFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(filePath+fileName+'_pbimages/',imageList,outName=fileName+'.m4v')
-    if os.path.exists(filePath+'/'+fileName+'.m4v'):
-        os.remove(filePath+'/'+fileName+'.m4v') 
+    m4vFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(filePath+fileName+'_pbimages',imageList,frameRate=frameRate,waterMark=waterMark,outName=fileName+'.m4v',)
+    
+    if os.path.exists(filePath+fileName+'.m4v'):
+        os.remove(filePath+fileName+'.m4v') 
     shutil.move(m4vFile,filePath)
     '''旧机制，废弃封存09122023
     runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+compressFileName
@@ -86,7 +88,7 @@ def J_playBlast_outPut(res=['1920','1080'],skipFrame=0,viewer=True,waterMark="")
     '''
     #删除序列图，并打开视频
     try:
-        shutil.rmtree(os.path.dirname(filePath+fileName+'_pbimages/'))
+        shutil.rmtree(filePath+fileName+'_pbimages/')
     except:
         pass
     if (viewer):

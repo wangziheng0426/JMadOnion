@@ -28,13 +28,18 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],skipFrame=0,render=False):
     j_CachePath=''
     if (filePath!=''):
         j_CachePath=filePath+cacheFileName+'_cache/mc/'
+    #选择物体中如果布料不为空,则制作缓存
     if (len(cmds.ls(sl=True))>0):
-        try:
-            mel.eval('deleteCacheFile 2 { "keep", "" } ;')
-        except :
-            pass
-        runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(frameRate)+'", "1","0","1","mcx" } ;'
-        mel.eval(runStr)
+        if (len(cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='nCloth'))>0):
+            cmds.select(cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='nCloth'))
+            try:
+                mel.eval('deleteCacheFile 2 { "keep", "" } ;')
+            except :
+                pass
+            runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(frameRate)+'", "1","0","1","mcx" } ;'
+            mel.eval(runStr)
+        else:
+            cmds.select(cl=1)
     waterMark=''
     if os.path.exists(cmds.workspace(query=True,rd=True)+'waterMark.png'):
         waterMark=(cmds.workspace(query=True,rd=True)+'waterMark.png') 

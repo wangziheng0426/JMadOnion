@@ -9,7 +9,7 @@
 # @Filename      : J_exportAbc.py
 # @Description   :
 ##############################################
-import os,sys,json,time,shutil
+import os,sys,json,time,shutil,subprocess
 
 #导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
 #模式2单独导出每个模型文件
@@ -52,21 +52,29 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     if not os.path.exists(ffmpegPath):
         print ("ffmpeg is missing!")
         return
-    tempCwd=os.getcwd()
-    os.chdir(compressPath)
     runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+compressFileName
+    #右上角加水印
     if os.path.exists(waterMark):
         if waterMark.endswith(".png"):
             runStr+= ' -i '+waterMark+' '
-            runStr+= ' -i '+waterMark+' '
+            #runStr+= ' -i '+waterMark+' '
             runStr+=' -filter_complex '
-            runStr+=' overlay=0:0'
-            runStr+=',overlay=main_w-overlay_w:0 '
-    if ass!='':
-        runStr+=' -vf subtitles=\\\''+ass+'\\\' ' 
+            #runStr+=' overlay=0:0'
+            runStr+=' overlay=main_w-overlay_w:0 '  
     runStr+=' -crf 20 -c:v h264   ' +compressedVideo
-
-    os.popen(runStr)
+    
+    spr=subprocess.Popen(runStr)
+    status=spr.wait()
+    #由于 filter_complex滤镜和 vf滤镜不能混用，暂时多压缩一次
+    if ass!='':
+        tempOut=compressPath+'/temp'+outName
+        runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+ compressedVideo
+        runStr+=' -vf subtitles=\\\''+ass+'\\\' ' 
+        runStr+=' -c:v h264   ' +tempOut
+        spr1=subprocess.Popen(runStr)
+        status=spr1.wait()
+        os.remove(compressedVideo)
+        os.rename(tempOut,compressedVideo)
     time.sleep(2)
     return compressedVideo
     #os.startfile(compressPath)  
@@ -77,8 +85,8 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
 # @param frameRange ass字幕输出帧范围[起始，结束]
 # @param setting ass字幕输出分辨率，字幕样式：数值为1时左侧竖式仅1列 大于1则为底部横式 此值为列数，超过列数向上加行 ，
 # 4,5两项为第一个字幕的屏幕坐标占比,默认在左下角
-def createAssFile(assFile,frameRate=24,frameRange=[0,1],styleSetting=[1280,720,1,0.08,0.95],infodic={},colorSetting=[0,255,0,10],fontsize=22):
-    assFile=open(assFile,'w')
+def createAssFile(assFileName,frameRate=24,frameRange=[0,1],styleSetting=[1280,720,1,0.08,0.95],infodic={},colorSetting=[0,255,0,10],fontsize=22):
+    assFile=open(assFileName,'w')
     strsToWrite=''
     #script info字段为固定内容,仅需写入宽高比
     strsToWrite+='[Script Info]\n'
@@ -142,7 +150,7 @@ def createAssFile(assFile,frameRate=24,frameRange=[0,1],styleSetting=[1280,720,1
         lineCount=lineCount+1
     assFile.write(strsToWrite)
     assFile.close()
-    return assFile
+    return assFileName
 def convertFrameToSrtTime(frame,frameRate):
     hourStr=str(int(frame/frameRate/3600)).zfill(2)
     minStr=str(int(frame/frameRate/60)%60).zfill(2)

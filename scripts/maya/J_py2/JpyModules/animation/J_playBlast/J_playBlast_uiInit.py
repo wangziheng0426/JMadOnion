@@ -55,7 +55,7 @@ def J_playBlast_uiInit():
         
     #logo
     if os.path.exists(cmds.workspace(query=True,rd=True)+'/waterMark.png'):
-        cmds.checkBox('J_playBlastWaterMarkCheckBox',edit=True,l=(cmds.workspace(query=True,rd=True)+'/waterMark.png') )
+        cmds.checkBox('J_playBlastWaterMarkCheckBox',edit=True,l=(cmds.workspace(query=True,rd=True)+'waterMark.png') )
         cmds.checkBox('J_playBlastWaterMarkCheckBox',edit=True,v =1)
 
 def J_playBlast_changeSize():
