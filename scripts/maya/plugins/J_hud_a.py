@@ -24,7 +24,7 @@ class J_hud_a(om2ui.MPxLocatorNode):
     TYPE_ID=om2.MTypeId(0x0426f002)
     DRAW_DB_CLASSIFICATION = 'drawdb/geometry/J_hud_a'
     DRAW_REGISTRANT_ID = 'J_hud_a'
-    hudInfos=['camName','Frame','FrameRange','FocalLength']
+    hudInfos=['SceneName','Frame','FrameRange','FocalLength']
     def __init__(self):
         super(J_hud_a,self).__init__()
 

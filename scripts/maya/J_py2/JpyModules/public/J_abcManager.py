@@ -169,6 +169,10 @@ def J_exportMaterail(exportPath,meshTrNode,attrList=['SGInfo','MatInfo','NodeNam
         
         return (','.join(matFileList))
 
+#批量导出场景&绑定中的材质
+def J_exportMaterails():
+    pass
+#根据输出日志导入abc
 def J_importAbc():
     #读取jcl日志
     jclFile = cmds.fileDialog2(fileMode=1, caption="Import clothInfo")[0]
@@ -207,6 +211,7 @@ def J_importAbc():
                 for matFileName in v1.split(","):
                     matFileName=jclDir+'/Materials/'+matFileName
                     if os.path.exists(matFileName):
+                        #倒入过的材质，不再导入
                         if matFileName in matImportedList:continue
                         try:
                             matImportedList.append(matFileName)

@@ -60,6 +60,12 @@ def J_playBlast_outPut(res=['1920','1080'],skipFrame=0,viewer=True,waterMark="")
         frameRate= mydic[frameRate]
     else:
         frameRate=24
+    #根据是否开启了hud和场景中是否有j_hud判断是否生成ass
+    if 'frameInfoHud' not in cmds.headsUpDisplay(query=True,listHeadsUpDisplays=True):
+        if len(cmds.ls(type='J_hud'))<1 and len(cmds.ls(type='J_hud_a'))<1 :
+            camInfo={'FrameRate':frameRate,'FileName':fileName}
+            JpyModules.public.J_ffmpeg.createAssFile(filePath+fileName+'_pbimages/'+fileName+'.ass',frameRate,[int(timeLineStart+skipFrame),
+                                int(timeLineEnd)],[res[0],res[1],1,0.08,0.95],camInfo)
     #配置ffmpeg运行命令
     m4vFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(filePath+fileName+'_pbimages/',imageList,outName=fileName+'.m4v')
     if os.path.exists(filePath+'/'+fileName+'.m4v'):

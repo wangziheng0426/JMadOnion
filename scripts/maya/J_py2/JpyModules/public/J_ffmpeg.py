@@ -1,20 +1,31 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##############################################
-# Author        : 张千桔
-# Last modified : 15:18 2021/11/06
-# Filename      : J_exportAbc.py
-# Description   :
+## 
+# @file J_ffmpeg.py
+# @brief 调用ffmpeg功能 
+# @Author        : 张千桔
+# @Last modified : 15:18 2021/11/06
+# @Filename      : J_exportAbc.py
+# @Description   :
 ##############################################
 import os,sys,json,time,shutil
 
 #导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
 #模式2单独导出每个模型文件
 def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',outName='comp.m4v',ass=''):
+    #路径不存在则退出
     if not os.path.exists(compressPath):
         print ("path not exists!")
         #print (__file__.split('/scripts/maya')[0]+'/other/thirdParty/ffmpeg.exe')
         return
+    #调用时如果未传入字幕文件，则搜索目录是否有字幕ass文件，如果有则加入，没有则不管
+    if ass=='':
+        for root,dirs,files in os.walk(compressPath):
+            for file in files:
+                if file.endswith('.ass'):
+                    ass=os.path.join(root,file).replace('\\','/')
+                    break
     #如果未指定文件列表，则搜索文件下的所有图片进行压缩
     if len(fileList)<1:
         textureFormat=['png','tga','jpg','jpeg','tif',]
@@ -41,7 +52,8 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     if not os.path.exists(ffmpegPath):
         print ("ffmpeg is missing!")
         return
-
+    tempCwd=os.getcwd()
+    os.chdir(compressPath)
     runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+compressFileName
     if os.path.exists(waterMark):
         if waterMark.endswith(".png"):
@@ -50,30 +62,43 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
             runStr+=' -filter_complex '
             runStr+=' overlay=0:0'
             runStr+=',overlay=main_w-overlay_w:0 '
+    if ass!='':
+        runStr+=' -vf subtitles=\\\''+ass+'\\\' ' 
     runStr+=' -crf 20 -c:v h264   ' +compressedVideo
 
     os.popen(runStr)
-
-
     time.sleep(2)
     return compressedVideo
     #os.startfile(compressPath)  
     #os.system(compressedVideo)  
-#创建字幕文件，
-def createAssFile(assFilePath,frameRate=24,frameRange=[0,1],resX=1280,resY=720,fontsize=22,infodic={}):
-    assFile=open(assFilePath,'w')
+##创建字幕文件，
+# @param assFilePath ass字幕输出路径
+# @param frameRate ass字幕输出帧率
+# @param frameRange ass字幕输出帧范围[起始，结束]
+# @param setting ass字幕输出分辨率，字幕样式：数值为1时左侧竖式仅1列 大于1则为底部横式 此值为列数，超过列数向上加行 ，
+# 4,5两项为第一个字幕的屏幕坐标占比,默认在左下角
+def createAssFile(assFile,frameRate=24,frameRange=[0,1],styleSetting=[1280,720,1,0.08,0.95],infodic={},colorSetting=[0,255,0,10],fontsize=22):
+    assFile=open(assFile,'w')
     strsToWrite=''
     #script info字段为固定内容,仅需写入宽高比
     strsToWrite+='[Script Info]\n'
     strsToWrite+='ScriptType: v4.00+\n'
     strsToWrite+='Original Script: 桔\n'
     strsToWrite+='Collisions: Normal\n'
-    strsToWrite+='PlayResX:'+str(resX)+'\n'
-    strsToWrite+='PlayResY:'+str(resY)+'\n'
+    strsToWrite+='PlayResX:'+str(styleSetting[0])+'\n'
+    strsToWrite+='PlayResY:'+str(styleSetting[1])+'\n'
     strsToWrite+='Timer: 100.0000\n\n'
     #样式信息 这一部分包含了所有样式的定义。每一个被脚本使用的样式都应该在这里定义
     #用字典设置对应关系
-    settingDic={'Name': 'chs', ' Fontname': '\xce\xa2\xc8\xed\xd1\xc5\xba\xda', ' Fontsize': str(fontsize), ' PrimaryColour': '&H2300EFFF', ' SecondaryColour': '&H2300CFFF', ' OutlineColour': '&H23007FAF', ' BackColour': '&H13002D4D',' Bold': '0', ' Italic': '0', ' Underline': '0', ' StrikeOut': '0',' ScaleX': '100.00', ' ScaleY': '100.00',' Spacing': '0.50',' Angle': '0.00',' BorderStyle': '1', ' Outline': '1.00', ' Shadow': '2.00', ' Alignment': '1',   ' MarginL': '5',   ' MarginR': '5', ' MarginV': '2',  ' Encoding': '134'} 
+    settingDic={'Name': 'chs', ' Fontname': '\xce\xa2\xc8\xed\xd1\xc5\xba\xda', ' Fontsize': str(fontsize),
+                    ' PrimaryColour': convertColorStr(colorSetting),
+                    ' SecondaryColour': convertColorStr(colorSetting),
+                    ' OutlineColour': convertColorStr(colorSetting,0.5),
+                    ' BackColour': convertColorStr(colorSetting,0.2),
+                    ' Bold': '0', ' Italic': '0', ' Underline': '0', ' StrikeOut': '0',
+                    ' ScaleX': '100.00', ' ScaleY': '100.00',' Spacing': '0.50',' Angle': '0.00',' BorderStyle': '1',
+                    ' Outline': '1.00', ' Shadow': '3.00', ' Alignment': '1',   ' MarginL': '5',   ' MarginR': '5',
+                    ' MarginV': '2',  ' Encoding': '134'} 
     assFormat=[]
     assStyle=[]
     for k,v in settingDic.items():
@@ -95,17 +120,40 @@ def createAssFile(assFilePath,frameRate=24,frameRange=[0,1],resX=1280,resY=720,f
         #样式设置(Actor Effect为空)
         strsToWrite+='chs,,0000,0000,0000,,'
         #字幕信息
-        strsToWrite+='{\\pos(50,700)}'+'Frame:'+str(i)+'\n'
+        fLength=len(str(frameRange[1]))
+        strsToWrite+='{\\pos('+str(styleSetting[0]*styleSetting[3])+','\
+        +str(styleSetting[1]*styleSetting[4])+')}'+'Frame:'+\
+            str(frameRange[0]).zfill(fLength)+'/'+str(i).zfill(fLength)+'/'+str(frameRange[1])+'\n'
+    lineCount=1
+    columnCount=styleSetting[2]
+    rowWidth=styleSetting[0]/columnCount
+    for k,v in infodic.items():
+        #0层 帧数
+        strsToWrite+='Dialogue: '+str(lineCount)+','
+        #起始结束时间：从头到尾一直显示
+        strsToWrite+=convertFrameToSrtTime(0,frameRate)+','
+        strsToWrite+=convertFrameToSrtTime(frameRange[1]-frameRange[0],frameRate)+','
+        #样式设置(Actor Effect为空)
+        strsToWrite+='chs,,0000,0000,0000,,'
+        #字幕信息
+        strsToWrite+='{\\pos('+str(styleSetting[0]*styleSetting[3]+rowWidth*(lineCount%columnCount))+\
+        ','+str(styleSetting[1]*styleSetting[4]-fontsize*1.5*(lineCount/int(columnCount)))+')}'+\
+        str(k)+':'+str(v)+'\n'
+        lineCount=lineCount+1
     assFile.write(strsToWrite)
     assFile.close()
-    return assFilePath
+    return assFile
 def convertFrameToSrtTime(frame,frameRate):
     hourStr=str(int(frame/frameRate/3600)).zfill(2)
     minStr=str(int(frame/frameRate/60)%60).zfill(2)
     secStr=str(int(frame/frameRate)%60).zfill(2)
     msecStr=str(int((frame*1000)/frameRate)%1000).zfill(3)[0:2]
-    
     return hourStr+":"+minStr+":"+secStr+"."+msecStr
+def convertColorStr(inputu,rate=1):
+    return ('&H'+str(hex(inputu[3]))[2:].zfill(2).upper()+
+        str(hex(int(inputu[2]*rate)))[2:].zfill(2).upper()+
+        str(hex(int(inputu[1]*rate)))[2:].zfill(2).upper()+
+        str(hex(int(inputu[0]*rate)))[2:].zfill(2).upper())
 if __name__ == "__main__":
     #J_exportAbc(exportAttr=["SGInfo"])
     compressFileSeqTovideo(r'C:\Users\Administrator\Desktop\rrr\render_aaa')
