@@ -13,12 +13,16 @@ import os,sys,json,time,shutil,subprocess
 
 #导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
 #模式2单独导出每个模型文件
-def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',outName='comp.m4v',ass=''):
+def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',outFile='',ass=''):
     #路径不存在则退出
     if not os.path.exists(compressPath):
         print ("path not exists!")
         #print (__file__.split('/scripts/maya')[0]+'/other/thirdParty/ffmpeg.exe')
         return
+    #未指定输出文件名,则使用文件夹下第一个文件的名称
+    if outFile=='':
+        if len(os.listdir(compressPath))>0:
+            outFile='_',join(os.listdir(compressPath)[0].split('.'))+'.m4v'
     #调用时如果未传入字幕文件，则搜索目录是否有字幕ass文件，如果有则加入，没有则不管
     if ass=='':
         for root,dirs,files in os.walk(compressPath):
@@ -31,16 +35,16 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
         textureFormat=['png','tga','jpg','jpeg','tif',]
         print (u'文件列表为空，搜索目录下文件进行压缩')
         for fitem in os.listdir(compressPath):
-            if os.path.isfile(compressPath+"/"+fitem):
+            if os.path.isfile(compressPath+fitem):
                 if os.path.basename(fitem).split('.')[-1].lower() in textureFormat:
                     fileList.append(fitem)
 
 
     #序列帧文件列表
-    compressFileName=compressPath+'/compress.list'
+    compressFileName=compressPath+'compress.list'
     compressFile=open(compressFileName,'w')
-    imageList=''
-    compressedVideo=compressPath+'/'+outName
+    imageList=''    
+
     for fileItem in fileList:
         imageList+='file '+fileItem+'\n'
     compressFile.write(imageList)
@@ -48,35 +52,39 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
 
     #ffmpeg路径
     ffmpegPath= __file__.split('/scripts/maya')[0]+'/other/thirdParty/ffmpeg.exe'
-    #ffmpegPath='E:/plugins/JmadOnionGit/other/thirdParty/ffmpeg.exe'
+    #ffmpegPath='c:/ffmpeg.exe'
     if not os.path.exists(ffmpegPath):
         print ("ffmpeg is missing!")
         return
     runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+compressFileName
-    #右上角加水印
+
     if os.path.exists(waterMark):
         if waterMark.endswith(".png"):
             runStr+= ' -i '+waterMark+' '
             #runStr+= ' -i '+waterMark+' '
             runStr+=' -filter_complex '
             #runStr+=' overlay=0:0'
-            runStr+=' overlay=main_w-overlay_w:0 '  
-    runStr+=' -crf 20 -c:v h264   ' +compressedVideo
+            runStr+=' overlay=main_w-overlay_w:0 '      
+    runStr+=' -crf 20 -c:v h264   ' 
+    #右上角加水印,没有字幕直接输出,有字幕的时候需要分开压缩
+    if ass=='':
+        runStr+=outFile
+    else:
+        runStr+=compressPath+'addWaterMarkfile.mp4'
     
     spr=subprocess.Popen(runStr)
     status=spr.wait()
     #由于 filter_complex滤镜和 vf滤镜不能混用，暂时多压缩一次
     if ass!='':
-        tempOut=compressPath+'/temp'+outName
-        runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+ compressedVideo
+        tempOut=compressPath+'temp'+os.path.basename(outFile) 
+        runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+ compressPath+'addWaterMarkfile.mp4'
         runStr+=' -vf subtitles=\\\''+ass+'\\\' ' 
-        runStr+=' -c:v h264   ' +tempOut
+        runStr+=' -c:v h264   ' +outFile
         spr1=subprocess.Popen(runStr)
         status=spr1.wait()
-        os.remove(compressedVideo)
-        os.rename(tempOut,compressedVideo)
+
     time.sleep(2)
-    return compressedVideo
+    return outFile
     #os.startfile(compressPath)  
     #os.system(compressedVideo)  
 ##创建字幕文件，
@@ -85,7 +93,7 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
 # @param frameRange ass字幕输出帧范围[起始，结束]
 # @param setting ass字幕输出分辨率，字幕样式：数值为1时左侧竖式仅1列 大于1则为底部横式 此值为列数，超过列数向上加行 ，
 # 4,5两项为第一个字幕的屏幕坐标占比,默认在左下角
-def createAssFile(assFileName,frameRate=24,frameRange=[0,1],styleSetting=[1280,720,1,0.08,0.95],infodic={},colorSetting=[0,255,0,10],fontsize=22):
+def createAssFile(assFileName,frameRate=24,frameRange=[0,1],styleSetting=[1280,720,1,0.08,0.95],infodic={},colorSetting=[0,255,0,10],fontsize=0):
     assFile=open(assFileName,'w')
     strsToWrite=''
     #script info字段为固定内容,仅需写入宽高比
@@ -98,6 +106,10 @@ def createAssFile(assFileName,frameRate=24,frameRange=[0,1],styleSetting=[1280,7
     strsToWrite+='Timer: 100.0000\n\n'
     #样式信息 这一部分包含了所有样式的定义。每一个被脚本使用的样式都应该在这里定义
     #用字典设置对应关系
+    #如果未设置字体大小,默认为0,则大小根据分辨率自行调节以1080p下字体24号为标准比例
+    if fontsize<1:
+        fontsize=24*(styleSetting[1]/1080.0)
+
     settingDic={'Name': 'chs', ' Fontname': '\xce\xa2\xc8\xed\xd1\xc5\xba\xda', ' Fontsize': str(fontsize),
                     ' PrimaryColour': convertColorStr(colorSetting),
                     ' SecondaryColour': convertColorStr(colorSetting),
@@ -119,7 +131,7 @@ def createAssFile(assFileName,frameRate=24,frameRange=[0,1],styleSetting=[1280,7
     #event 字幕部分
     strsToWrite+='[Events]\n'
     strsToWrite+='Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text\n'
-    for i in range(frameRange[0],frameRange[1]):
+    for i in range(frameRange[0],frameRange[1]+1):
         #0层 帧数
         strsToWrite+='Dialogue: 0,'
         #起始结束时间
@@ -140,7 +152,7 @@ def createAssFile(assFileName,frameRate=24,frameRange=[0,1],styleSetting=[1280,7
         strsToWrite+='Dialogue: '+str(lineCount)+','
         #起始结束时间：从头到尾一直显示
         strsToWrite+=convertFrameToSrtTime(0,frameRate)+','
-        strsToWrite+=convertFrameToSrtTime(frameRange[1]-frameRange[0],frameRate)+','
+        strsToWrite+=convertFrameToSrtTime(frameRange[1]-frameRange[0]+1,frameRate)+','
         #样式设置(Actor Effect为空)
         strsToWrite+='chs,,0000,0000,0000,,'
         #字幕信息
@@ -163,6 +175,5 @@ def convertColorStr(inputu,rate=1):
         str(hex(int(inputu[1]*rate)))[2:].zfill(2).upper()+
         str(hex(int(inputu[0]*rate)))[2:].zfill(2).upper())
 if __name__ == "__main__":
-    #J_exportAbc(exportAttr=["SGInfo"])
     compressFileSeqTovideo(r'C:\Users\Administrator\Desktop\rrr\render_aaa')
    

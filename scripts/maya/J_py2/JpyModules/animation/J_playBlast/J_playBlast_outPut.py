@@ -64,15 +64,15 @@ def J_playBlast_outPut(res=['1920','1080'],skipFrame=0,viewer=True,waterMark="")
     
     if 'frameInfoHud' not in cmds.headsUpDisplay(query=True,listHeadsUpDisplays=True):
         if len(cmds.ls(type='J_hud'))<1 and len(cmds.ls(type='J_hud_a'))<1 :
-            camInfo={'FrameRate':frameRate,'FileName':fileName,'author':mel.eval('getenv "USERNAME"')}
+            camInfo={'date':cmds.date(format='YY.MM.DD-hh:mm:ss'),'FileName':fileName,'author':mel.eval('getenv "USERNAME"'),'FrameRate':frameRate}
             JpyModules.public.J_ffmpeg.createAssFile(filePath+fileName+'_pbimages/'+fileName+'.ass',frameRate,[int(timeLineStart+skipFrame),
-                                int(timeLineEnd)],[res[0],res[1],1,0.08,0.95],camInfo,)
+                                int(timeLineEnd)],[res[0],res[1],1,0.08,0.95],camInfo,[0,255,0,140])
     #配置ffmpeg运行命令
-    m4vFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(filePath+fileName+'_pbimages',imageList,frameRate=frameRate,waterMark=waterMark,outName=fileName+'.m4v',)
-    
-    if os.path.exists(filePath+fileName+'.m4v'):
-        os.remove(filePath+fileName+'.m4v') 
-    shutil.move(m4vFile,filePath)
+    m4vFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(filePath+fileName+'_pbimages/',imageList,frameRate=frameRate,waterMark=waterMark,outFile=filePath+fileName+'.m4v')
+    # if os.path.exists(filePath+fileName+'.m4v'):
+    #     os.remove(filePath+fileName+'.m4v') 
+    #     print (filePath+fileName+'.m4v'+u"已删除")
+    # shutil.move(m4vFile,filePath)
     '''旧机制，废弃封存09122023
     runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+compressFileName
     if os.path.exists(waterMark):

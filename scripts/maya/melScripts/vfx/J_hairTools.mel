@@ -15,7 +15,7 @@ global proc string J_hairTools()
 {
 if (`window -ex J_hairTool`)
     deleteUI -window J_hairTool;
-    window -title "统一曲线方向" -widthHeight 400 148  J_hairTool;
+    window -title "毛发工具" -widthHeight 400 148  J_hairTool;
     formLayout textureNameLayout;   
 
      radioButtonGrp -numberOfRadioButtons 3 -sl 2 

@@ -14,7 +14,7 @@ import shutil,time
 import maya.cmds as cmds
 import maya.mel as mel
 #拍平格式，解析度，帧率，是否播放，是否渲染，是否另存
-def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],skipFrame=0,render=False):
+def J_CFXWorkFlow_CachePb(sumframeRate=1,res=[1920,1080],skipFrame=0,render=False):
     import JpyModules
     #文件路径
     filePath=JpyModules.public.J_getMayaFileFolder()+'/' 
@@ -30,16 +30,19 @@ def J_CFXWorkFlow_CachePb(frameRate=1,res=[1920,1080],skipFrame=0,render=False):
         j_CachePath=filePath+cacheFileName+'_cache/mc/'
     #选择物体中如果布料不为空,则制作缓存
     if (len(cmds.ls(sl=True))>0):
-        if (len(cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='nCloth'))>0):
-            cmds.select(cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='nCloth'))
+        temp0=cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='nCloth')
+        temp1=cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='hairSystem')
+        cmds.select(temp0)
+        cmds.select(temp1,tgl=1)
+        if (len(cmds.ls(sl=1))):
             try:
                 mel.eval('deleteCacheFile 2 { "keep", "" } ;')
             except :
                 pass
-            runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(frameRate)+'", "1","0","1","mcx" } ;'
+            runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(sumframeRate)+'", "1","0","1","mcx" } ;'
             mel.eval(runStr)
-        else:
-            cmds.select(cl=1)
+    else:
+        cmds.select(cl=1)
     waterMark=''
     if os.path.exists(cmds.workspace(query=True,rd=True)+'waterMark.png'):
         waterMark=(cmds.workspace(query=True,rd=True)+'waterMark.png') 
