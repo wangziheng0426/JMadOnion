@@ -79,7 +79,7 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
         tempOut=compressPath+'temp'+os.path.basename(outFile) 
         runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+ compressPath+'addWaterMarkfile.mp4'
         runStr+=' -vf subtitles=\\\''+ass+'\\\' ' 
-        runStr+=' -c:v h264   ' +outFile
+        runStr+=' -c:v copy   ' +outFile
         spr1=subprocess.Popen(runStr)
         status=spr1.wait()
 

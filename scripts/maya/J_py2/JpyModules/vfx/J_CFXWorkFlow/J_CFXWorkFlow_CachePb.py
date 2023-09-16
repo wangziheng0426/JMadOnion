@@ -31,10 +31,10 @@ def J_CFXWorkFlow_CachePb(sumframeRate=1,res=[1920,1080],skipFrame=0,render=Fals
     #选择物体中如果布料不为空,则制作缓存
     if (len(cmds.ls(sl=True))>0):
         temp0=cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='nCloth')
-        temp1=cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='hairSystem')
+        temp0.extend(cmds.ls(cmds.listHistory(cmds.ls(sl=1)),type='hairSystem'))
         cmds.select(temp0)
-        cmds.select(temp1,tgl=1)
-        if (len(cmds.ls(sl=1))):
+
+        if (len(cmds.ls(sl=1))>0):
             try:
                 mel.eval('deleteCacheFile 2 { "keep", "" } ;')
             except :
