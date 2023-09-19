@@ -65,7 +65,7 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
             runStr+=' -filter_complex '
             #runStr+=' overlay=0:0'
             runStr+=' overlay=main_w-overlay_w:0 '      
-    runStr+=' -crf 20 -c:v h264   ' 
+    runStr+=' -crf 18 -c:v h264   ' 
     #右上角加水印,没有字幕直接输出,有字幕的时候需要分开压缩
     if ass=='':
         runStr+=outFile
@@ -74,15 +74,15 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     
     spr=subprocess.Popen(runStr)
     status=spr.wait()
+    #print runStr
     #由于 filter_complex滤镜和 vf滤镜不能混用，暂时多压缩一次
     if ass!='':
-        tempOut=compressPath+'temp'+os.path.basename(outFile) 
         runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+ compressPath+'addWaterMarkfile.mp4'
         runStr+=' -vf subtitles=\\\''+ass+'\\\' ' 
-        runStr+=' -c:v copy   ' +outFile
+        runStr+=' -c:v h264 -crf 18  ' +outFile
         spr1=subprocess.Popen(runStr)
         status=spr1.wait()
-
+        #print runStr
     time.sleep(2)
     return outFile
     #os.startfile(compressPath)  
@@ -117,7 +117,7 @@ def createAssFile(assFileName,frameRate=24,frameRange=[0,1],styleSetting=[1280,7
                     ' BackColour': convertColorStr(colorSetting,0.2),
                     ' Bold': '0', ' Italic': '0', ' Underline': '0', ' StrikeOut': '0',
                     ' ScaleX': '100.00', ' ScaleY': '100.00',' Spacing': '0.50',' Angle': '0.00',' BorderStyle': '1',
-                    ' Outline': '1.00', ' Shadow': '3.00', ' Alignment': '1',   ' MarginL': '5',   ' MarginR': '5',
+                    ' Outline': '1.00', ' Shadow': '2.00', ' Alignment': '1',   ' MarginL': '5',   ' MarginR': '5',
                     ' MarginV': '2',  ' Encoding': '134'} 
     assFormat=[]
     assStyle=[]

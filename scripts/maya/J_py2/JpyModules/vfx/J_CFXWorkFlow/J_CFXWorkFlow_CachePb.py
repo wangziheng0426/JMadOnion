@@ -14,15 +14,15 @@ import shutil,time
 import maya.cmds as cmds
 import maya.mel as mel
 #拍平格式，解析度，帧率，是否播放，是否渲染，是否另存
-def J_CFXWorkFlow_CachePb(sumframeRate=1,res=[1920,1080],skipFrame=0,render=False):
+def J_CFXWorkFlow_CachePb(simframeRate=1,res='',skipFrame=0,render=False):
     import JpyModules
     #文件路径
     filePath=JpyModules.public.J_getMayaFileFolder()+'/' 
     #文件名
     fileName=JpyModules.public.J_getMayaFileNameWithOutExtension()
-    #视频尺寸
+    #视频尺寸,未设置,则读取渲染尺寸
     if res=='':
-        res=[str(cmds.getAttr("defaultResolution.width")),str(cmds.getAttr("defaultResolution.height"))]
+        res=[cmds.getAttr("defaultResolution.width"),cmds.getAttr("defaultResolution.height")]
         
     cacheFileName=fileName
     j_CachePath=''
@@ -39,7 +39,7 @@ def J_CFXWorkFlow_CachePb(sumframeRate=1,res=[1920,1080],skipFrame=0,render=Fals
                 mel.eval('deleteCacheFile 2 { "keep", "" } ;')
             except :
                 pass
-            runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(sumframeRate)+'", "1","0","1","mcx" } ;'
+            runStr='doCreateNclothCache 5 { "2", "1", "10", "OneFile", "1", "'+j_CachePath+'","1","","0", "add", "1", "'+str(simframeRate)+'", "1","0","1","mcx" } ;'
             mel.eval(runStr)
     else:
         cmds.select(cl=1)
@@ -49,9 +49,10 @@ def J_CFXWorkFlow_CachePb(sumframeRate=1,res=[1920,1080],skipFrame=0,render=Fals
 
     if render:
          JpyModules.render.J_renderPreview(
-             animationRange=[cmds.playbackOptions(query=True,minTime=True)+int(skipFrame),
-                             cmds.playbackOptions(query=True,maxTime=True),1])    
+            animationRange=[cmds.playbackOptions(query=True,minTime=True),
+                             cmds.playbackOptions(query=True,maxTime=True),1],
+            skipFrame=skipFrame, resolution=res,waterMark=waterMark)    
     else:
         JpyModules.animation.J_playBlast.J_playBlast_outPut(res=res,skipFrame=skipFrame,waterMark=waterMark)
 if __name__=='__main__':
-    J_CFXWorkFlow_CachePb()
+    J_CFXWorkFlow_CachePb(1,'',50,True)

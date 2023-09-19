@@ -13,7 +13,7 @@ import shutil,time
 import json
 import os
 import sys
-def J_playBlast_outPut(res=['1920','1080'],skipFrame=0,viewer=True,waterMark=""):    
+def J_playBlast_outPut(res=[1920,1080],skipFrame=0,viewer=True,waterMark=""):    
     import JpyModules
     #文件路径
     filePath=JpyModules.public.J_getMayaFileFolder()+'/'    
@@ -22,7 +22,6 @@ def J_playBlast_outPut(res=['1920','1080'],skipFrame=0,viewer=True,waterMark="")
 
     #获取分辨率,并保证是2的倍数
     #res=[cmds.getAttr("defaultResolution.width"),cmds.getAttr("defaultResolution.height")]
-    res=[int(res[0]),int(res[1])]
     res=[(res[0]+res[0]%2),(res[1]+res[1]%2)]
     #自动创建拍平序列目录
     playBlastFile=filePath+fileName+'_pbimages/'+fileName
@@ -66,7 +65,7 @@ def J_playBlast_outPut(res=['1920','1080'],skipFrame=0,viewer=True,waterMark="")
         if len(cmds.ls(type='J_hud'))<1 and len(cmds.ls(type='J_hud_a'))<1 :
             camInfo={'date':cmds.date(format='YY.MM.DD-hh:mm:ss'),'FileName':fileName,'author':mel.eval('getenv "USERNAME"'),'FrameRate':frameRate}
             JpyModules.public.J_ffmpeg.createAssFile(filePath+fileName+'_pbimages/'+fileName+'.ass',frameRate,[int(timeLineStart+skipFrame),
-                                int(timeLineEnd)],[res[0],res[1],1,0.08,0.95],camInfo,[0,255,0,140])
+                                int(timeLineEnd)],[res[0],res[1],1,0.08,0.95],camInfo,[0,255,0,80])
     #配置ffmpeg运行命令
     m4vFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(filePath+fileName+'_pbimages/',imageList,frameRate=frameRate,waterMark=waterMark,outFile=filePath+fileName+'.m4v')
     # if os.path.exists(filePath+fileName+'.m4v'):
@@ -92,6 +91,7 @@ def J_playBlast_outPut(res=['1920','1080'],skipFrame=0,viewer=True,waterMark="")
     except:
         pass
     if (viewer):
-        os.system(filePath+'/'+fileName+'.m4v')  
+        print m4vFile
+        os.system(m4vFile)  
 if __name__=='__main__':
     J_playBlast_outPut()

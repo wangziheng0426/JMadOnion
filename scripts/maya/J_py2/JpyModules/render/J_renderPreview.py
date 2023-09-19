@@ -9,13 +9,13 @@
 
 import maya.cmds as cmds
 import maya.mel as mel
-import os
-def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],renderer="arnold",renderMode=1):
+import os,shutil
+def J_renderPreview(resolution=[],camera='',animationRange=[],renderer="arnold",skipFrame=0,renderMode=1,waterMark=""):
     import JpyModules
-    filePath=JpyModules.public.J_getMayaFileFolder()
+    filePath=JpyModules.public.J_getMayaFileFolder()+'/'
     renderFileName=JpyModules.public.J_getMayaFileNameWithOutExtension()
-    renderPath=filePath+'/render_'+renderFileName
-    renderPrefix=renderPath+"/"+renderFileName
+    renderPath=filePath+'render_'+renderFileName+'/'
+    renderPrefix=renderPath+renderFileName
     cmds.setAttr("defaultRenderGlobals.imageFilePrefix",renderPrefix,type='string')
     #改相机
     if camera!='':
@@ -43,24 +43,24 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     #    for lightItem in cmds.ls(type=item):
     #        cmds.setAttr(lightItem+".visibility",0)
     #映射灯光文件，可传入完整路径，或者传入文件名，传入文件名则直接再工程目录下寻找，如果已经发现有名字空间未lightRef的映射灯光文件，则不再映射
-    if not os.path.exists(lightFile):
-        if os.path.exists(cmds.workspace(query=True,rd=True)+'lightPresets.ma'):
-            lightFile=(cmds.workspace(query=True,rd=True)+'lightPresets.ma') 
-    needLight=True
-    for reItem in cmds.ls(type ='reference'):
-        if cmds.referenceQuery(reItem,isNodeReferenced=True):            
-            if cmds.referenceQuery(reItem,namespace=True).find('J_lightPresets')>-1:
-                needLight=False
-    if os.path.exists(lightFile) and  needLight:
-        cmds.file(lightFile,r=1,type="mayaAscii",ignoreVersion=1,mergeNamespacesOnClash=0,ns=":J_lightPresets")
-        needLight=False
+    # if not os.path.exists(lightFile):
+    #     if os.path.exists(cmds.workspace(query=True,rd=True)+'lightPresets.ma'):
+    #         lightFile=(cmds.workspace(query=True,rd=True)+'lightPresets.ma') 
+    # needLight=True
+    # for reItem in cmds.ls(type ='reference'):
+    #     if cmds.referenceQuery(reItem,isNodeReferenced=True):            
+    #         if cmds.referenceQuery(reItem,namespace=True).find('J_lightPresets')>-1:
+    #             needLight=False
+    # if os.path.exists(lightFile) and  needLight:
+    #     cmds.file(lightFile,r=1,type="mayaAscii",ignoreVersion=1,mergeNamespacesOnClash=0,ns=":J_lightPresets")
+    #     needLight=False
     #没有灯光预设文件,则查询场景中是否有灯光
-    if (len(cmds.ls(type="aiSkyDomeLight"))>0):
-        needLight=False
-    if (len(cmds.ls(type="aiAreaLight"))>0):
-        needLight=False  
-    if (len(cmds.ls(type="light"))>0):
-        needLight=False   
+    # if (len(cmds.ls(type="aiSkyDomeLight"))>0):
+    #     needLight=False
+    # if (len(cmds.ls(type="aiAreaLight"))>0):
+    #     needLight=False  
+    # if (len(cmds.ls(type="light"))>0):
+    #     needLight=False   
     #场景中没有灯光,则创建默认灯光
     #if needLight:
         #createPreviewRenderLight(camera)
@@ -72,17 +72,29 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
         
         cmds.setAttr("defaultResolution.deviceAspectRatio",(resolution[0]/(resolution[1]*1.0)))
         cmds.setAttr("defaultResolution.pixelAspect",1)
+    #计算帧率
+    mydic={'game':15,'film':24,'pal':25,'ntsc':30,'show':48,'palf':50,'ntscf':60}
+    frameRate=cmds.currentUnit(query=True,time=True)
+    if frameRate in mydic:
+        frameRate= mydic[frameRate]
+    else:
+        frameRate=24
+    
     #开启动画
     cmds.setAttr("defaultRenderGlobals.animation",1)
     cmds.setAttr("defaultRenderGlobals.animationRange",0)
     cmds.setAttr("defaultRenderGlobals.startFrame",cmds.playbackOptions(query=True,minTime=True))
     cmds.setAttr("defaultRenderGlobals.endFrame",cmds.playbackOptions(query=True,maxTime=True))
-    #animationRange=[0,10,1]起始帧，结束帧，帧间隔
-    if (len(animationRange)==3):
-        cmds.setAttr("defaultRenderGlobals.startFrame",animationRange[0])
-        cmds.setAttr("defaultRenderGlobals.endFrame",animationRange[1])
-        cmds.setAttr("defaultRenderGlobals.byFrameStep",animationRange[2])
-    
+    #animationRange=[0,10,1]起始帧，结束帧，帧间隔,如果输入时未设置,则读取时间滑块
+    if (len(animationRange)!=3):
+        animationRange[0]=cmds.playbackOptions(query=True,minTime=True)
+        animationRange[0]=cmds.playbackOptions(query=True,maxTime=True)
+        animationRange[0]=1
+        
+    cmds.setAttr("defaultRenderGlobals.startFrame",animationRange[0])
+    cmds.setAttr("defaultRenderGlobals.endFrame",animationRange[1])
+    cmds.setAttr("defaultRenderGlobals.byFrameStep",animationRange[2])
+
     #关闭光线跟宗
     cmds.setAttr("defaultRenderQuality.enableRaytracing",0)
     #关闭运动模糊
@@ -103,22 +115,35 @@ def J_renderPreview(lightFile="",resolution=[],camera='',animationRange=[],rende
     if renderer=='arnold':
         cmds.setAttr("defaultArnoldDriver.ai_translator", "png", type="string")
         cmds.setAttr("defaultArnoldDriver.prefix", renderPrefix, type="string")
-
+    #修改图片保存设置
+    cmds.colorManagementPrefs(e=1,outputTransformEnabled=1)
+    cmds.optionVar(intValue=("renderViewSaveMode", 1))
+    #渲染
     if renderMode==1:
         mel.eval('RenderSequence')
     if renderMode==2:
         mel.eval('BatchRender')
-    if renderMode>0:
-        #整理文件列表
-        fileList=[]
-        for item in range(int(cmds.getAttr("defaultRenderGlobals.startFrame")),
-                        int(cmds.getAttr("defaultRenderGlobals.endFrame")),
-                        int(cmds.getAttr("defaultRenderGlobals.byFrameStep"))):
-            fileList.append(os.path.basename(renderPrefix)+"_1.%04d.png"%item)
-        JpyModules.public.J_ffmpeg.compressFileSeqTovideo(renderPath,fileList,outName=renderFileName)
-        print fileList
+    #自动生成字幕
+    camInfo={'date':cmds.date(format='YY.MM.DD-hh:mm:ss'),'FileName':renderFileName,'author':mel.eval('getenv "USERNAME"'),'FrameRate':frameRate}
+    JpyModules.public.J_ffmpeg.createAssFile(renderPath+renderFileName+'.ass',frameRate,[int(animationRange[0]+skipFrame),int(animationRange[1])]
+                                             ,[resolution[0],resolution[1],1,0.08,0.95],camInfo,[0,255,0,70])
+    #整理文件列表
+    fileList=[]
+    for item in range(int(cmds.getAttr("defaultRenderGlobals.startFrame")+skipFrame),
+                    int(cmds.getAttr("defaultRenderGlobals.endFrame")),
+                    int(cmds.getAttr("defaultRenderGlobals.byFrameStep"))):
+        fileList.append(os.path.basename(renderPrefix)+"_1.%04d.png"%item)
+    JpyModules.public.J_ffmpeg.compressFileSeqTovideo(compressPath=renderPath,frameRate=frameRate,
+        fileList=fileList,waterMark=waterMark,outFile=filePath+renderFileName+".m4v")
+    #print fileList
     #删除渲染图
+    # try:
+    #     shutil.rmtree(renderPath)
+    # except:
+    #     pass
 
+    #print m4vFile
+    os.system(filePath+renderFileName+".m4v")  
 def addRandomMatToSelections():
     pass
 def createPreviewRenderLight(camera=''):
