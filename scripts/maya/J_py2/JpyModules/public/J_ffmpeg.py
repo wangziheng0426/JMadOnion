@@ -56,11 +56,11 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     if not os.path.exists(ffmpegPath):
         print ("ffmpeg is missing!")
         return
-    runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+compressFileName
+    runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+"\""+compressFileName+"\""
 
     if os.path.exists(waterMark):
         if waterMark.endswith(".png"):
-            runStr+= ' -i '+waterMark+' '
+            runStr+= ' -i \"'+waterMark+'\" '
             #runStr+= ' -i '+waterMark+' '
             runStr+=' -filter_complex '
             #runStr+=' overlay=0:0'
@@ -68,21 +68,21 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     runStr+=' -crf 18 -c:v h264   ' 
     #右上角加水印,没有字幕直接输出,有字幕的时候需要分开压缩
     if ass=='':
-        runStr+=outFile
+        runStr+="\""+outFile+"\""
     else:
-        runStr+=compressPath+'addWaterMarkfile.mp4'
+        runStr+="\""+compressPath+'addWaterMarkfile.mp4'+"\""
     
     spr=subprocess.Popen(runStr)
     status=spr.wait()
-    #print runStr
+    print runStr
     #由于 filter_complex滤镜和 vf滤镜不能混用，暂时多压缩一次
     if ass!='':
-        runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+ compressPath+'addWaterMarkfile.mp4'
-        runStr+=' -vf subtitles=\\\''+ass+'\\\' ' 
-        runStr+=' -c:v h264 -crf 18  ' +outFile
+        runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+"\""+ compressPath+'addWaterMarkfile.mp4'+"\""
+        runStr+=' -vf subtitles="\\\''+ass+'\\\'\" ' 
+        runStr+=' -c:v h264 -crf 18  ' +"\""+outFile+"\""
         spr1=subprocess.Popen(runStr)
         status=spr1.wait()
-        #print runStr
+    print runStr
     time.sleep(2)
     return outFile
     #os.startfile(compressPath)  

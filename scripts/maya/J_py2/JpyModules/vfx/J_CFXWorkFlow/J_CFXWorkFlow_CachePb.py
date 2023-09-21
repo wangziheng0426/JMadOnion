@@ -48,11 +48,14 @@ def J_CFXWorkFlow_CachePb(simframeRate=1,res='',skipFrame=0,render=False):
         waterMark=(cmds.workspace(query=True,rd=True)+'waterMark.png') 
 
     if render:
-         JpyModules.render.J_renderPreview(
+        JpyModules.render.J_renderPreview(
             animationRange=[cmds.playbackOptions(query=True,minTime=True),
                              cmds.playbackOptions(query=True,maxTime=True),1],
             skipFrame=skipFrame, resolution=res,waterMark=waterMark)    
+        
     else:
         JpyModules.animation.J_playBlast.J_playBlast_outPut(res=res,skipFrame=skipFrame,waterMark=waterMark)
+
+    
 if __name__=='__main__':
     J_CFXWorkFlow_CachePb(1,'',50,True)

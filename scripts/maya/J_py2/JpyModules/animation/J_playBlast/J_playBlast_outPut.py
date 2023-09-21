@@ -92,6 +92,6 @@ def J_playBlast_outPut(res=[1920,1080],skipFrame=0,viewer=True,waterMark=""):
         pass
     if (viewer):
         print m4vFile
-        os.system(m4vFile)  
+        os.system("\""+m4vFile+"\"")  
 if __name__=='__main__':
     J_playBlast_outPut()

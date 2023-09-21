@@ -191,14 +191,15 @@ global proc J_playBlastOutPut()
 {
     //»ñÈ¡ºá×Ý±È
     python("items=cmds.formLayout('J_playBlastHUDFormLayOut',query=True,childArray=True )");
-    string $res[]=python("cmds.textField(items[15],query=True,text=True).split('/')");
+    int $res[]={(int)python("cmds.textField(items[15],query=True,text=True).split('/')[0]")
+    ,(int)python("cmds.textField(items[15],query=True,text=True).split('/')[1]")};
     string $waterMark="";
     if (`checkBox -q  -value "J_playBlastWaterMarkCheckBox"`)
     {
         $waterMark=`checkBox -q  -label "J_playBlastWaterMarkCheckBox"`;
     }
         
-    string $temp="JpyModules.animation.J_playBlast.J_playBlast_outPut(res=['"+$res[0]+"','"+$res[1]+"'],waterMark='"+$waterMark+"')";
+    string $temp="JpyModules.animation.J_playBlast.J_playBlast_outPut(res=["+$res[0]+","+$res[1]+"],waterMark='"+$waterMark+"')";
 
     python($temp);
 }
