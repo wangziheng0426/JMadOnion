@@ -29,11 +29,10 @@ def J_renderPreview(resolution=[],camera='',animationRange=[],renderer="arnold",
     frameRate=cmds.currentUnit(query=True,time=True)
     #帧范围设置
     if (len(animationRange)!=3):
-        animationRange[0]=cmds.playbackOptions(query=True,minTime=True)
-        animationRange[0]=cmds.playbackOptions(query=True,maxTime=True)
-        animationRange[0]=1
-
-
+        animationRange=[cmds.playbackOptions(query=True,minTime=True),cmds.playbackOptions(query=True,maxTime=True),1]
+    #设置分辨率
+    if (len(resolution)!=2):
+        resolution=[cmds.getAttr("defaultResolution.width"),cmds.getAttr("defaultResolution.height")]
     if frameRate in mydic:
         frameRate= mydic[frameRate]
     else:
@@ -90,25 +89,19 @@ def J_renderPreview(resolution=[],camera='',animationRange=[],renderer="arnold",
             #createPreviewRenderLight(camera)
 
         #改分辨率
-        if (len(resolution)==2):
-            cmds.setAttr("defaultResolution.width",resolution[0])
-            cmds.setAttr("defaultResolution.height",resolution[1])
-            
-            cmds.setAttr("defaultResolution.deviceAspectRatio",(resolution[0]/(resolution[1]*1.0)))
-            cmds.setAttr("defaultResolution.pixelAspect",1)
+        cmds.setAttr("defaultResolution.width",resolution[0])
+        cmds.setAttr("defaultResolution.height",resolution[1])
         
+        cmds.setAttr("defaultResolution.deviceAspectRatio",(resolution[0]/(resolution[1]*1.0)))
+        cmds.setAttr("defaultResolution.pixelAspect",1)
+    
         
         #开启动画
         cmds.setAttr("defaultRenderGlobals.animation",1)
         cmds.setAttr("defaultRenderGlobals.animationRange",0)
-        cmds.setAttr("defaultRenderGlobals.startFrame",cmds.playbackOptions(query=True,minTime=True))
-        cmds.setAttr("defaultRenderGlobals.endFrame",cmds.playbackOptions(query=True,maxTime=True))
-        #animationRange=[0,10,1]起始帧，结束帧，帧间隔,如果输入时未设置,则读取时间滑块
-        
-            
-        cmds.setAttr("defaultRenderGlobals.startFrame",animationRange[0])
-        cmds.setAttr("defaultRenderGlobals.endFrame",animationRange[1])
-        cmds.setAttr("defaultRenderGlobals.byFrameStep",animationRange[2])
+        #cmds.setAttr("defaultRenderGlobals.startFrame",cmds.playbackOptions(query=True,minTime=True))
+        #cmds.setAttr("defaultRenderGlobals.endFrame",cmds.playbackOptions(query=True,maxTime=True))
+        #animationRange=[0,10,1]起始帧，结束帧，帧间隔,如果输入时未设置,则读取时间滑块 
 
         #关闭光线跟宗
         cmds.setAttr("defaultRenderQuality.enableRaytracing",0)
@@ -135,6 +128,11 @@ def J_renderPreview(resolution=[],camera='',animationRange=[],renderer="arnold",
         cmds.optionVar(intValue=("renderViewSaveMode", 1))
         #修改状态标识，说明已经设置过了，以后不再设置
         cmds.setAttr('lambert1.J_ResetRenderSetting','1',type='string')
+    #渲染帧范围
+    cmds.setAttr("defaultRenderGlobals.startFrame",animationRange[0])
+    cmds.setAttr("defaultRenderGlobals.endFrame",animationRange[1])
+    cmds.setAttr("defaultRenderGlobals.byFrameStep",animationRange[2])
+    
     #渲染
     if renderMode==1:
         mel.eval('RenderSequence')

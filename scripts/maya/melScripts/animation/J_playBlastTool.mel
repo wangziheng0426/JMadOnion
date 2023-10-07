@@ -90,15 +90,21 @@ global proc string J_playBlastTool()//ÅÄÆÁ¹¤¾ß
                 formLayout  -nd 100  J_playBlastPBFormLayOut;        
                 checkBox -l  "Ë®Ó¡" -onCommand ("J_playBlast_loadLogo(\"J_playBlastWaterMarkCheckBox\")") J_playBlastWaterMarkCheckBox;
 
-                button -h 38 -label "ÅÄ" -command "J_playBlastOutPut" J_playBlastRunPBBu;
+                button -h 36 -label "ÅÄÆÁ" -command "J_playBlastOutPut" J_playBlastRunPBBu;
+                button -h 36 -label "äÖÈ¾Ô¤ÀÀ" -command "J_playBlastOutPut" J_playBlastRenderBu;
                 formLayout -e 
                     -af J_playBlastWaterMarkCheckBox left 4
                     -af J_playBlastWaterMarkCheckBox top 3
                     -ap J_playBlastWaterMarkCheckBox right 0 98
                     
-                    -af J_playBlastRunPBBu left 3 
+                    -ap J_playBlastRunPBBu left 0 1 
                     -ac J_playBlastRunPBBu top 3 J_playBlastWaterMarkCheckBox
-                    -ap J_playBlastRunPBBu right 0 99
+                    -ap J_playBlastRunPBBu right 0 49
+
+                    -ap J_playBlastRenderBu left 0 50 
+                    -ac J_playBlastRenderBu top 3 J_playBlastWaterMarkCheckBox
+                    -ap J_playBlastRenderBu right 0 99
+
                 J_playBlastPBFormLayOut;
 
                 setParent ..; 
@@ -200,8 +206,10 @@ global proc J_playBlastOutPut()
     }
         
     string $temp="JpyModules.animation.J_playBlast.J_playBlast_outPut(res=["+$res[0]+","+$res[1]+"],waterMark='"+$waterMark+"')";
-
     python($temp);
 }
-
+global proc J_playBlastOutPut()
+{
+    python("JpyModules.render.J_renderPreview()");
+}
 
