@@ -60,7 +60,7 @@ def J_exportAbc(mode=1,nodesToExport=[],exportAttr=[],importRef=False):
             exportString+=' -root '+nitem +" "
         exportString+=' -file '+j_abcCachePath+cacheFileName+'.abc"'
         outFile=open(j_abcCachePath+'abcLog.jcl','w')
-        outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False)) 
+        outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":"))) 
         outFile.close()
         mel.eval(exportString)
     #按照选择的对象每个单独导出一个abc
@@ -87,7 +87,7 @@ def J_exportAbc(mode=1,nodesToExport=[],exportAttr=[],importRef=False):
             mel.eval(exportStringa)
             count=count+1
         outFile=open(j_abcCachePath+'abcLog.jcl','w')
-        outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False)) 
+        outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":"))) 
         outFile.close()
     cmds.select(nodesToExport)
     os.startfile(j_abcCachePath)    
@@ -194,8 +194,9 @@ def J_importAbc():
         selectedNodeParent='|'.join(selectedNodeParent)
 
         #第一层字典以序号作为key，每个字典对应一套abc文件和模型材质信息，关键字："abcFile"
-        abcFile=os.path.dirname(jclFile)+"/"+v0["abcFile"]
+        abcFile=v0["abcFile"]
         groupNode=cmds.createNode('transform',name=('J_abc_'+str(k0)+"_"+abcFile[:-4].split("@")[len(abcFile.split("@"))-1]))
+        abcFile=os.path.dirname(jclFile)+"/"+v0["abcFile"]
         if os.path.exists(abcFile):
             mel.eval('AbcImport -mode import -reparent '+groupNode+' \"'+abcFile +'\";')
         #第二层字典关键字mesh包含模型名称和材质名称，导入材质球  
