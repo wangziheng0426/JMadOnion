@@ -16,7 +16,7 @@ def J_renameDefaultRenderLayer(newname='defaultRenderLayer'):
         try:
             cmds.delete('defaultRenderLayer')
         except:
-            print 'defaultRenderLayer is not found!'
+            print ('defaultRenderLayer is not found!')
     cmds.select(J_defaultRenderNode,r=1)
     J_mSelection=om.MSelectionList()
     mayaGlobal=om.MGlobal()

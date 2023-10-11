@@ -8,102 +8,124 @@
 ///History:  导出动画工具
 ///
 ///////////////////////////////////////////////////////////////
-global proc J_animationExporter()//主窗口
+global proc J_resourceExporter()//主窗口
 {
-    if (`window -ex J_animationExporterWin`)
-        deleteUI -window J_animationExporterWin;
-    window -w 300 -h 360 -title "动画导出" J_animationExporterWin;
+    if (`window -ex J_resourceExporterWin`)
+        deleteUI -window J_resourceExporterWin;
+    window -w 300 -h 800 -title "资源导出" J_resourceExporterWin;
     //文件导出设置
     string $geoSetting[]={"SmoothingGroup","SmoothMesh","SelectionSets","Triangulate",
      "IncludeChildren","InputConnections","Skin","BlendShape" };
     string $geoSettingCheckBox[];
-
-    tabLayout J_animationExporterTab;
-        formLayout  -numberOfDivisions 100  J_animationExporter_FromLayout0;
-            frameLayout -cll 1 -cl 0 -l "模型选项"  J_animationExporter_frameLayout0;
-                string $formLayout_Temp0=`formLayout -numberOfDivisions 100 `;
-                    for ($iItem=0;$iItem<size($geoSetting);$iItem++)
-                    {
-                        $geoSettingCheckBox[$iItem]=`checkBox -label  $geoSetting[$iItem] `;
-                        formLayout -e 
-                        -ap $geoSettingCheckBox[$iItem] left 0 (1+50*($iItem%2))
-                        -ap $geoSettingCheckBox[$iItem] right 0 (49+50*($iItem%2))
-                        -af $geoSettingCheckBox[$iItem] top (15*floor($iItem/2)) $formLayout_Temp0;
-                    }
-                setParent ..;    
+    formLayout  -numberOfDivisions 100  J_resourceExporter_FromLayout0;
+        frameLayout -cll 1 -cl 0 -l "模型选项"  J_resourceExporter_rigframeLayout;
+            string $formLayout_Temp0=`formLayout -numberOfDivisions 100 `;
+                for ($iItem=0;$iItem<size($geoSetting);$iItem++)
+                {
+                    $geoSettingCheckBox[$iItem]=`checkBox -label  $geoSetting[$iItem] `;
+                    formLayout -e 
+                    -ap $geoSettingCheckBox[$iItem] left 0 (1+50*($iItem%2))
+                    -ap $geoSettingCheckBox[$iItem] right 0 (49+50*($iItem%2))
+                    -af $geoSettingCheckBox[$iItem] top (15*floor($iItem/2)) $formLayout_Temp0;
+                }
             setParent ..;
-            frameLayout -cll 1 -cl 0 -l "文件配置"  J_animationExporter_frameLayout1;
-                button;
+            button -l "导出绑定" -c  "J_resourceExporterExportRig" J_expRig;   
+            separator -style "in"; 
+        setParent ..;
+        frameLayout -cll 1 -cl 0 -l "动画选项"  J_resourceExporter_aniframeLayout;
+            formLayout  -numberOfDivisions 100  J_resourceExporter_animationFromLayout;
+                textScrollList -h 80 -sc "J_resourceExporterSelitem"  -allowMultiSelection 1  J_allCameraNode;
+                textScrollList  -sc "" -allowMultiSelection 1 J_allRefNode;
+                
+                checkBox -label "曲线平滑" -v 1 J_animationExporter_chbox01;
+                checkBox -label "曲线打平"  J_animationExporter_chbox02;
+                checkBox -label "根骨归零"  J_animationExporter_chbox03;
+
+                checkBox -label "相机->fbx" -v 1 J_animationExporter_chbox04;
+                checkBox -label "动画->fbx"  J_animationExporter_chbox05;
+
+                optionMenu -label "差值模式" J_animationExporter_optionMenu01;
+                menuItem  -label "resample";
+                menuItem  -label "euler";
+                menuItem  -label "quaternion";
+
+                button -l "导出相机" -c  "J_resourceExporterExportCam" J_expCam;
+                button -l "导出动画" -c  "" J_expAni;
+                button -l "批量导" -c  "" J_expAniBat;
             setParent ..;
         setParent ..;
-        formLayout  -numberOfDivisions 100  J_animationExporter_FromLayout1;
-            textScrollList  -sc "J_animationExporterSelitem"  -allowMultiSelection 1  J_allCameraNode;
-            textScrollList  -sc "" -allowMultiSelection 1 J_allRefNode;
-            button -l "导出相机" -c  "J_animationExporterExportCamBut" J_expCam;
-            button -l "导出动画" -c  "J_animationExporterExportAniBut" J_expAni;
-            textField    J_tex;
-
-            button -l "批量导出相机" -c  "J_animationExporterExportBatBut(0)" J_expCamBat;
-            button -l "批量导出动画" -c  "J_animationExporterExportBatBut(1)" J_expAniBat;
-
-        setParent ..;
-    tabLayout -edit
-         -tabLabel "J_animationExporter_FromLayout0" "模型资产" -tabLabel "J_animationExporter_FromLayout1" "动画导出" J_animationExporterTab;
-        
+       
     formLayout -e 
-        -ap J_animationExporter_frameLayout0 left 0 1
-        -ap J_animationExporter_frameLayout0 right 0 99
-        -af J_animationExporter_frameLayout0 top 0
+        -ap J_resourceExporter_rigframeLayout left 0 1
+        -ap J_resourceExporter_rigframeLayout right 0 99
+        -af J_resourceExporter_rigframeLayout top 0
         
-        -ap J_animationExporter_frameLayout1 left 0 1
-        -ap J_animationExporter_frameLayout1 right 0 99
-        -ac J_animationExporter_frameLayout1 top 1 J_animationExporter_frameLayout0
+        -ap J_resourceExporter_aniframeLayout left 0 1
+        -ap J_resourceExporter_aniframeLayout right 0 99
+        -ac J_resourceExporter_aniframeLayout top 1 J_resourceExporter_rigframeLayout
+        -af J_resourceExporter_aniframeLayout bottom 0
 
-    J_animationExporter_FromLayout0;
+    J_resourceExporter_FromLayout0;
 
-    formLayout -e 
-        -ap J_allRefNode left 1 1
-        -ap J_allRefNode right 1 99
-        -af J_allRefNode top 0
-        -ap J_allRefNode bottom 0 50
+    formLayout -e        
         
         -ap J_allCameraNode left 1 1
         -ap J_allCameraNode right 1 99
-        -ac J_allCameraNode top  1 J_allRefNode
-        -af J_allCameraNode bottom 80
+        -af J_allCameraNode top  1 
+
+        -ap J_allRefNode left 1 1
+        -ap J_allRefNode right 1 99
+        -ac J_allRefNode top 1 J_allCameraNode
+        -ap J_allRefNode bottom 90 99
         
+        -ap J_animationExporter_chbox01 left 0 1
+        -ap J_animationExporter_chbox01 right 0 33
+        -ac J_animationExporter_chbox01 top  2 J_allRefNode
+
+        -ap J_animationExporter_chbox02 left 0 34
+        -ap J_animationExporter_chbox02 right 0 66
+        -ac J_animationExporter_chbox02 top  2 J_allRefNode
+
+        -ap J_animationExporter_chbox03 left 0 67
+        -ap J_animationExporter_chbox03 right 0 99
+        -ac J_animationExporter_chbox03 top  2 J_allRefNode
+
+        -ap J_animationExporter_optionMenu01 left 0 1
+        -ap J_animationExporter_optionMenu01 right 0 99
+        -ac J_animationExporter_optionMenu01 top  2 J_animationExporter_chbox03
+
+        -ap J_animationExporter_chbox04 left 0 1
+        -ap J_animationExporter_chbox04 right 0 33
+        -ac J_animationExporter_chbox04 top  2 J_animationExporter_optionMenu01
+
+        -ap J_animationExporter_chbox05 left 0 34
+        -ap J_animationExporter_chbox05 right 0 66
+        -ac J_animationExporter_chbox05 top  2 J_animationExporter_optionMenu01        
+
         -ap J_expCam left 0 1
-        -ap J_expCam right 0 49
-        -ac J_expCam top  2 J_allCameraNode
+        -ap J_expCam right 0 33
+        -ac J_expCam top  2 J_animationExporter_chbox05
 
-        -ap J_expAni left 0 50
-        -ap J_expAni right 0 99
-        -ac J_expAni top  2 J_allCameraNode
-        
-        -ap J_tex left 0 1
-        -ap J_tex right 0 99
-        -ac J_tex top  2 J_expAni
+        -ap J_expAni left 0 34
+        -ap J_expAni right 0 66
+        -ac J_expAni top 2 J_animationExporter_chbox05        
 
-        -ap J_expCamBat left 0 1
-        -ap J_expCamBat right 0 50
-        -ac J_expCamBat top  2 J_tex
-
-        -ap J_expAniBat left 0 51
+        -ap J_expAniBat left 0 67
         -ap J_expAniBat right 0 99
-        -ac J_expAniBat top  2 J_tex
+        -ac J_expAniBat top 2 J_animationExporter_chbox05
        
-    J_animationExporter_FromLayout1;
+    J_resourceExporter_animationFromLayout;
 
 
     
-    showWindow J_animationExporterWin;
-    J_animationExporterInit();
-    J_animationExporterRunScriptJob();
+    showWindow J_resourceExporterWin;
+    J_resourceExporterInit();
+    J_resourceExporterRunScriptJob();
     python("JpyModules.public.J_deleteUnknownNode()");
     python("JpyModules.public.J_cleanVaccine_gene()");
 }
 
-global proc J_animationExporterInit()
+global proc J_resourceExporterInit()
 {
     string $allCamera[]=`ls -type "camera"`;
     string $allCamTr[]=`listRelatives  -fullPath -p $allCamera`;
@@ -130,71 +152,35 @@ global proc J_animationExporterInit()
 }
 
 
-global proc J_animationExporterExportCam(string $camName,string $outPath)
+global proc J_resourceExporterExportCam()
 {
-    $newCamNode="|Rootmotion|TimelineCamera";
-    int $startFrame=`playbackOptions -query -minTime`;
-    int $endFrame=`playbackOptions -query -maxTime`+1;
-
-    if ($camName!=$newCamNode)
+    string $selCam[]=`textScrollList  -q -si  J_allCameraNode`;
+    python("import os");
+    string $outPath=python("os.path.dirname(maya.cmds.file(query=True,sceneName=True))")+"/cache/";
+    if (size ($outPath)<3)
+        $outPath= "c:/temp";
+    if (size($selCam)>0)
     {
-    //创建摄像机
-        if (objExists("|Rootmotion"))
+        for ($item in $selCam)
         {
-            int $count =0; 
-            string $newName="Rootmotion"+$count;
-            while (objExists($newName))
-            { $count++; $newName="Rootmotion"+$count; }
-            rename "Rootmotion" $newName;
+            if (`checkBox -q -v J_animationExporter_chbox04`==1)
+            {
+                python("JpyModules.pipline.J_resourceExporter.J_animationExportCamera2Fbx('"+$item+"')"); 
+            }
+            else
+            {
+                python("JpyModules.pipline.J_resourceExporter.J_animationExportCamera2Abc('"+$item+"')");    
+            }
         }
-        string $rootMotionNode=`createNode -n "Rootmotion" "transform"`;
-        string $newCamNode=`createNode "camera"`;
-        parent $newCamNode $rootMotionNode;
-        string $newCmTrNode[]=`listRelatives -p -fullPath $newCamNode`;
-        $newCamNode=`rename $newCmTrNode[0] ("TimelineCamera")`;
-
-        //记录关键帧
-        
-        string $pttemp0[]=`parentConstraint $camName $newCamNode`;
-        bakeResults -t ($startFrame+":"+$endFrame) -s 0 -simulation true $newCamNode;
-        for ($i =$startFrame;$i<=$endFrame;$i++)
-        {
-            currentTime $i;        
-
-            string $camShape[]=`listRelatives -c -type "camera" $camName`;
-            float  $focalLength=`getAttr ($camShape[0]+".focalLength")`;
-            setKeyframe -attribute "focalLength" -v $focalLength $newCamNode;
-            filterCurve ($newCamNode+".rotateX");
-            filterCurve ($newCamNode+".rotateY");
-            filterCurve ($newCamNode+".rotateZ");
-        }
-        delete $pttemp0;
-
-        //设置相机参数
-        setAttr ($newCamNode+".filmFit") 2;
-        setAttr ($newCamNode+".verticalFilmAperture") 0.944882;
-        setAttr ($newCamNode+".horizontalFilmAperture") 1.653543;
+        string $cmd="os.startfile(\""+$outPath+"\")";
+        python($cmd); 
     }
-    //导出fbx
-    select $newCamNode;
-    //配置参数
-    FBXResetExport ;
-    FBXExportInAscii  -v true;
-    FBXExportBakeComplexAnimation -v 1;    
-    FBXExportBakeComplexStart -v $startFrame;
-    FBXExportBakeComplexEnd -v $endFrame;
-    FBXExportBakeResampleAnimation -v 1;
-    FBXExportInAscii -v 1;
-    FBXExportIncludeChildren -v 1;
-    FBXExportSplitAnimationIntoTakes -clear;    
-    FBXExportDeleteOriginalTakeOnSplitAnimation -v true;
-    FBXExportSplitAnimationIntoTakes -v "cam" $startFrame $endFrame;
-    FBXExport -f $outPath -s ;
+    
 }
-//J_animationExporterExportCam("pSphere1","Z:/THD/file.fbx")
+//J_resourceExporterExportCam("pSphere1","Z:/THD/file.fbx")
 
 //查文件路径,未保存,则以c:/temp为准
-global proc string J_animationExporterGetFilePath()
+global proc string J_resourceExporterGetFilePath()
 {       
     python("import os");
     string $filePath=python("os.path.dirname(maya.cmds.file(query=True,sceneName=True))")+"/";
@@ -203,36 +189,17 @@ global proc string J_animationExporterGetFilePath()
     return $filePath;
 }
 
-global proc J_animationExporterExportCamBut()
-{
-    string $selCam[]=`textScrollList  -q -si  J_allCameraNode`;
-    string $outPath=J_animationExporterGetFilePath();
-    for ($item in $selCam)
-    {
-        string $buffer[];
-        $numTokens = `tokenize $item "|" $buffer`;
-        
-        string $buffer1[];
-        $numTokens = `tokenize $buffer[size($buffer)-1] ":" $buffer1`;
-        
-        $outPath+=$buffer1[size($buffer1)-1] +".fbx";
-        J_animationExporterExportCam($item,$outPath);
-    }
-    //导出后打开文件夹
-    string $cmd="os.startfile(os.path.dirname(\""+$outPath+"\"))";
-    python($cmd); 
-}
 //随选择修改窗体内容
-global proc J_animationExporterRunScriptJob()
+global proc J_resourceExporterRunScriptJob()
 {
-    int $sjId = `scriptJob -e "SelectionChanged" J_animationExporterScriptJob `;
+    int $sjId = `scriptJob -e "SelectionChanged" J_resourceExporterScriptJob `;
     string $temp = ("scriptJob -k "+ $sjId);
-    scriptJob -uid "J_animationExporterWin" $temp;
+    scriptJob -uid "J_resourceExporterWin" $temp;
 
 }
-global proc J_animationExporterScriptJob()
+global proc J_resourceExporterScriptJob()
 {
-    J_animationExporterInit();
+    J_resourceExporterInit();
     textScrollList -e -deselectAll  J_allCameraNode;
     string $allListCam[]=`textScrollList  -q -ai  J_allCameraNode`;
     string $sel[]=`ls -sl -allPaths -l`;
@@ -243,13 +210,13 @@ global proc J_animationExporterScriptJob()
     }
 }
 /////////
-global proc J_animationExporterSelitem()
+global proc J_resourceExporterSelitem()
 {
     string $allListCam[]=`textScrollList  -q -si  J_allCameraNode`;
     select $allListCam;
 }
 //导出动画
-global proc J_animationExporterExportAni(string $refNode,string $outPath)
+global proc J_resourceExporterExportAni(string $refNode,string $outPath)
 {
     int $startFrame=`playbackOptions -query -minTime`;
     int $endFrame=`playbackOptions -query -maxTime`+1;
@@ -262,7 +229,7 @@ global proc J_animationExporterExportAni(string $refNode,string $outPath)
             file -loadReferenceDepth "asPrefs" -loadReference $refNode $refFile;
         }
         //搜索根骨
-        $root=J_animationExporterGetRootJoint($refNode);
+        $root=J_resourceExporterGetRootJoint($refNode);
         //搜索根骨
         
         //导出所选
@@ -319,7 +286,7 @@ global proc J_animationExporterExportAni(string $refNode,string $outPath)
         //关闭约束
         delete `ls -type constraint`;
         //删除名字空间
-        J_animationExporterRemoveAllNameSpace();
+        J_resourceExporterRemoveAllNameSpace();
         //羽化动画曲线
         for ($item2 in `ls -type joint`)
         {
@@ -360,25 +327,25 @@ global proc J_animationExporterExportAni(string $refNode,string $outPath)
                 FBXExportSplitAnimationIntoTakes -clear;    
                 FBXExportDeleteOriginalTakeOnSplitAnimation -v true;
                 FBXExport -f $facOut -s ;
-                python("JpyModules.animation.J_animationExporter.J_replaceSubdeformer(\""+$facOut+"\")");
+                python("JpyModules.animation.J_resourceExporter.J_replaceSubdeformer(\""+$facOut+"\")");
             }
         }
         
     }
 }
-global proc J_animationExporterExportAniBut()
+global proc J_resourceExporterExportAniBut()
 {
     string $selRef[]=`textScrollList  -q -si  J_allRefNode`;
     string $mayafile=`file -q -sceneName`;
-    string $outPathA=J_animationExporterGetFilePath();
+    string $outPathA=J_resourceExporterGetFilePath();
     if (size($selRef)>0)
     {
         for ($item in $selRef)
         {
             string $refFilename=`referenceQuery -filename $item`;
-            string $outPath=J_animationExporterGetFilePath()+
-                python("JpyModules.animation.J_animationExporter.J_getFileName()") +"_"+$item;
-            J_animationExporterExportAni($item,$outPath);
+            string $outPath=J_resourceExporterGetFilePath()+
+                python("JpyModules.animation.J_resourceExporter.J_getFileName()") +"_"+$item;
+            J_resourceExporterExportAni($item,$outPath);
             file -f  -prompt false   -open $mayafile;
         }
     }
@@ -387,7 +354,7 @@ global proc J_animationExporterExportAniBut()
     python($cmd); 
     
 }
-global proc J_animationExporterExportBatBut(int $state)
+global proc J_resourceExporterExportBatBut(int $state)
 {
     string $file[]=`fileDialog2 -fileMode 2 `;
     string $mayaFiles[]=`getFileList -folder $file[0] -filespec "*.m?" `;
@@ -404,7 +371,7 @@ global proc J_animationExporterExportBatBut(int $state)
             
             for ($item0 in $allCamTr)
             {
-                string $outPath=J_animationExporterGetFilePath();
+                string $outPath=J_resourceExporterGetFilePath();
                 int $temp=0;
                 for ($item1 in $sysCam)
                 {
@@ -419,7 +386,7 @@ global proc J_animationExporterExportBatBut(int $state)
                 $numTokens = `tokenize $buffer[size($buffer)-1] ":" $buffer1`;
                 
                 $outPath+=$buffer1[size($buffer1)-1] +".fbx";
-                J_animationExporterExportCam($item0,$outPath);
+                //J_resourceExporterExportCam($item0,$outPath);
                 }
             }
             string $allRefFile[]=`file -q -r`;
@@ -432,9 +399,9 @@ global proc J_animationExporterExportBatBut(int $state)
                         if (`file -q -ex $item0`)
                         {
                             string $refNode=`referenceQuery -referenceNode $item0`;
-                            string $outPath=J_animationExporterGetFilePath()+
-                                python("JpyModules.animation.J_animationExporter.J_getFileName()") +"_"+$refNode ;
-                            J_animationExporterExportAni($refNode,$outPath);
+                            string $outPath=J_resourceExporterGetFilePath()+
+                                python("JpyModules.animation.J_resourceExporter.J_getFileName()") +"_"+$refNode ;
+                            J_resourceExporterExportAni($refNode,$outPath);
                             
                             file -f -prompt false   -open ($file[0]+"/"+$item );
                         }
@@ -445,9 +412,9 @@ global proc J_animationExporterExportBatBut(int $state)
                             string $refNode=`referenceQuery -referenceNode $item0`;
                             if(`gmatch $refNode $filter`)
                             {
-                            string $outPath=J_animationExporterGetFilePath()+
-                                python("JpyModules.animation.J_animationExporter.J_getFileName()") +"_"+$refNode ;
-                            J_animationExporterExportAni($refNode,$outPath);
+                            string $outPath=J_resourceExporterGetFilePath()+
+                                python("JpyModules.animation.J_resourceExporter.J_getFileName()") +"_"+$refNode ;
+                            J_resourceExporterExportAni($refNode,$outPath);
                             
                             file -f -prompt false   -open ($file[0]+"/"+$item );
                             }
@@ -458,7 +425,7 @@ global proc J_animationExporterExportBatBut(int $state)
         }
     }
 }
-global proc  J_animationExporterRemoveAllNameSpace()
+global proc  J_resourceExporterRemoveAllNameSpace()
 {
     string $nameSpaces[]=`namespaceInfo -listOnlyNamespaces`;
     string $items[] = { "shared", "UI"};
@@ -470,10 +437,10 @@ global proc  J_animationExporterRemoveAllNameSpace()
             namespace -mergeNamespaceWithRoot -removeNamespace $i ;
             print ($i +"被删除\n");
         }
-        J_animationExporterRemoveAllNameSpace();
+        J_resourceExporterRemoveAllNameSpace();
     }
 }
-global proc string[] J_animationExporterGetRootJoint(string $refNode)
+global proc string[] J_resourceExporterGetRootJoint(string $refNode)
 {
     string $rootJoint="";
     string $allNodes[]= `referenceQuery -nodes  $refNode `;
@@ -511,4 +478,4 @@ global proc string[] J_animationExporterGetRootJoint(string $refNode)
 }
 
 
-//J_animationExporter;
+J_resourceExporter;

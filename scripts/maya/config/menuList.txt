@@ -5,7 +5,9 @@
   <SubMenu> 检查重名工具 J_moreThanOneObj common/J_moreThanOneObj.mel </SubMenu>  
   <SubMenu> 批量传预设工具 J_attrTransfor common/J_attrTransfor.mel </SubMenu>  
   
-  
+  <MainMenu> 流程工具 pipline </MainMenu>  
+  <SubMenu> 资源导出 J_resourceExporter pipline/J_resourceExporter.mel </SubMenu>  
+
   <MainMenu> 模型工具 model </MainMenu>  
   <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
   <SubMenu> 删除辣鸡 J_deleteJunkWin model/J_deleteJunkWin.mel </SubMenu>
@@ -27,7 +29,7 @@
     
   <MainMenu> 动画工具 anim </MainMenu>  
   <SubMenu> 拍平工具 J_playBlastTool animation/J_playBlastTool.mel </SubMenu>
-  <SubMenu> 批量导动画 J_animationExporter animation/J_animationExporter.mel </SubMenu>  
+  
 
   <MainMenu> 渲染工具 render </MainMenu>  
   <SubMenu> 自动分层 J_autoLayer render/J_autoLayer.mel </SubMenu>

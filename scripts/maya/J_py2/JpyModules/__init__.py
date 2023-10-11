@@ -7,7 +7,7 @@ import public
 import rigid
 import render
 import vfx
-
+import pipline
 #查询本地是否有垃圾代码文件，并设置本地免疫
 
 import maya.cmds as cmds

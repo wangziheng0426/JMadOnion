@@ -16,6 +16,15 @@ def J_deleteUnknownNode():
     cmds.delete(cmds.ls(type="unknownDag"))
     if not cmds.unknownPlugin( q=True, l=True )==None:
         for item in cmds.unknownPlugin( q=True, l=True ):
-            print item
+            print (item)
             cmds.unknownPlugin(item,r=True)
-        
+def J_deleteNode(nodes):
+    for nodeToDelete in cmds.ls(type=nodes):
+        if cmds.objExists(nodeToDelete):
+            cmds.lockNode( nodeToDelete, lock=False )
+            try:
+                cmds.delete( nodeToDelete )
+            except:
+                print (nodeToDelete+u'无法删除')
+    print (u'场景中的'+nodes+u'节点已被删除')
+    

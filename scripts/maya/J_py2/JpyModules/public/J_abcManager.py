@@ -10,29 +10,37 @@ import maya.cmds as cmds
 import maya.mel as mel
 import os,sys,json
 import maya.api.OpenMaya as om2
-#导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
-#模式2单独导出每个模型文件
-def J_exportAbc(mode=1,nodesToExport=[],exportAttr=[],importRef=False):
+#导出abc缓存,模式0普通模式,直接导出所选模型为一个整体abc文件
+#模式1单独导出每个模型文件,
+def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileName='',j_abcCachePath=''):
+    import JpyModules
+    #导出属性，未定义，则使用默认
     attrList=['SGInfo','MatInfo','NodeName','NodeVisibility']
     if len(exportAttr)<1:
-        exportAttr=attrList
-    import JpyModules
+        exportAttr=attrList    
+    #导出的节点，未定义则使用选择的节点，什么都没选，则退出
     if len(nodesToExport)<1:
         nodesToExport=cmds.ls(sl=True,long=True)
     if len(nodesToExport)<1:
         print (u"选点东西吧")
         return
+    if len(J_getAllMeshs(nodesToExport))<1:
+        print (u"未选择有效的mesh或者组")
+        return
     #解锁默认材质集
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
     timeLineStart=cmds.playbackOptions(query=True,minTime=True)
     timeLineEnd=cmds.playbackOptions(query=True,maxTime=True)
+    #配置路径，如果美誉输入abc路径，则使用当前文件所在目录，输出名称则使用当前文件名称
     filePath=JpyModules.public.J_getMayaFileFolder()
-    cacheFileName=JpyModules.public.J_getMayaFileNameWithOutExtension()
-
-    j_abcCachePath=filePath+"/"+cacheFileName+'_cache/abc/'
+    if cacheFileName=='':
+        cacheFileName=JpyModules.public.J_getMayaFileNameWithOutExtension()
+    if j_abcCachePath=='':
+        j_abcCachePath=filePath+"/"+cacheFileName+'_cache'
+    #文件夹不存在则创建
     if not os.path.exists(j_abcCachePath):
         os.makedirs(j_abcCachePath)
-    #输出abc材质log，并导出材质球
+    #输出abc材质log，记录模型和材质球关联关系
     logStr={}
     logStr["settings"]={}
     logStr["settings"]["frameRate"]=cmds.currentUnit(query=True,time=True)
@@ -43,37 +51,40 @@ def J_exportAbc(mode=1,nodesToExport=[],exportAttr=[],importRef=False):
     count=0
     if mode==0:   
         #写log倒材质↓
-        logStr[count]={}
-        logStr[count]['abcFile']=cacheFileName+'.abc'
-        logStr[count]['selectedNode']=','.join(nodesToExport)
-        logStr[count]['meshs']={}
-        #导出材质球，添加信息
-        for meshItem in J_getAllMeshs(nodesToExport):
-            logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem,exportAttr)
+        logStr[count]={}#每个abc对应一组数据，0模式所有指定导出一个abc文件
+        logStr[count]['abcFile']=cacheFileName+'.abc'#保存abc文件名
+        logStr[count]['selectedNode']=','.join(nodesToExport)#记录选择的节点
+        logStr[count]['meshs']={}#记录选择的节点下的所有mesh
+        #根据设置导出材质球，添加信息，默认会输出材质球和信息
+        if exportMat:
+            for meshItem in J_getAllMeshs(nodesToExport):            
+                logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem,exportAttr)
         #log↑
+        #配置导出命令
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)
+        #导出abc时添加自定义的属性，以便记录材质信息
         if(len(exportAttr)>0):            
             for attrItem in exportAttr:
                 exportString+=' -attr '+attrItem+' '        
         exportString+=' -uvWrite -writeFaceSets -worldSpace -dataFormat ogawa '    
         for nitem in nodesToExport:
             exportString+=' -root '+nitem +" "
-        exportString+=' -file '+j_abcCachePath+cacheFileName+'.abc"'
-        outFile=open(j_abcCachePath+'abcLog.jcl','w')
-        outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":"))) 
-        outFile.close()
+        exportString+=' -file '+j_abcCachePath+'/'+cacheFileName+'.abc"'
+
         mel.eval(exportString)
     #按照选择的对象每个单独导出一个abc
     if mode==1:
+        #配置导出命令
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)
         if(len(exportAttr)>0):            
             for attrItem in exportAttr:
                 exportString+=' -attr '+attrItem+' '    
         exportString+=' -uvWrite -writeFaceSets -worldSpace -dataFormat ogawa '
-        
-        for item in nodesToExport:             
+        #按照指定的节点逐个导出
+        for item in nodesToExport:      
+            #单独导出abc命令       
             exportStringa=exportString+' -root '+item
-            itemName=item.split('|')[-1].replace(':','@')
+            itemName=item.split('|')[-1].replace(":","@")
             #print itemName
             #log
             logStr[count]={}
@@ -81,22 +92,25 @@ def J_exportAbc(mode=1,nodesToExport=[],exportAttr=[],importRef=False):
             logStr[count]['selectedNode']=item
             logStr[count]['meshs']={}        
             #导出材质球，添加信息
-            for meshItem in J_getAllMeshs([item]):
-                logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem,exportAttr)   
-            exportStringa+=' -file '+j_abcCachePath+cacheFileName+'_'+itemName+'.abc"'
+            if exportMat:
+                for meshItem in J_getAllMeshs([item]):                
+                    logStr[count]['meshs'][meshItem]=J_exportMaterail(j_abcCachePath,meshItem,exportAttr)   
+            exportStringa+=' -file '+j_abcCachePath+'/'+cacheFileName+'_'+itemName+'.abc"'
             mel.eval(exportStringa)
             count=count+1
-        outFile=open(j_abcCachePath+'abcLog.jcl','w')
+    if exportMat:
+        outFile=open(j_abcCachePath+'/abcLog.jcl','w')
         outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":"))) 
         outFile.close()
-    cmds.select(nodesToExport)
-    os.startfile(j_abcCachePath)    
-#为模型添加自定义属性，并将材质信息写入，最后导出材质球，返回导出文件
+    #cmds.select(nodesToExport)
+    #os.startfile(j_abcCachePath)    
+#为模型添加自定义属性，并将材质信息写入，最后导出材质球，返回导出材质文件列表
 def J_exportMaterail(exportPath,meshTrNode,attrList=['SGInfo','MatInfo','NodeName','NodeVisibility']):
-    cmds.lockNode("initialShadingGroup", l=0, lu=0)
+    #变换节点不存在，或者导出路径不存在则退出
     if meshTrNode==""or exportPath=="":
         return ''
     if cmds.objExists(meshTrNode):
+        #检查是否有mesh节点，没有则退出
         shapeNodes=cmds.ls(meshTrNode,dag=True,ni=True,type="mesh",ap=1)  
         if   shapeNodes==None:
             print (meshTrNode+u"缺少shape节点")
@@ -137,7 +151,7 @@ def J_exportMaterail(exportPath,meshTrNode,attrList=['SGInfo','MatInfo','NodeNam
             cmds.select(mat)
             cmds.file(outMatFIlePath,op='v=0;',force=1,typ="mayaAscii", es=True,constructionHistory=1)
             matFileList.append(mat[0].replace("|",'_').replace(":","@")+'_mat.ma')
-        #未模型添加属性        
+        #模型添加属性        
         for attrItem in attrList:
             if not cmds.attributeQuery(attrItem,node=meshTrNode,ex=1):
                 cmds.addAttr(meshTrNode,longName=attrItem,dt='string')
@@ -297,7 +311,7 @@ def J_addFaceSet(nodesToAddFaceSet=[]):
                     cmds.sets(fe="initialShadingGroup", e=True)
                     cmds.sets(fe=seItem, e=True)
     cmds.select(nodesToAddFaceSet)
-#查找选择对象下所有的mesh
+#查找选择对象下所有的mesh，返回mesh对象的变换节点
 def J_getAllMeshs(meshTrNodes):
     allMesh=[]
     for item in meshTrNodes:
