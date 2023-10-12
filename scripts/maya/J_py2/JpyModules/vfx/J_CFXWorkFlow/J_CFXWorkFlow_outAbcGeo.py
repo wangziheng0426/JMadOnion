@@ -5,7 +5,7 @@
 ##  @author 桔
 ##  @version 1.0
 ##  @date  16:46 2018/11/2
-#  History:  
+#  History:  废弃
 ##导出abc
 import sys
 import os
@@ -44,7 +44,6 @@ def J_CFXWorkFlow_outAbcGeo(selectedNodes=[],cacheFileName='',model=0):
     if len(selectedNodes)<1:
         cmds.confirmDialog(title=u'错误',message=u'   未选中任何节点   ',button='666')
         return
-    J_deleteUnknownNode()
     #时间线切换
     cmds.currentTime(timeLineStart)
     #整体出abc模型
@@ -151,10 +150,3 @@ def J_deleteUnknownNode():
             print item
             cmds.unknownPlugin(item,r=True)
 ########################################################################################################################################
-#敬平非要用mc
-def J_CFXWorkFlow_outMcCache():
-    pass
-    
-    
-if __name__ == '__main__':
-    J_CFXWorkFlow_outAbcGeo()

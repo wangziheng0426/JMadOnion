@@ -5,7 +5,7 @@
 ##  @author ju
 ##  @version 1.0
 ##  @date  2:47 2020/6/27
-#  History:  
+#  History:  废弃
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -93,6 +93,3 @@ def J_cleanVaccine_gene():
         if i.find('leukocyte.antivirus()')>0:
             id=int(i.split(':')[0])
             cmds.scriptJob( kill=id, force=True)
-
-if __name__ == '__main__':
-    J_openFileWithOutScripts()

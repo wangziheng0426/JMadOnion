@@ -6,7 +6,7 @@
 ///\author 桔
 ///\version 1.0
 ///\date  21:57 2019/3/4
-///History:  
+///History:  废弃
 ///
 ///////////////////////////////////////////////////////////////
 global proc J_modelAnimToJointAnimTurbo()//带动画的模型转为骨骼

@@ -52,7 +52,8 @@ def J_CFXWorkFlow_hairOut():
         cmds.confirmDialog(title=u'错误',message=u'   未选中毛发节点        ',button='666')
         return 'noHair';
     #清理辣鸡
-    J_deleteUnknownNode()
+    import JpyModules
+    JpyModules.public.J_deleteUnknownNode()
     #场控帧速率
     hairData['currentUnit']=cmds.currentUnit(query=True,time=True)
 
@@ -97,7 +98,7 @@ def J_CFXWorkFlow_hairOut():
     outFile.write(json.dumps(hairData,encoding='utf-8',ensure_ascii=False)) 
     outFile.close()
     runAbcString+=' -file \\"'+j_hairCachePath+cacheFileName+'_Hair.abc\\""'
-    print runAbcString
+    print (runAbcString)
     mel.eval(runAbcString)
     os.startfile(j_hairCachePath)
     
@@ -133,14 +134,6 @@ def J_CFXWorkFlow_createOutCurveNode(inputHairSys,inputFollicle,outCurveGroup):
     except:
         pass
     cmds.parent(curveTranNodeName+str(index),outCurveGroup)
-def J_deleteUnknownNode():
-    cmds.delete(cmds.ls(type="unknown"))
-    cmds.delete(cmds.ls(type="unknownDag"))
-    if not cmds.unknownPlugin( q=True, l=True )==None:
-        for item in cmds.unknownPlugin( q=True, l=True ):
-            print item
-            cmds.unknownPlugin(item,r=True)
-            
-            
+
 if __name__ == '__main__':
     J_CFXWorkFlow_hairOut()

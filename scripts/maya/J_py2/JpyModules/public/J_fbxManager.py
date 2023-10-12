@@ -10,30 +10,52 @@ import maya.cmds as cmds
 import maya.mel as mel
 import os,sys,json
 import maya.api.OpenMaya as om2
-#导出abc缓存,模式0普通模式,直接导出所选模型为一个整体abc文件
-#模式1单独导出每个模型文件,
-def J_exportFbx(outPath,takeName='take001',QuaternionMode="resample",startFrame='',endFrame=''):
+
+#将选择的对象导出fbx
+def J_exportFbx(outPath,startFrame='',endFrame='',
+                includeChild=1,smoothingGroup=0,smoothMesh=1,triangulate=0,
+                bakeAnimation=1,resampleAni=1,exportBlend=1,
+                exportSkin=1,
+                takeName='take001',QuaternionMode="resample"):
     if(startFrame==""):
         startFrame=cmds.playbackOptions( query=1, minTime=1)
     if(endFrame==""):
         endFrame=cmds.playbackOptions( query=1, maxTime=1)
     #导出相机
+    #重置参数
     mel.eval('FBXResetExport ;')
+    #导出为 ASCII 文件
     mel.eval('FBXExportInAscii  -v true')
+    ################################模型
+    #导出平滑组
+    mel.eval('FBXExportSmoothingGroups -v '+smoothingGroup)
+    #导出细分级别
+    mel.eval('FBXExportSmoothMesh -v '+smoothMesh)
+    #三角化
+    mel.eval('FBXExportTriangulate -v '+triangulate)
+    #FBX 文件中排除或包含父对象下的层级
+    mel.eval('FBXExportIncludeChildren -v '+includeChild)
     
-    mel.eval('FBXExportBakeComplexAnimation -v 1; ')
-    mel.eval('FBXExportShapes -v true;')
-
+    ################################动画
+    #烘焙动画(Bake animation)选项的脚本
+    mel.eval('FBXExportBakeComplexAnimation -v '+bakeAnimation)
+    #烘焙动画时间
     mel.eval('FBXExportBakeComplexStart -v '+ str(startFrame))
     mel.eval('FBXExportBakeComplexEnd -v ' +str(endFrame))
-
-    mel.eval('FBXExportBakeResampleAnimation -v 1;')
-    mel.eval('FBXExportInAscii -v 1;')
-
-    mel.eval('FBXExportIncludeChildren -v 1;')
-    mel.eval('FBXExportSplitAnimationIntoTakes -clear; ')  
-
+    #动画重采样
+    mel.eval('FBXExportBakeResampleAnimation -v '+resampleAni)
+    
+    #导出融合变型，blendshape
+    mel.eval('FBXExportShapes -v '+exportBlend)
+    #导出蒙皮 ，skin
+    mel.eval('FBXExportSkins -v ' +exportSkin)
+    
+    
+    
+    #清理动画轨道
+    mel.eval('FBXExportSplitAnimationIntoTakes -clear; ')    
     mel.eval('FBXExportDeleteOriginalTakeOnSplitAnimation -v true;')
+    #新建动画轨道
     mel.eval('FBXExportSplitAnimationIntoTakes -v '+takeName+' '+str(startFrame) +' ' +str(endFrame))
     #曲线模式
     mel.eval('FBXExportQuaternion -v '+QuaternionMode)

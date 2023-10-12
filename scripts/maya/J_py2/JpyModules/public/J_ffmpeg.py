@@ -74,7 +74,7 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     
     spr=subprocess.Popen(runStr)
     status=spr.wait()
-    print runStr
+    print (runStr)
     #由于 filter_complex滤镜和 vf滤镜不能混用，暂时多压缩一次
     if ass!='':
         runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+"\""+ compressPath+'addWaterMarkfile.mp4'+"\""
@@ -82,7 +82,7 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
         runStr+=' -c:v h264 -crf 18  ' +"\""+outFile+"\""
         spr1=subprocess.Popen(runStr)
         status=spr1.wait()
-    print runStr
+    print (runStr)
     time.sleep(2)
     return outFile
     #os.startfile(compressPath)  

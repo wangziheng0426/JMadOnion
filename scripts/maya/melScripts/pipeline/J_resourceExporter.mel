@@ -14,8 +14,9 @@ global proc J_resourceExporter()//主窗口
         deleteUI -window J_resourceExporterWin;
     window -w 300 -h 800 -title "资源导出" J_resourceExporterWin;
     //文件导出设置
-    string $geoSetting[]={"SmoothingGroup","SmoothMesh","SelectionSets","Triangulate",
-     "IncludeChildren","InputConnections","Skin","BlendShape" };
+    string $geoSetting[]={"SmoothingGroup","SmoothMesh","Triangulate",
+     "InputConnections","Animation","Skinning","BlendShape","BakeAnimation"
+     "Resample"};
     string $geoSettingCheckBox[];
     formLayout  -numberOfDivisions 100  J_resourceExporter_FromLayout0;
         frameLayout -cll 1 -cl 0 -l "模型选项"  J_resourceExporter_rigframeLayout;
@@ -185,11 +186,27 @@ global proc J_animationExporterExportAniBut()
     {  
         if (`checkBox -q -v J_animationExporter_chbox05`==1)
         {
-            
+            //列表窗中有被选择的ref对象,则导出ref对象，否则直接导出所选对象
+            if (size($selRef)>0)
+            {
+                python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc('"+$item +"')");
+            }
+            else
+            {
+                
+            }
         }
         else
         {
-            python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationWithRefToAbc('"+$item +"')");
+            //列表窗中有被选择的ref对象,则导出ref对象，否则直接导出所选对象
+            if (size($selRef)>0)
+            {
+                python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc('"+$item +"')");
+            }
+            else
+            {
+
+            }
         }
     }
     string $outPath=J_resourceExporterGetFilePath()+"/cache/";
@@ -232,124 +249,6 @@ global proc J_resourceExporterSelitem()
 {
     string $allListCam[]=`textScrollList  -q -si  J_allCameraNode`;
     select $allListCam;
-}
-//导出动画
-global proc J_resourceExporterExportAni(string $refNode,string $outPath)
-{
-    int $startFrame=`playbackOptions -query -minTime`;
-    int $endFrame=`playbackOptions -query -maxTime`+1;
-    if (`objExists $refNode`)
-    {
-        string $refFile=`referenceQuery -filename $refNode`;
-        string $root[]={};
-        if (!`referenceQuery -isLoaded $refNode`)
-        {
-            file -loadReferenceDepth "asPrefs" -loadReference $refNode $refFile;
-        }
-        //搜索根骨
-        $root=J_resourceExporterGetRootJoint($refNode);
-        //搜索根骨
-        
-        //导出所选
-        if (!`objExists $root[0]`)
-            $root=`ls -type joint "Bone_Broom_01"`;
-        if (size($root)<1){return;}
-        
-        bakeResults -t ($startFrame+":"+$endFrame)  -hierarchy "below" -simulation true 
-            -sampleBy 1 -oversamplingRate 1 -disableImplicitControl true -preserveOutsideKeys true 
-            -sparseAnimCurveBake false -removeBakedAttributeFromLayer false -removeBakedAnimFromLayer true 
-            -bakeOnOverrideLayer false -minimizeRotation true -controlPoints false -shape true 
-            $root;
-        
-        //导入ref
-        file -importReference $refFile;
-        //卸载其他ref
-        string $allRefFile[]=`file -q -r`;
-        for ($item1 in $allRefFile)
-        {   
-            string $refNode1=`referenceQuery -referenceNode $item1`;
-            if ($refNode1!=$refNode)
-            {
-                if (`referenceQuery -isLoaded $refNode1`)
-                {
-                    file -unloadReference $refNode1 $item1;
-                }
-            }
-        }
-        
-        if (`objExists "|Bone_Broom_01"`) delete "|Bone_Broom_01";
-        //骨骼移到最外侧
-        string $newRoot[];
-        for ($item in $root)
-        {
-            if (`objExists $item`)
-            {
-                string $parentTemp[]=`listRelatives -p $item`;
-                if (size($parentTemp)>0)
-                {
-                    string $temp[]= `parent -w $item`;
-                    for ($itemTemp in $temp)
-                    {
-                        $newRoot[size($newRoot)]=$itemTemp;
-                    }
-                }
-            }
-        }
-        if (size ($newRoot)<1)
-        {
-            print "找不到骨骼";
-            return ;
-        }
-        select $newRoot;
-        //关闭约束
-        delete `ls -type constraint`;
-        //删除名字空间
-        J_resourceExporterRemoveAllNameSpace();
-        //羽化动画曲线
-        for ($item2 in `ls -type joint`)
-        {
-            filterCurve ($item2+".rotateX");
-            filterCurve ($item2+".rotateY");
-            filterCurve ($item2+".rotateZ");
-        }
-        //导出动画
-        FBXResetExport ;
-        FBXExportInAscii  -v true;
-        string $takeName= `basenameEx $refFile`;
-        FBXExportBakeComplexAnimation -v 1;    
-        FBXExportShapes -v true;
-        FBXExportBakeComplexStart -v $startFrame;
-        FBXExportBakeComplexEnd -v $endFrame;
-        FBXExportBakeResampleAnimation -v 1;
-        FBXExportInAscii -v 1;
-        FBXExportIncludeChildren -v 1;
-        FBXExportSplitAnimationIntoTakes -clear;    
-        FBXExportDeleteOriginalTakeOnSplitAnimation -v true;
-        FBXExportSplitAnimationIntoTakes -v $takeName $startFrame $endFrame;
-        string $aniOut=$outPath+".fbx";
-        FBXExport -f $aniOut -s ;
-        //导出表情
-        string $faceModels[]=`ls "*_Face"`;
-        string $faceModelsHis[]= `listHistory $faceModels`;
-        delete `ls -type skinCluster $faceModelsHis`;
-        for ($faceItem in $faceModels)
-        {
-            string $hisNodes[]=`listHistory $faceItem `;
-            string $blendNodes[]=`ls -type blendShape $hisNodes`;
-            if (size($blendNodes)>0 )
-            {    setKeyframe -t $startFrame $blendNodes ;
-                setKeyframe -t $endFrame $blendNodes ;
-                bakeResults -t ($startFrame+":"+$endFrame) -simulation true $blendNodes;
-                parent -w $faceItem;
-                string $facOut=$outPath+"face.fbx";
-                FBXExportSplitAnimationIntoTakes -clear;    
-                FBXExportDeleteOriginalTakeOnSplitAnimation -v true;
-                FBXExport -f $facOut -s ;
-                python("JpyModules.animation.J_resourceExporter.J_replaceSubdeformer(\""+$facOut+"\")");
-            }
-        }
-        
-    }
 }
 global proc J_resourceExporterExportAniBut()
 {

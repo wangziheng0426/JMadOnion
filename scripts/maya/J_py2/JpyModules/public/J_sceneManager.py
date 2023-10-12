@@ -28,3 +28,12 @@ def J_deleteNode(nodes):
                 print (nodeToDelete+u'无法删除')
     print (u'场景中的'+nodes+u'节点已被删除')
     
+def J_removeAllNameSpace():
+    nameSpaces=cmds.namespaceInfo(listOnlyNamespaces=1)
+    nameSpaces.remove("shared")
+    nameSpaces.remove("UI")
+    if len(nameSpaces)>0:
+        for item in nameSpaces:
+            cmds.namespace(mergeNamespaceWithRoot=1,removeNamespace=item)
+            print (item+u"被删除\n")
+        J_removeAllNameSpace()

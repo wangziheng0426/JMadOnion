@@ -35,7 +35,7 @@ if (`window -ex J_CFXWorkFlow`)
                 button -l "选择布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_selNode(\"nCloth\")" J_buNClothMark;
                 button -l "随机颜色" -w $ButtonW  -h $ButtonH -c  "J_meshRandomColor()" J_buRandomColor;
                 button -l "布料转bs" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outInBetweenGeo()" J_buNClothOut;
-                //button -l "导出布料" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeo()" J_buNClothOutAbc;
+
                 button -l "单独导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoSep()" J_buNClothOutAbcSep;
                 button -l "整体导出" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_outAbcGeoAll()" J_buNClothOutAbcAll;
                 button -l "导入abc" -w $ButtonW  -h $ButtonH -c  "J_CFXWorkFlow_nClothIn()" J_buNClothIn;
@@ -191,10 +191,6 @@ global proc J_CFXWorkFlow_hairIn()
 global proc J_CFXWorkFlow_outInBetweenGeo()
 {
     python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_outInBetweenGeo()");
-}
-global proc J_CFXWorkFlow_outAbcGeo()
-{
-    python("JpyModules.vfx.J_CFXWorkFlow.J_CFXWorkFlow_outAbcGeo()");
 }
 global proc J_CFXWorkFlow_outAbcGeoSep()
 {

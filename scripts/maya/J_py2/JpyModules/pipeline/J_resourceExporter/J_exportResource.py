@@ -9,8 +9,10 @@
 
 import maya.cmds as cmds
 import maya.mel as mel
+import maya.api.OpenMaya as om2
 import re,os
 import JpyModules
+#相机导fbx
 def J_animationExportCamera2Fbx(camera):
     if cmds.objExists(camera):
         cmds.select(camera)
@@ -36,17 +38,17 @@ def J_animationExportCamera2Fbx(camera):
         #导出相机
         JpyModules.public.J_exportFbx(outPath,camera)
         print (u"相机导出："+outPath)
-        
+#相机导abc      
 def J_animationExportCamera2Abc(camera):
     if cmds.objExists(camera):
         cmds.select(camera)
         #文件路径
         filePath=JpyModules.public.J_getMayaFileFolder()+'/cache'    
         #文件名
-        fileName=J_analysisCamName() 
-        if fileName=='':
+        assetName=J_analysisCamName() 
+        if assetName=='':
             if len(cmds.ls(sl=1))>0:
-                fileName=cmds.ls(sl=1)[0]
+                assetName=cmds.ls(sl=1)[0]
                 print (u"场景名称解析失败，使用相机名导出")
             else:
                 print (u"需要选择相机")    
@@ -59,25 +61,23 @@ def J_animationExportCamera2Abc(camera):
         exportString='AbcExport -j "-frameRange '+str(startFrame)+' '+str(endFrame)
         exportString+=' -uvWrite -writeFaceSets -worldSpace -dataFormat ogawa '    
         exportString+=' -root '+camera +" "
-        exportString+=' -file '+filePath+'/'+fileName.replace(":","@")+'.abc"'
+        exportString+=' -file '+filePath+'/'+assetName.replace(":","@")+'.abc"'
 
         mel.eval(exportString)
-        
-def J_exportAnimationWithRefToAbc(refNode):
+#根据reference导出abc    
+def J_exportAnimationFromRefToAbc(refNode):
     refFile=cmds.referenceQuery(refNode,filename=1 )
     finalOutPath=JpyModules.public.J_getMayaFileFolder()+"/cache"
-    chName=J_analysisAssetsName(refFile)
-    fileFullName=cmds.file(query=True,sceneName=True,shortName=True)[:-3]
-    cacheNameTemp='proj_'
+    assetName=J_analysisAssetsName(refFile)
+    #fileFullName=cmds.file(query=True,sceneName=True,shortName=True)[:-3]
+    cacheNameTemp=''
     projectRoot=re.search('/\w*/assets',refFile)
     if projectRoot!=None:
         cacheNameTemp= projectRoot.group().replace('/assets',"").replace('/',"")+'_'
     else :
         print (u"未找到工程根目录，可能资产不在assets文件夹下，请核对")
-    jishu=re.search('/s[0-9]{3}/',fileFullName)
-    if jishu!=None:
-        cacheNameTemp+= jishu.group().replace('/',"")
-    cacheNameTemp+=chName+"@"+refNode+"_ani"
+
+    cacheNameTemp+=assetName+"@"+refNode+"_ani"
     templist=[]
     for itema in cmds.referenceQuery(refNode,nodes=1):
         if itema.endswith('srfNUL'):
@@ -88,17 +88,151 @@ def J_exportAnimationWithRefToAbc(refNode):
                                   cacheFileName=cacheNameTemp,
                                   j_abcCachePath=finalOutPath)
 
+#根据reference导出fbx，param ：1 ref节点名  2是否单独导出表情  3仅导出骨骼动画
+def J_exportAnimationFromRefNodeToFbx(refNode,jointOnly=False): 
+    cmds.lockNode("initialShadingGroup", l=0, lu=0)
+    startFrame=cmds.playbackOptions( query=1, minTime=1)
+    endFrame=cmds.playbackOptions( query=1, maxTime=1)
+
+    #文件路径
+    filePath=JpyModules.public.J_getMayaFileFolder()+'/cache'    
+    #文件名
+    refFile=cmds.referenceQuery(refNode,filename=1)
+    assetName=J_analysisAssetsName(refFile)       
+
+    outPath=filePath+'/'+assetName+"@"+refNode+"_ani.fbx"
+    if (cmds.objExists(refNode) ):        
+        #如果ref未加载，则加载
+        if (not cmds.referenceQuery(refNode,isLoaded=1) ):
+            cmds.file(refNode,loadReferenceDepth="asPrefs",loadReference=1)
+        #搜索根骨
+        root=J_getRootJointFromRefNode(refNode)
+
+        #导出所选
+        if not cmds.objExists(root[0]):
+            return refNode+":ref节点中没有找到骨骼"
+        #如果未找到根骨则退出
+        if len(root)<1:return refNode+":ref节点中没有找到骨骼"
+        #修改约束方式,暂时弃用
+        #allConstraint=cmds.ls(type= 'constraint')
+        #for itemc in allConstraint:
+        #    if cmds.objectType(itemc)=="orientConstraint" or cmds.objectType(itemc)=="parentConstraint":
+        #        cmds.setAttr(itemc+".interpType"),2)
+
+        #烘培关键帧
+        cmds.bakeResults(root,t =(startFrame,endFrame),hierarchy ="below" ,simulation=1,
+            sampleBy= 1 ,oversamplingRate= 1 ,disableImplicitControl =1 ,preserveOutsideKeys=1, 
+            sparseAnimCurveBake=0 ,removeBakedAttributeFromLayer=0 ,removeBakedAnimFromLayer=1,
+            bakeOnOverrideLayer= 0 ,minimizeRotation=1,controlPoints = 0,shape=1)           
         
+        #导入ref
+        refFile=cmds.referenceQuery(refNode,filename=1)
+        cmds.file(refFile,importReference=1)
+        #卸载其他ref
+        allRefFile=cmds.file(q=1,r=1)
+        for refFileitem in allRefFile:
+            refNodeTemp=cmds.referenceQuery(refFileitem,referenceNode=1)
+            if (refNodeTemp!=refNode):
+                if cmds.referenceQuery(refNodeTemp,isLoaded=1):
+                    cmds.file(refFileitem,unloadReference=1) 
+
+        #如果最外层有其他角色骨骼则删除
+        #骨骼移到最外侧
+        newRoot=[]
+        for jointItem in root:
+            if cmds.objExists(jointItem):
+                parentTemp=cmds.listRelatives(jointItem,p=1)
+                if parentTemp:
+                    newParentTemp= cmds.parent(jointItem,w=1)
+                    for newTempItem in newParentTemp:
+                        newRoot.append(newTempItem)
+
+        if len(newRoot)<1:
+            print ("找不到骨骼")
+            return 
+        #引擎是用的片段可以仅导出动画
+        if jointOnly:
+            cmds.delete(cmds.ls(cmds.listHistory(newRoot),type='mesh'))
+        cmds.select(newRoot)
+        #关闭约束
+        cmds.delete(cmds.ls(type= 'constraint'))
         
-#分析资产类型和名称，返回元组（类型，名称）
+        #羽化动画曲线
+        for jointItem in cmds.ls(type ='joint'):
+            if cmds.checkBox('J_animationExporter_chbox01' ,q=1 ,v =1):
+                cmds.filterCurve(jointItem+".rotateX",jointItem+".rotateY",jointItem+".rotateZ")
+            if cmds.checkBox('J_animationExporter_chbox02' ,q=1 ,v =1):
+                cmds.keyTangent((jointItem+".rotateX") (jointItem+".rotateY") (jointItem+".rotateZ"),ott= 'linear' )
+
+        #根骨是否归零
+        if cmds.checkBox('J_animationExporter_chbox03' ,q=1 ,v =1):
+            for jointItem in newRoot:
+                cmds.delete(cmds.listConnections(jointItem,type='animCurve'))
+                cmds.setAttr(jointItem+".translateY",0) 
+                cmds.setAttr(jointItem+".translateZ",0) 
+                cmds.setAttr(jointItem+".rotateX",0) 
+                cmds.setAttr(jointItem+".rotateY",0) 
+                cmds.setAttr(jointItem+".rotateZ",0) 
+
+        #删除名字空间
+        JpyModules.public.J_removeAllNameSpace()
+        #导出动画
+        quaternionMode=cmds.optionMenu('J_animationExporter_optionMenu01',q=1,v=1)
+        JpyModules.public.J_exportFbx(outPath,takeName=refNode,QuaternionMode=quaternionMode) 
+        #导出表情,如果不是仅导出骨骼模式，则单独输出表情文件，表情文件保存时会创建一个组，并以角色名命名。
+        if not jointOnly:
+            outPath=filePath+'/'+assetName+"@"+refNode+"_faceAni.fbx"
+            faceModels=cmds.ls("*_Face",ap=1,type='transform')
+            
+
+            if faceModels:
+                cmds.select(cmds.ls(cmds.listHistory(faceModels),type='blendShape'))
+                if len(cmds.ls(sl=1)<1):
+                    print(u"脸部没有表情相关数据，请检查")
+                    return
+                #删除blendshape节点上的动画和模型链接
+                for item in om2. MItSelectionList(om2.MGlobal.getActiveSelectionList()):
+                    bsNodeFullName=item.getStrings()
+                    for attrItem in cmds.listAttr(bsNodeFullName[0]+".w",m=1):
+                        cmds.setAttr(bsNodeFullName[0]+"."+attrItem,l=0)
+                    mfnDp=om2.MFnDependencyNode(item.getDependNode())
+                    for mPlugItem in mfnDp.getConnections():
+                        if mPlugItem.source !=None:
+                            #动画，模型链接都要打断
+                            if mPlugItem.source().node().apiType()==296 :
+                                print (mPlugItem.source().name())
+                                mdf=om2.MDGModifier()
+                                mdf.disconnect(mPlugItem.source(),mPlugItem)
+                                mdf.doIt()
+                faceModelsHis= cmds.listHistory(faceModels)
+                #删除蒙皮
+                cmds.delete(cmds.ls(faceModelsHis,type='skinCluster'))
+                cmds.select(faceModels)
+                blendNodes=cmds.ls(cmds.listHistory(faceModels),type='blendShape')
+                if (blendNodes):
+                    cmds.setKeyframe( blendNodes, t=[startFrame,endFrame] )
+                    cmds.bakeResults( blendNodes, t=(startFrame,endFrame) ,simulation= 1)
+
+                chFaceGroup=cmds.createNode('transform',n=assetName)
+                cmds.parent(faceModels ,chFaceGroup)
+                cmds.select(chFaceGroup)
+                JpyModules.public.J_exportFbx(outPath,takeName=assetName) 
+                J_replaceSubdeformer(outPath)
+
+
+
+#分析资产类型和名称,如果分析成功，则返回资产“类型_名称”，分析失败，返回资产文件名，如果文件不存在则返回none_temp
 def J_analysisAssetsName(fileFullName):    
     #分析角色名，如果失败，则返回文件名
-    chName=re.search('[a-zA-Z]*/\w*/rig/',fileFullName)
-    if chName!=None:
-        return chName.group().replace('/rig/','').replace('/','_')
+    if os.path.exists(fileFullName):
+        chName=re.search('[a-zA-Z]*/\w*/rig/',fileFullName,re.IGNORECASE)
+        if chName!=None:
+            return chName.group().replace('/rig/','').replace('/','_')
+        else:
+            return os.path.splitext(os.path.basename(fileFullName))[0]
     else:
-        return os.path.splitext(os.path.basename(fileFullName))[0]
-
+        print (u'文件不存在，请核实')
+        return ('none_temp')
 def J_analysisCamName():    
     fileFullName=cmds.file(query=True,sceneName=True)[:-3]
     #filePath=JpyModules.public.J_getMayaFileFolder()+'/cache'
@@ -128,7 +262,7 @@ def J_analysisCamName():
         return ''
     
     return res.replace('/','') 
-    
+#maya导出的fbx会自动添加subdeformer字段，强制擦除
 def J_replaceSubdeformer(fbxFile):
     filep=open(fbxFile,'r')
     line=filep.readline()
@@ -149,5 +283,34 @@ def J_replaceSubdeformer(fbxFile):
     
 def J_animationExportAnim2Abc(camera):
     pass
+#从给定的ref节点中查找所有骨骼的根节点,只要节点父层不是骨骼，就会认为是根骨节
+def J_getRootJointFromRefNode(refNode):
+    allNodes= cmds.referenceQuery(refNode,nodes=1)
+    return J_getRootJointFromNodes(allNodes)
+def J_getRootJointFromInputNodes(inputNodes):
+    allNodes=cmds.listHistory(inputNodes)
+    return J_getRootJointFromNodes(allNodes)
+#从给定的节点中查找所有骨骼的根节点
+def J_getRootJointFromNodes(allNodes):   
+    if len(allNodes)<1: return [""]
+    allSkinClustersFromRef=cmds.ls(allNodes ,type ='skinCluster',allPaths=1)
+    if len(allSkinClustersFromRef)<1: return [""]
+    skinClustersHis=cmds.listHistory(allSkinClustersFromRef)
+    if len(skinClustersHis)<1: return [""]
+    allJointFromSkinClusters=cmds.ls(skinClustersHis ,long=1 ,type= 'joint' )
+    if len(allJointFromSkinClusters)<1: return [""]
+    #refNamespace=cmds.referenceQuery(refNode,namespace=1)
+    res=[]
+    if len(allJointFromSkinClusters)>0:
+        rootJoint=""
+        for itemSC in allJointFromSkinClusters:
+            rootJoint=itemSC
+            par=cmds.listRelatives(itemSC,p=1,f=1)
+            if len(par)>0:
+                while (cmds.objectType(par[0])!="transform"):
+                    rootJoint=par[0]
+                    par=cmds.listRelatives(par[0],p=1,f=1)
+            res.append(rootJoint)    
+    return list(set(res))
 if __name__=='__main__':
-    J_animationExporter('camera1')
+    J_exportAnimationFromRefNodeToFbx('qiuRN')
