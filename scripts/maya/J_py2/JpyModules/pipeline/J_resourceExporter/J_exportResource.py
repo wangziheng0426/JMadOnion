@@ -47,7 +47,7 @@ def J_animationExportCamera2Abc(camera):
         if fileName=='':
             if len(cmds.ls(sl=1))>0:
                 fileName=cmds.ls(sl=1)[0]
-                print (u"摄像机名解析失败，使用相机名导出")
+                print (u"场景名称解析失败，使用相机名导出")
             else:
                 print (u"需要选择相机")    
                 return
@@ -62,6 +62,43 @@ def J_animationExportCamera2Abc(camera):
         exportString+=' -file '+filePath+'/'+fileName.replace(":","@")+'.abc"'
 
         mel.eval(exportString)
+        
+def J_exportAnimationWithRefToAbc(refNode):
+    refFile=cmds.referenceQuery(refNode,filename=1 )
+    finalOutPath=JpyModules.public.J_getMayaFileFolder()+"/cache"
+    chName=J_analysisAssetsName(refFile)
+    fileFullName=cmds.file(query=True,sceneName=True,shortName=True)[:-3]
+    cacheNameTemp='proj_'
+    projectRoot=re.search('/\w*/assets',refFile)
+    if projectRoot!=None:
+        cacheNameTemp= projectRoot.group().replace('/assets',"").replace('/',"")+'_'
+    else :
+        print (u"未找到工程根目录，可能资产不在assets文件夹下，请核对")
+    jishu=re.search('/s[0-9]{3}/',fileFullName)
+    if jishu!=None:
+        cacheNameTemp+= jishu.group().replace('/',"")
+    cacheNameTemp+=chName+"@"+refNode+"_ani"
+    templist=[]
+    for itema in cmds.referenceQuery(refNode,nodes=1):
+        if itema.endswith('srfNUL'):
+            templist.append(itema)
+
+    JpyModules.public.J_exportAbc(mode=0,exportMat=False,
+                                  nodesToExport=templist,
+                                  cacheFileName=cacheNameTemp,
+                                  j_abcCachePath=finalOutPath)
+
+        
+        
+#分析资产类型和名称，返回元组（类型，名称）
+def J_analysisAssetsName(fileFullName):    
+    #分析角色名，如果失败，则返回文件名
+    chName=re.search('[a-zA-Z]*/\w*/rig/',fileFullName)
+    if chName!=None:
+        return chName.group().replace('/rig/','').replace('/','_')
+    else:
+        return os.path.splitext(os.path.basename(fileFullName))[0]
+
 def J_analysisCamName():    
     fileFullName=cmds.file(query=True,sceneName=True)[:-3]
     #filePath=JpyModules.public.J_getMayaFileFolder()+'/cache'

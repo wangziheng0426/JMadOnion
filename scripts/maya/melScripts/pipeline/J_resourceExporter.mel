@@ -50,7 +50,7 @@ global proc J_resourceExporter()//主窗口
                 menuItem  -label "quaternion";
 
                 button -l "导出相机" -c  "J_resourceExporterExportCam" J_expCam;
-                button -l "导出动画" -c  "" J_expAni;
+                button -l "导出动画" -c  "J_animationExporterExportAniBut" J_expAni;
                 button -l "批量导" -c  "" J_expAniBat;
             setParent ..;
         setParent ..;
@@ -154,9 +154,8 @@ global proc J_resourceExporterInit()
 
 global proc J_resourceExporterExportCam()
 {
-    string $selCam[]=`textScrollList  -q -si  J_allCameraNode`;
-    python("import os");
-    string $outPath=python("os.path.dirname(maya.cmds.file(query=True,sceneName=True))")+"/cache/";
+    string $selCam[]=`textScrollList  -q -si  J_allCameraNode`;    
+    string $outPath=J_resourceExporterGetFilePath()+"/cache/";
     if (size ($outPath)<3)
         $outPath= "c:/temp";
     if (size($selCam)>0)
@@ -165,28 +164,40 @@ global proc J_resourceExporterExportCam()
         {
             if (`checkBox -q -v J_animationExporter_chbox04`==1)
             {
-                python("JpyModules.pipline.J_resourceExporter.J_animationExportCamera2Fbx('"+$item+"')"); 
+                python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Fbx('"+$item+"')"); 
             }
             else
             {
-                python("JpyModules.pipline.J_resourceExporter.J_animationExportCamera2Abc('"+$item+"')");    
+                python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Abc('"+$item+"')");    
             }
         }
         string $cmd="os.startfile(\""+$outPath+"\")";
+        python("import os");
         python($cmd); 
     }
     
 }
-//J_resourceExporterExportCam("pSphere1","Z:/THD/file.fbx")
-
-//查文件路径,未保存,则以c:/temp为准
-global proc string J_resourceExporterGetFilePath()
-{       
+//导出动画
+global proc J_animationExporterExportAniBut()
+{
+    string $selRef[]=`textScrollList  -q -si  J_allRefNode`;
+    for ($item in $selRef)
+    {  
+        if (`checkBox -q -v J_animationExporter_chbox05`==1)
+        {
+            
+        }
+        else
+        {
+            python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationWithRefToAbc('"+$item +"')");
+        }
+    }
+    string $outPath=J_resourceExporterGetFilePath()+"/cache/";
+    //导出后打开文件夹
+    string $cmd="os.startfile(\""+$outPath+"\")";
     python("import os");
-    string $filePath=python("os.path.dirname(maya.cmds.file(query=True,sceneName=True))")+"/";
-    if (size ($filePath)<3)
-        return "c:/temp/";
-    return $filePath;
+    python($cmd); 
+    
 }
 
 //随选择修改窗体内容
@@ -201,12 +212,19 @@ global proc J_resourceExporterScriptJob()
 {
     J_resourceExporterInit();
     textScrollList -e -deselectAll  J_allCameraNode;
+    textScrollList -e -deselectAll  J_allRefNode;
     string $allListCam[]=`textScrollList  -q -ai  J_allCameraNode`;
+    string $allRefNode[]=`textScrollList  -q -ai  J_allRefNode`;
     string $sel[]=`ls -sl -allPaths -l`;
     for($i in $sel)
     {
         if(stringArrayContains( $i, $allListCam))
         textScrollList -e -si $i J_allCameraNode;
+        if (`referenceQuery -isNodeReferenced $i`)
+        {
+        if (stringArrayContains(`referenceQuery  -referenceNode -tr $i `,$allRefNode))
+        textScrollList -e -si `referenceQuery  -referenceNode -tr $i ` J_allRefNode;
+        }
     }
 }
 /////////
@@ -476,6 +494,23 @@ global proc string[] J_resourceExporterGetRootJoint(string $refNode)
     //$rootJoint=python("\""+$rootJoint+"\".replace("+"\""+$refNamespace+"\",\"\")");
     return stringArrayRemoveDuplicates($res);
 }
-
+//查文件路径,未保存,则以c:/temp为准
+global proc string J_resourceExporterGetFilePath()
+{       
+    python("import os");
+    string $filePath=python("os.path.dirname(maya.cmds.file(query=True,sceneName=True))")+"/";
+    if (size ($filePath)<3)
+        return "c:/temp/";
+    return $filePath;
+}
+//获取文件名
+global proc string J_resourceExporterGetFileNameWithOutExtension()
+{       
+    python("import os");
+    string $filePath=python("os.path.basename(maya.cmds.file(query=True,sceneName=True))[:-3]");
+    if (size ($filePath)<3)
+        return "temp";
+    return $filePath;
+}
 
 J_resourceExporter;

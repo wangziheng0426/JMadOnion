@@ -25,7 +25,7 @@ def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileNa
         print (u"选点东西吧")
         return
     if len(J_getAllMeshs(nodesToExport))<1:
-        print (u"未选择有效的mesh或者组")
+        print (u"未选择有效的mesh或者组，模型导出结束")
         return
     #解锁默认材质集
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
