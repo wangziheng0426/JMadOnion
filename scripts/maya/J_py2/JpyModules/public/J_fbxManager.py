@@ -8,62 +8,51 @@
 ##############################################
 import maya.cmds as cmds
 import maya.mel as mel
-import os,sys,json
-import maya.api.OpenMaya as om2
-
 #将选择的对象导出fbx
-def J_exportFbx(outPath,startFrame='',endFrame='',
-                includeChild=1,smoothingGroup=0,smoothMesh=1,triangulate=0,
-                bakeAnimation=1,resampleAni=1,exportBlend=1,
-                exportSkin=1,
-                takeName='take001',QuaternionMode="resample"):
+def J_exportFbx(outPath,takeName='',startFrame='',endFrame='',QuaternionMode='resample',fbxArg={}):
     if(startFrame==""):
         startFrame=cmds.playbackOptions( query=1, minTime=1)
     if(endFrame==""):
-        endFrame=cmds.playbackOptions( query=1, maxTime=1)
-    #导出相机
-    #重置参数
-    mel.eval('FBXResetExport ;')
+        endFrame=cmds.playbackOptions( query=1, maxTime=1)    
     #导出为 ASCII 文件
     mel.eval('FBXExportInAscii  -v true')
-    ################################模型
-    #导出平滑组
-    mel.eval('FBXExportSmoothingGroups -v '+smoothingGroup)
-    #导出细分级别
-    mel.eval('FBXExportSmoothMesh -v '+smoothMesh)
-    #三角化
-    mel.eval('FBXExportTriangulate -v '+triangulate)
-    #FBX 文件中排除或包含父对象下的层级
-    mel.eval('FBXExportIncludeChildren -v '+includeChild)
     
-    ################################动画
-    #烘焙动画(Bake animation)选项的脚本
-    mel.eval('FBXExportBakeComplexAnimation -v '+bakeAnimation)
-    #烘焙动画时间
-    mel.eval('FBXExportBakeComplexStart -v '+ str(startFrame))
-    mel.eval('FBXExportBakeComplexEnd -v ' +str(endFrame))
-    #动画重采样
-    mel.eval('FBXExportBakeResampleAnimation -v '+resampleAni)
-    
-    #导出融合变型，blendshape
-    mel.eval('FBXExportShapes -v '+exportBlend)
-    #导出蒙皮 ，skin
-    mel.eval('FBXExportSkins -v ' +exportSkin)
-    
-    
-    
+    ###############################输入设置不为空，则设置输入属性
+    if len(fbxArg)>0:
+        #重置参数
+        print (u'按照输入修改fbx导出参数')
+        mel.eval('FBXResetExport ;')
+        settingDic={"SmoothingGroup":"Export|IncludeGrp|Geometry|SmoothingGroups",
+                    "SmoothMesh":"Export|IncludeGrp|Geometry|SmoothMesh",
+                    "Triangulate":"Export|IncludeGrp|Geometry|Triangulate",
+                    "IncludeChildren":"Export|IncludeGrp|InputConnectionsGrp|IncludeChildren" ,
+                    "Animation":"Export|IncludeGrp|Animation",
+                    "BakeAnimation":"Export|IncludeGrp|Animation|BakeComplexAnimation",
+                    "Deformation":"Export|IncludeGrp|Animation|Deformation",
+                    "Skins":"Export|IncludeGrp|Animation|Deformation|Skins",
+                    "BlendShape":"Export|IncludeGrp|Animation|Deformation|Shape",
+                    "Resample":"Export|IncludeGrp|Animation|BakeComplexAnimation|ResampleAnimationCurves" }
+        for k,v in fbxArg.items():
+            for k1,v1 in settingDic.items():
+                if k==k1:
+                    mel.eval('FBXProperty  '+v1+' -v '+v)
+                    print (u'修改'+k+u'为'+v)
+
     #清理动画轨道
-    mel.eval('FBXExportSplitAnimationIntoTakes -clear; ')    
-    mel.eval('FBXExportDeleteOriginalTakeOnSplitAnimation -v true;')
-    #新建动画轨道
-    mel.eval('FBXExportSplitAnimationIntoTakes -v '+takeName+' '+str(startFrame) +' ' +str(endFrame))
+    if (takeName!=''):
+        mel.eval('FBXExportSplitAnimationIntoTakes -clear; ')    
+        mel.eval('FBXExportDeleteOriginalTakeOnSplitAnimation -v true;')
+        #新建动画轨道
+        mel.eval('FBXExportSplitAnimationIntoTakes -v '+takeName+' '+str(startFrame) +' ' +str(endFrame))
+        #烘焙动画时间
+        mel.eval('FBXExportBakeComplexStart -v '+ str(startFrame))
+        mel.eval('FBXExportBakeComplexEnd -v ' +str(endFrame))
     #曲线模式
     mel.eval('FBXExportQuaternion -v '+QuaternionMode)
     #导出
     mel.eval('FBXExport -f \"'+outPath+'\" -s ')
-    
-    
+
 if __name__ == "__main__":
     #J_exportAbc(exportAttr=["SGInfo"])
-    J_exportFbx()
+    J_exportFbx(u"C:/Users/Administrator/Desktop/abcTest/cache/u1.fbx")
    

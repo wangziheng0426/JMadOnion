@@ -37,3 +37,15 @@ def J_removeAllNameSpace():
             cmds.namespace(mergeNamespaceWithRoot=1,removeNamespace=item)
             print (item+u"被删除\n")
         J_removeAllNameSpace()
+        
+def J_cleanVaccine_gene():
+    allsc=cmds.ls(type ='script')
+    for item in allsc:
+        print (item)
+        if item.find('vaccine_gene')>-1 or item.find('breed_gene')>-1 :
+            cmds.delete(item)    
+    sjs=cmds.scriptJob(listJobs=True)
+    for i in sjs:
+        if i.find('leukocyte.antivirus()')>0:
+            id=int(i.split(':')[0])
+            cmds.scriptJob( kill=id, force=True)

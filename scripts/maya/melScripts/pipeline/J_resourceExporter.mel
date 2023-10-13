@@ -14,16 +14,34 @@ global proc J_resourceExporter()//主窗口
         deleteUI -window J_resourceExporterWin;
     window -w 300 -h 800 -title "资源导出" J_resourceExporterWin;
     //文件导出设置
-    string $geoSetting[]={"SmoothingGroup","SmoothMesh","Triangulate",
-     "InputConnections","Animation","Skinning","BlendShape","BakeAnimation"
+    string $geoSetting[]={"SmoothingGroup","SmoothMesh","Triangulate","IncludeChildren",
+     "Animation","BakeAnimation","Deformation","Skins","BlendShape",
      "Resample"};
+    string $fbxAttr[]={"Export|IncludeGrp|Geometry|SmoothingGroups",
+    "Export|IncludeGrp|Geometry|SmoothMesh",
+    "Export|IncludeGrp|Geometry|Triangulate",
+    "Export|IncludeGrp|InputConnectionsGrp|IncludeChildren" ,
+    "Export|IncludeGrp|Animation",
+    "Export|IncludeGrp|Animation|BakeComplexAnimation",
+    "Export|IncludeGrp|Animation|Deformation",
+    "Export|IncludeGrp|Animation|Deformation|Skins",
+    "Export|IncludeGrp|Animation|Deformation|Shape",
+    "Export|IncludeGrp|Animation|BakeComplexAnimation|ResampleAnimationCurves"      
+    };
     string $geoSettingCheckBox[];
     formLayout  -numberOfDivisions 100  J_resourceExporter_FromLayout0;
         frameLayout -cll 1 -cl 0 -l "模型选项"  J_resourceExporter_rigframeLayout;
             string $formLayout_Temp0=`formLayout -numberOfDivisions 100 `;
+            //创建所有勾选控件，并附带修改命令
                 for ($iItem=0;$iItem<size($geoSetting);$iItem++)
                 {
-                    $geoSettingCheckBox[$iItem]=`checkBox -label  $geoSetting[$iItem] `;
+                    string $cbname="checkBox_"+ $geoSetting[$iItem];
+                    $geoSettingCheckBox[$iItem]=`checkBox 
+                    -onCommand ("FBXProperty "+$fbxAttr[$iItem] +" -v 1")
+                    -offCommand ("FBXProperty "+$fbxAttr[$iItem] +" -v 0")
+                    -label $geoSetting[$iItem] $cbname`;
+
+                    checkBox -e -v `FBXProperty $fbxAttr[$iItem] -q` $geoSettingCheckBox[$iItem];
                     formLayout -e 
                     -ap $geoSettingCheckBox[$iItem] left 0 (1+50*($iItem%2))
                     -ap $geoSettingCheckBox[$iItem] right 0 (49+50*($iItem%2))
@@ -45,7 +63,7 @@ global proc J_resourceExporter()//主窗口
                 checkBox -label "相机->fbx" -v 1 J_animationExporter_chbox04;
                 checkBox -label "动画->fbx"  J_animationExporter_chbox05;
 
-                optionMenu -label "差值模式" J_animationExporter_optionMenu01;
+                optionMenu -label "差值模式"  J_animationExporter_optionMenu01;
                 menuItem  -label "resample";
                 menuItem  -label "euler";
                 menuItem  -label "quaternion";

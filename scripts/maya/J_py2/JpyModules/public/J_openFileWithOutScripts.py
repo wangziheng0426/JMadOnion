@@ -60,8 +60,8 @@ def J_killPTTQ():
             count=count+1
             if cmds.progressWindow( query=True, isCancelled=True ) :
                 break
-            print count
-            print '............\n'
+            print (count)
+            print ('............\n')
             cmds.progressWindow( edit=True, progress=(count*100/fileCount), status=('running: ' + str(count*100/fileCount) + '%' ) )
             cmds.pause( seconds=1 )
             if i.lower().endswith(".mb") or i.lower().endswith(".ma"):    
@@ -82,14 +82,3 @@ def J_killPTTQ():
 
     cmds.progressWindow(endProgress=1)   
     cmds.confirmDialog( title='执行结果', message=res, button=['好'], dismissString='No' ) 
-def J_cleanVaccine_gene():
-    allsc=cmds.ls(type ='script')
-    for item in allsc:
-        print item
-        if item.find('vaccine_gene')>-1 or item.find('breed_gene')>-1 :
-            cmds.delete(item)    
-    sjs=cmds.scriptJob(listJobs=True)
-    for i in sjs:
-        if i.find('leukocyte.antivirus()')>0:
-            id=int(i.split(':')[0])
-            cmds.scriptJob( kill=id, force=True)
