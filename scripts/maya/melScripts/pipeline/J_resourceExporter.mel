@@ -12,7 +12,7 @@ global proc J_resourceExporter()//主窗口
 {
     if (`window -ex J_resourceExporterWin`)
         deleteUI -window J_resourceExporterWin;
-    window -w 300 -h 800 -title "资源导出" J_resourceExporterWin;
+    window -w 300 -h 400 -title "资源导出" J_resourceExporterWin;
     //文件导出设置
     string $geoSetting[]={"SmoothingGroup","SmoothMesh","Triangulate","IncludeChildren",
      "Animation","BakeAnimation","Deformation","Skins","BlendShape",
@@ -196,36 +196,39 @@ global proc J_resourceExporterExportCam()
     }
     
 }
-//导出动画
+//导出动画,动画导出有4种状况,1用ref文件导出abc ,2用ref导出fbx ,3非ref导出abc ,4非ref导出fbx
 global proc J_animationExporterExportAniBut()
 {
     string $selRef[]=`textScrollList  -q -si  J_allRefNode`;
-    for ($item in $selRef)
-    {  
-        if (`checkBox -q -v J_animationExporter_chbox05`==1)
-        {
-            //列表窗中有被选择的ref对象,则导出ref对象，否则直接导出所选对象
-            if (size($selRef)>0)
+    //如果在ref列表里选择了对象,则导出选择的ref,未选任何ref节点,则导出所选对象
+    if (size($selRef)>0)
+    {
+        //按ref导出
+        for ($item in $selRef)
+        {  
+            //动画->fbx未勾选,则导出abc,勾选则导出fbx
+            if (`checkBox -q -v J_animationExporter_chbox05`==0)
             {
                 python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc('"+$item +"')");
             }
             else
             {
-                
+                python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefNodeToFbx('"+$item +"')");
             }
         }
-        else
-        {
-            //列表窗中有被选择的ref对象,则导出ref对象，否则直接导出所选对象
-            if (size($selRef)>0)
+    }
+    else
+    {
+        //将选择的物体导出
+        //动画->fbx未勾选,则导出abc,勾选则导出fbx
+            if (`checkBox -q -v J_animationExporter_chbox05`==0)
             {
-                python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc('"+$item +"')");
+                python("JpyModules.public.J_exportAbc(mode=1,exportMat=False)");
             }
             else
             {
-
+                python("JpyModules.public.J_exportFbx() ");
             }
-        }
     }
     string $outPath=J_resourceExporterGetFilePath()+"/cache/";
     //导出后打开文件夹
@@ -359,6 +362,12 @@ global proc J_resourceExporterExportBatBut(int $state)
             }
         }
     }
+}
+
+//单独导出fbx文件
+global proc  J_resourceExporterExportRig()
+{
+    python("JpyModules.pipeline.J_resourceExporter.J_exportFbxFromSelection()");
 }
 global proc  J_resourceExporterRemoveAllNameSpace()
 {

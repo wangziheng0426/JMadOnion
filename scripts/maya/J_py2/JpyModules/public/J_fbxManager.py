@@ -8,12 +8,22 @@
 ##############################################
 import maya.cmds as cmds
 import maya.mel as mel
+import os
 #将选择的对象导出fbx
-def J_exportFbx(outPath,takeName='',startFrame='',endFrame='',QuaternionMode='resample',fbxArg={}):
+def J_exportFbx(outPath='',takeName='',startFrame='',endFrame='',QuaternionMode='resample',fbxArg={}):
     if(startFrame==""):
         startFrame=cmds.playbackOptions( query=1, minTime=1)
     if(endFrame==""):
         endFrame=cmds.playbackOptions( query=1, maxTime=1)    
+    import JpyModules.public as jpb
+    if outPath=='':
+        outPath=jpb.J_getMayaFileFolder()+"/"+\
+            jpb.J_getMayaFileNameWithOutExtension()+'_cache/'
+        if not os.path.exists(outPath):
+            os.makedirs(outPath)
+        outPath+=jpb.J_getMayaFileNameWithOutExtension()
+        if len(cmds.ls(sl=1))>0:
+            outPath+="@"+cmds.ls(sl=1)[0].replace(":","_")
     #导出为 ASCII 文件
     mel.eval('FBXExportInAscii  -v true')
     
@@ -51,8 +61,8 @@ def J_exportFbx(outPath,takeName='',startFrame='',endFrame='',QuaternionMode='re
     mel.eval('FBXExportQuaternion -v '+QuaternionMode)
     #导出
     mel.eval('FBXExport -f \"'+outPath+'\" -s ')
-
+    return outPath
 if __name__ == "__main__":
     #J_exportAbc(exportAttr=["SGInfo"])
-    J_exportFbx(u"C:/Users/Administrator/Desktop/abcTest/cache/u1.fbx")
+    J_exportFbx(u"C:/Users/even5950/Desktop/abcTest/cache/u1.fbx")
    
