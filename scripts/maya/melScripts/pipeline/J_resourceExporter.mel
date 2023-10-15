@@ -56,21 +56,21 @@ global proc J_resourceExporter()//主窗口
                 textScrollList -h 80 -sc "J_resourceExporterSelitem"  -allowMultiSelection 1  J_allCameraNode;
                 textScrollList  -sc "" -allowMultiSelection 1 J_allRefNode;
                 
-                checkBox -label "曲线平滑" -v 1 J_animationExporter_chbox01;
-                checkBox -label "曲线打平"  J_animationExporter_chbox02;
-                checkBox -label "根骨归零"  J_animationExporter_chbox03;
+                checkBox -label "曲线平滑" -v 1 J_resourceExporter_chbox01;
+                checkBox -label "曲线打平"  J_resourceExporter_chbox02;
+                checkBox -label "根骨归零"  J_resourceExporter_chbox03;
 
-                checkBox -label "相机->fbx" -v 1 J_animationExporter_chbox04;
-                checkBox -label "动画->fbx"  J_animationExporter_chbox05;
+                checkBox -label "相机->fbx" -v 1 J_resourceExporter_chbox04;
+                checkBox -label "动画->fbx"  J_resourceExporter_chbox05;
 
-                optionMenu -label "差值模式"  J_animationExporter_optionMenu01;
+                optionMenu -label "差值模式"  J_resourceExporter_optionMenu01;
                 menuItem  -label "resample";
                 menuItem  -label "euler";
                 menuItem  -label "quaternion";
 
                 button -l "导出相机" -c  "J_resourceExporterExportCam" J_expCam;
-                button -l "导出动画" -c  "J_animationExporterExportAniBut" J_expAni;
-                button -l "批量导" -c  "" J_expAniBat;
+                button -l "导出动画" -c  "J_resourceExporterExportAniBut" J_expAni;
+                button -l "批量导" -c  "J_resourceExporterBatchExportAniBut" J_expAniBat;
             setParent ..;
         setParent ..;
        
@@ -97,41 +97,41 @@ global proc J_resourceExporter()//主窗口
         -ac J_allRefNode top 1 J_allCameraNode
         -ap J_allRefNode bottom 90 99
         
-        -ap J_animationExporter_chbox01 left 0 1
-        -ap J_animationExporter_chbox01 right 0 33
-        -ac J_animationExporter_chbox01 top  2 J_allRefNode
+        -ap J_resourceExporter_chbox01 left 0 1
+        -ap J_resourceExporter_chbox01 right 0 33
+        -ac J_resourceExporter_chbox01 top  2 J_allRefNode
 
-        -ap J_animationExporter_chbox02 left 0 34
-        -ap J_animationExporter_chbox02 right 0 66
-        -ac J_animationExporter_chbox02 top  2 J_allRefNode
+        -ap J_resourceExporter_chbox02 left 0 34
+        -ap J_resourceExporter_chbox02 right 0 66
+        -ac J_resourceExporter_chbox02 top  2 J_allRefNode
 
-        -ap J_animationExporter_chbox03 left 0 67
-        -ap J_animationExporter_chbox03 right 0 99
-        -ac J_animationExporter_chbox03 top  2 J_allRefNode
+        -ap J_resourceExporter_chbox03 left 0 67
+        -ap J_resourceExporter_chbox03 right 0 99
+        -ac J_resourceExporter_chbox03 top  2 J_allRefNode
 
-        -ap J_animationExporter_optionMenu01 left 0 1
-        -ap J_animationExporter_optionMenu01 right 0 99
-        -ac J_animationExporter_optionMenu01 top  2 J_animationExporter_chbox03
+        -ap J_resourceExporter_optionMenu01 left 0 1
+        -ap J_resourceExporter_optionMenu01 right 0 99
+        -ac J_resourceExporter_optionMenu01 top  2 J_resourceExporter_chbox03
 
-        -ap J_animationExporter_chbox04 left 0 1
-        -ap J_animationExporter_chbox04 right 0 33
-        -ac J_animationExporter_chbox04 top  2 J_animationExporter_optionMenu01
+        -ap J_resourceExporter_chbox04 left 0 1
+        -ap J_resourceExporter_chbox04 right 0 33
+        -ac J_resourceExporter_chbox04 top  2 J_resourceExporter_optionMenu01
 
-        -ap J_animationExporter_chbox05 left 0 34
-        -ap J_animationExporter_chbox05 right 0 66
-        -ac J_animationExporter_chbox05 top  2 J_animationExporter_optionMenu01        
+        -ap J_resourceExporter_chbox05 left 0 34
+        -ap J_resourceExporter_chbox05 right 0 66
+        -ac J_resourceExporter_chbox05 top  2 J_resourceExporter_optionMenu01        
 
         -ap J_expCam left 0 1
         -ap J_expCam right 0 33
-        -ac J_expCam top  2 J_animationExporter_chbox05
+        -ac J_expCam top  2 J_resourceExporter_chbox05
 
         -ap J_expAni left 0 34
         -ap J_expAni right 0 66
-        -ac J_expAni top 2 J_animationExporter_chbox05        
+        -ac J_expAni top 2 J_resourceExporter_chbox05        
 
         -ap J_expAniBat left 0 67
         -ap J_expAniBat right 0 99
-        -ac J_expAniBat top 2 J_animationExporter_chbox05
+        -ac J_expAniBat top 2 J_resourceExporter_chbox05
        
     J_resourceExporter_animationFromLayout;
 
@@ -143,7 +143,7 @@ global proc J_resourceExporter()//主窗口
     python("JpyModules.public.J_deleteUnknownNode()");
     python("JpyModules.public.J_cleanVaccine_gene()");
 }
-
+//初始化窗体
 global proc J_resourceExporterInit()
 {
     string $allCamera[]=`ls -type "camera"`;
@@ -170,7 +170,7 @@ global proc J_resourceExporterInit()
     }
 }
 
-
+//导出摄像机
 global proc J_resourceExporterExportCam()
 {
     string $selCam[]=`textScrollList  -q -si  J_allCameraNode`;    
@@ -181,7 +181,7 @@ global proc J_resourceExporterExportCam()
     {
         for ($item in $selCam)
         {
-            if (`checkBox -q -v J_animationExporter_chbox04`==1)
+            if (`checkBox -q -v J_resourceExporter_chbox04`==1)
             {
                 python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Fbx('"+$item+"')"); 
             }
@@ -197,7 +197,7 @@ global proc J_resourceExporterExportCam()
     
 }
 //导出动画,动画导出有4种状况,1用ref文件导出abc ,2用ref导出fbx ,3非ref导出abc ,4非ref导出fbx
-global proc J_animationExporterExportAniBut()
+global proc J_resourceExporterExportAniBut()
 {
     string $selRef[]=`textScrollList  -q -si  J_allRefNode`;
     //如果在ref列表里选择了对象,则导出选择的ref,未选任何ref节点,则导出所选对象
@@ -207,7 +207,7 @@ global proc J_animationExporterExportAniBut()
         for ($item in $selRef)
         {  
             //动画->fbx未勾选,则导出abc,勾选则导出fbx
-            if (`checkBox -q -v J_animationExporter_chbox05`==0)
+            if (`checkBox -q -v J_resourceExporter_chbox05`==0)
             {
                 python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc('"+$item +"')");
             }
@@ -221,7 +221,7 @@ global proc J_animationExporterExportAniBut()
     {
         //将选择的物体导出
         //动画->fbx未勾选,则导出abc,勾选则导出fbx
-            if (`checkBox -q -v J_animationExporter_chbox05`==0)
+            if (`checkBox -q -v J_resourceExporter_chbox05`==0)
             {
                 python("JpyModules.public.J_exportAbc(mode=1,exportMat=False)");
             }
@@ -237,7 +237,53 @@ global proc J_animationExporterExportAniBut()
     python($cmd); 
     
 }
+//批量导出相机动画
+global proc J_resourceExporterBatchExportAniBut()
+{
+    string $file[]=`fileDialog2 -fileMode 2 `;
+    string $mayaFiles[]=`getFileList -folder $file[0] -filespec "*.m?" `;
 
+    for ($fItem in $mayaFiles)
+    {
+        if (`endsWith $fItem ".mb"` ||`endsWith $fItem ".ma"` )
+        {
+            //逐个打开文件
+            file -f  -prompt false   -open ($file[0]+"/"+$fItem );
+            //批量导出相机
+            string $allCamera[]=`ls -type "camera"`;
+            string $sysCam[]={"|back","|front","|left","|persp","|side","|top"};
+            string $allCamTr[]=`listRelatives  -fullPath -p $allCamera`;
+            string $exportCam[]= `stringArrayRemove $sysCam $allCamTr `;
+            for ($itemC in $exportCam)
+            {
+                if (`checkBox -q -v J_resourceExporter_chbox04`==1)
+                {
+                    python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Fbx('"+$itemC+"')"); 
+                }
+                else
+                {
+                    python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Abc('"+$itemC+"')");    
+                }
+            }
+            //批量导出动画
+            string $allRefFile[]=`file -q -r`;
+            for ($itemR in $allRefFile)
+            {   
+                string $refNode=`referenceQuery -referenceNode -tr $itemR`; 
+                //动画->fbx未勾选,则导出abc,勾选则导出fbx
+                if (`checkBox -q -v J_resourceExporter_chbox05`==0)
+                {
+                    python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc('"+$refNode +"')");
+                }
+                else
+                {
+                    python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefNodeToFbx('"+$refNode +"')");
+                }               
+            }
+        }
+    }
+
+}
 //随选择修改窗体内容
 global proc J_resourceExporterRunScriptJob()
 {
@@ -270,98 +316,6 @@ global proc J_resourceExporterSelitem()
 {
     string $allListCam[]=`textScrollList  -q -si  J_allCameraNode`;
     select $allListCam;
-}
-global proc J_resourceExporterExportAniBut()
-{
-    string $selRef[]=`textScrollList  -q -si  J_allRefNode`;
-    string $mayafile=`file -q -sceneName`;
-    string $outPathA=J_resourceExporterGetFilePath();
-    if (size($selRef)>0)
-    {
-        for ($item in $selRef)
-        {
-            string $refFilename=`referenceQuery -filename $item`;
-            string $outPath=J_resourceExporterGetFilePath()+
-                python("JpyModules.animation.J_resourceExporter.J_getFileName()") +"_"+$item;
-            J_resourceExporterExportAni($item,$outPath);
-            file -f  -prompt false   -open $mayafile;
-        }
-    }
-    //导出后打开文件夹
-    string $cmd="os.startfile(os.path.dirname(\""+$outPathA+"\"))";
-    python($cmd); 
-    
-}
-global proc J_resourceExporterExportBatBut(int $state)
-{
-    string $file[]=`fileDialog2 -fileMode 2 `;
-    string $mayaFiles[]=`getFileList -folder $file[0] -filespec "*.m?" `;
-    string $filter=`textField -q -text J_tex`;
-
-    for ($item in $mayaFiles)
-    {
-        if (`endsWith $item ".mb"` ||`endsWith $item ".ma"` )
-        {
-            file -f  -prompt false   -open ($file[0]+"/"+$item );
-            string $allCamera[]=`ls -type "camera"`;
-            string $allCamTr[]=`listRelatives  -fullPath -p $allCamera`;
-            string $sysCam[]={"|back","|front","|left","|persp","|side","|top"};
-            
-            for ($item0 in $allCamTr)
-            {
-                string $outPath=J_resourceExporterGetFilePath();
-                int $temp=0;
-                for ($item1 in $sysCam)
-                {
-                    if ($item0==$item1)$temp=1;
-                }
-                if ($temp==0)
-                {
-                string $buffer[];
-                $numTokens = `tokenize $item0 "|" $buffer`;
-                
-                string $buffer1[];
-                $numTokens = `tokenize $buffer[size($buffer)-1] ":" $buffer1`;
-                
-                $outPath+=$buffer1[size($buffer1)-1] +".fbx";
-                //J_resourceExporterExportCam($item0,$outPath);
-                }
-            }
-            string $allRefFile[]=`file -q -r`;
-            if ($state==1)
-            {
-                for ($item0 in $allRefFile)
-                {   
-                    if ($filter=="")
-                    {
-                        if (`file -q -ex $item0`)
-                        {
-                            string $refNode=`referenceQuery -referenceNode $item0`;
-                            string $outPath=J_resourceExporterGetFilePath()+
-                                python("JpyModules.animation.J_resourceExporter.J_getFileName()") +"_"+$refNode ;
-                            J_resourceExporterExportAni($refNode,$outPath);
-                            
-                            file -f -prompt false   -open ($file[0]+"/"+$item );
-                        }
-                    }
-                    else{
-                        if (`file -q -ex $item0`)
-                        {                        
-                            string $refNode=`referenceQuery -referenceNode $item0`;
-                            if(`gmatch $refNode $filter`)
-                            {
-                            string $outPath=J_resourceExporterGetFilePath()+
-                                python("JpyModules.animation.J_resourceExporter.J_getFileName()") +"_"+$refNode ;
-                            J_resourceExporterExportAni($refNode,$outPath);
-                            
-                            file -f -prompt false   -open ($file[0]+"/"+$item );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 //单独导出fbx文件
@@ -439,4 +393,4 @@ global proc string J_resourceExporterGetFileNameWithOutExtension()
     return $filePath;
 }
 
-J_resourceExporter;
+//J_resourceExporter;

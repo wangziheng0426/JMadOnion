@@ -165,13 +165,13 @@ def J_exportAnimationFromRefNodeToFbx(refNode,jointOnly=False):
         
             #羽化动画曲线
             for jointItem in cmds.ls(type ='joint'):
-                if cmds.checkBox('J_animationExporter_chbox01' ,q=1 ,v =1):
+                if cmds.checkBox('J_resourceExporter_chbox01' ,q=1 ,v =1):
                     cmds.filterCurve(jointItem+".rotateX",jointItem+".rotateY",jointItem+".rotateZ")
-                if cmds.checkBox('J_animationExporter_chbox02' ,q=1 ,v =1):
+                if cmds.checkBox('J_resourceExporter_chbox02' ,q=1 ,v =1):
                     cmds.keyTangent((jointItem+".rotateX") (jointItem+".rotateY") (jointItem+".rotateZ"),ott= 'linear' )
 
             #根骨是否归零
-            if cmds.checkBox('J_animationExporter_chbox03' ,q=1 ,v =1):
+            if cmds.checkBox('J_resourceExporter_chbox03' ,q=1 ,v =1):
                 for jointItem in newRoot:
                     cmds.delete(cmds.listConnections(jointItem,type='animCurve'))
                     cmds.setAttr(jointItem+".translateY",0) 
@@ -183,7 +183,7 @@ def J_exportAnimationFromRefNodeToFbx(refNode,jointOnly=False):
         #删除名字空间
         JpyModules.public.J_removeAllNameSpace()
         #导出动画
-        quaternionMode=cmds.optionMenu('J_animationExporter_optionMenu01',q=1,v=1)
+        quaternionMode=cmds.optionMenu('J_resourceExporter_optionMenu01',q=1,v=1)
         JpyModules.public.J_exportFbx(outPath,takeName=refNode,QuaternionMode=quaternionMode) 
         #导出表情,如果不是仅导出骨骼模式，则单独输出表情文件，表情文件保存时会创建一个组，并以角色名命名。
         if not jointOnly:
@@ -197,7 +197,7 @@ def J_exportAnimationFromRefNodeToFbx(refNode,jointOnly=False):
                     print(u"脸部没有表情相关数据，请检查")
                     return
                 #删除blendshape节点上的动画和模型链接
-                for item in om2. MItSelectionList(om2.MGlobal.getActiveSelectionList()):
+                for item in om2.MItSelectionList(om2.MGlobal.getActiveSelectionList()):
                     bsNodeFullName=item.getStrings()
                     for attrItem in cmds.listAttr(bsNodeFullName[0]+".w",m=1):
                         cmds.setAttr(bsNodeFullName[0]+"."+attrItem,l=0)
@@ -224,11 +224,29 @@ def J_exportAnimationFromRefNodeToFbx(refNode,jointOnly=False):
                 cmds.select(chFaceGroup)
                 JpyModules.public.J_exportFbx(outPath,takeName=assetName) 
                 J_replaceSubdeformer(outPath)
-
-#将所有模型放到世界层级下,导出绑定
-def J_exportFbxFromSelection():
-    #查询选择的模型，没选就报错
+#仅导出选择的对象为fbx,选择模型即可连带关联的骨骼一起导出
+def J_exportFbxFromSelectionToEngine():
     sel=cmds.ls(sl=1,ap=1)   
+    if len(sel)<1:
+        print (u'未选任何模型')
+        return
+    meshNodes=cmds.ls(cmds.listRelatives(sel,s=1,ni=1,f=1),type='mesh',ni=1)
+    
+    skinClusters=''
+    skinedJoints='' 
+    if len(meshNodes)>0:
+        skinClusters=cmds.ls(cmds.listHistory(meshNodes),type="skinCluster")
+        skinedJoints=cmds.ls(cmds.listHistory(skinClusters),type="joint")
+    cmds.select(meshNodes)
+    cmds.select(skinedJoints,tgl=1)
+    os.startfile(os.path.dirname(JpyModules.public.J_exportFbx()))
+#导出绑定给引擎使用,会将所有模型和根骨节拿到最外层后再导出
+def J_exportFbxFromSelectionToEngine():
+    #查询选择的模型
+    sel=cmds.ls(sl=1,ap=1)   
+    if len(sel)<1:
+        print (u'未选任何模型')
+        return
     #如果选了ref的模型,先导入
     if cmds.referenceQuery(sel,isNodeReferenced=True):
         #导入ref
@@ -287,19 +305,20 @@ def J_exportFbxFromSelection():
     
     #删除blendshape节点上的动画和模型链接
     cmds.select(cmds.ls(type='blendShape'))
-    for item in om2. MItSelectionList(om2.MGlobal.getActiveSelectionList()):
-        bsNodeFullName=item.getStrings()
-        for attrItem in cmds.listAttr(bsNodeFullName[0]+".w",m=1):
-            cmds.setAttr(bsNodeFullName[0]+"."+attrItem,l=0)
-        mfnDp=om2.MFnDependencyNode(item.getDependNode())
-        for mPlugItem in mfnDp.getConnections():
-            if mPlugItem.source !=None:
-                #动画，模型链接都要打断
-                if mPlugItem.source().node().apiType()==296 or mPlugItem.source().node().apiType()==15 :
-                    print (mPlugItem.source().name())
-                    mdf=om2.MDGModifier()
-                    mdf.disconnect(mPlugItem.source(),mPlugItem)
-                    mdf.doIt()
+    if len(cmds.ls(type='blendShape'))>0:
+        for item in om2. MItSelectionList(om2.MGlobal.getActiveSelectionList()):
+            bsNodeFullName=item.getStrings()
+            for attrItem in cmds.listAttr(bsNodeFullName[0]+".w",m=1):
+                cmds.setAttr(bsNodeFullName[0]+"."+attrItem,l=0)
+            mfnDp=om2.MFnDependencyNode(item.getDependNode())
+            for mPlugItem in mfnDp.getConnections():
+                if mPlugItem.source !=None:
+                    #动画，模型链接都要打断
+                    if mPlugItem.source().node().apiType()==296 or mPlugItem.source().node().apiType()==15 :
+                        print (mPlugItem.source().name())
+                        mdf=om2.MDGModifier()
+                        mdf.disconnect(mPlugItem.source(),mPlugItem)
+                        mdf.doIt()
 
     #选择模型和骨骼
     cmds.select(skinedJoints)
