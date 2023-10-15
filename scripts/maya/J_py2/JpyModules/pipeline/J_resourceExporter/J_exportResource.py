@@ -225,7 +225,7 @@ def J_exportAnimationFromRefNodeToFbx(refNode,jointOnly=False):
                 JpyModules.public.J_exportFbx(outPath,takeName=assetName) 
                 J_replaceSubdeformer(outPath)
 #仅导出选择的对象为fbx,选择模型即可连带关联的骨骼一起导出
-def J_exportFbxFromSelectionToEngine():
+def J_exportFbxFromSelection():
     sel=cmds.ls(sl=1,ap=1)   
     if len(sel)<1:
         print (u'未选任何模型')
