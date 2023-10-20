@@ -1,2 +1,2 @@
 # -*- coding:utf-8 -*-
-from J_exportResource import *
+from J_resourceExporter import *

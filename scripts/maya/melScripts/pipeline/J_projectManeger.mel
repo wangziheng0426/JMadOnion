@@ -1,0 +1,69 @@
+/////////////////////////////////////////////////////////////
+///\file animationExporter.mel
+///\brief fbx导出工具
+///
+///\author 桔
+///\version 1.4.2
+///\date  9:45 2022/4/6
+///History:  导出动画工具
+///
+///////////////////////////////////////////////////////////////
+global proc J_projectManeger()//主窗口
+{
+    if (`window -ex J_projectManager`)
+        deleteUI -window J_projectManager;
+    window -w 300 -h 400 -title "文件管理" J_projectManager;
+    string $geoSettingCheckBox[];
+    formLayout  -numberOfDivisions 100  J_projectManager_FromLayout0;
+        
+        textField -text "工程目录" J_projectManager_projectPath;
+        textField -e  -text `workspace -q -rootDirectory` J_projectManager_projectPath;
+        button -l "设置工程目录" -c  "" J_projectManager_loadPath;
+        
+        formLayout  -numberOfDivisions 100  J_projectManager_FromLayout1;
+            treeView -numberOfButtons 2  -abr false J_projectManager_TreeView;
+            popupMenu -parent "J_projectManager_TreeView" J_projectManager_TreeViewRightPopup;
+            menuItem -label "打开文件";
+            menuItem -label "索引到文件";
+        setParent ..;
+        formLayout -e
+			-attachForm  J_projectManager_TreeView "top" 2
+			-attachForm  J_projectManager_TreeView "left" 2
+			-attachForm  J_projectManager_TreeView "bottom" 2
+			-attachForm  J_projectManager_TreeView "right" 2
+		J_projectManager_FromLayout1;
+    formLayout -e 
+        -ap J_projectManager_projectPath left 1 1
+        -af J_projectManager_projectPath right 90
+        -af J_projectManager_projectPath top 3
+
+        -ac J_projectManager_loadPath left 3 J_projectManager_projectPath
+        -ap J_projectManager_loadPath right 1 99
+        -af J_projectManager_loadPath top 3
+
+        -ac J_projectManager_FromLayout1 top 0 J_projectManager_loadPath
+        -ap J_projectManager_FromLayout1 left 0 1
+        -ap J_projectManager_FromLayout1 right 0 99        
+        -ap J_projectManager_FromLayout1 bottom 5 99
+
+
+    J_projectManager_FromLayout0;
+
+    
+    
+
+    python("JpyModules.pipeline.J_projectManeger.J_projectManeger_init()");
+    python("JpyModules.public.J_deleteUnknownNode()");
+    python("JpyModules.public.J_cleanVaccine_gene()");
+    showWindow J_projectManager;
+}
+//随选择修改窗体内容
+global proc J_projectManegerRunScriptJob()
+{
+    int $sjId = `scriptJob -e "SelectionChanged" J_resourceExporterScriptJob `;
+    string $temp = ("scriptJob -k "+ $sjId);
+    scriptJob -uid "J_resourceExporterWin" $temp;
+
+}
+
+J_projectManeger;

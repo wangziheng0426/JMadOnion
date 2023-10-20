@@ -7,6 +7,7 @@
   
   <MainMenu> 流程工具 pipeline </MainMenu>  
   <SubMenu> 资源导出 J_resourceExporter pipeline/J_resourceExporter.mel </SubMenu>  
+  <SubMenu> 项目管理 J_projectManeger pipeline/J_projectManeger.mel </SubMenu>  
 
   <MainMenu> 模型工具 model </MainMenu>  
   <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
