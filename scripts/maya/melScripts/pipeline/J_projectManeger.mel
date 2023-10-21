@@ -18,19 +18,21 @@ global proc J_projectManeger()//主窗口
         
         textField -text "工程目录" J_projectManager_projectPath;
         textField -e  -text `workspace -q -rootDirectory` J_projectManager_projectPath;
-        button -l "设置工程目录" -c  "" J_projectManager_loadPath;
+        button -l "设置工程目录" -c  "python(\"JpyModules.pipeline.J_projectManeger.J_projectManeger_setProject()\")"
+         J_projectManager_loadPath;
         
         formLayout  -numberOfDivisions 100  J_projectManager_FromLayout1;
             treeView -numberOfButtons 2  -abr false J_projectManager_TreeView;
             popupMenu -parent "J_projectManager_TreeView" J_projectManager_TreeViewRightPopup;
-            menuItem -label "打开文件";
-            menuItem -label "索引到文件";
+            //menuItem -label "打开文件";
+            menuItem -c "python(\"JpyModules.pipeline.J_projectManeger.J_projectManeger_openFilePath()\")"
+            -label "索引到文件" J_projectManager_openPath;
         setParent ..;
         formLayout -e
-			-attachForm  J_projectManager_TreeView "top" 2
-			-attachForm  J_projectManager_TreeView "left" 2
-			-attachForm  J_projectManager_TreeView "bottom" 2
-			-attachForm  J_projectManager_TreeView "right" 2
+			-attachForm  J_projectManager_TreeView "top" 1
+			-attachForm  J_projectManager_TreeView "left" 1
+			-attachForm  J_projectManager_TreeView "bottom" 1
+			-attachForm  J_projectManager_TreeView "right" 1
 		J_projectManager_FromLayout1;
     formLayout -e 
         -ap J_projectManager_projectPath left 1 1
@@ -41,10 +43,10 @@ global proc J_projectManeger()//主窗口
         -ap J_projectManager_loadPath right 1 99
         -af J_projectManager_loadPath top 3
 
-        -ac J_projectManager_FromLayout1 top 0 J_projectManager_loadPath
+        -ac J_projectManager_FromLayout1 top 1 J_projectManager_loadPath
         -ap J_projectManager_FromLayout1 left 0 1
         -ap J_projectManager_FromLayout1 right 0 99        
-        -ap J_projectManager_FromLayout1 bottom 5 99
+        -af J_projectManager_FromLayout1 bottom 2 
 
 
     J_projectManager_FromLayout0;
@@ -65,5 +67,9 @@ global proc J_projectManegerRunScriptJob()
     scriptJob -uid "J_resourceExporterWin" $temp;
 
 }
-
+global proc int lttt(string $str)
+{
+	print("selectCallBack :- str = " + $str  + "\n");
+	return 1;
+}
 J_projectManeger;
