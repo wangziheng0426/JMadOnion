@@ -120,24 +120,36 @@ def J_projectManeger_openSubWin(itemName,itemLabel):
 def J_projectManeger_subWin_init(inPath):
     #创建一列text显示属性,两列textfield填属性
     cmds.scrollField('J_projectManager_subWin_obj',e=1,text=inPath)
+    cmds.button('J_projectManager_subWin_saveInfo',e=1,c=J_projectManeger_subWin_saveJmeta) ; 
+    cmds.button('J_projectManager_subWin_addInfo',e=1,c=J_projectManeger_subWin_addInfo) ; 
     #如果不存在jmeta则是用默认属性列表
     
-    baseAttrList=['uuid','hash','assetType','fileType','userInfo']
-    jmetaInfo={'baseInfo':{}}
+    baseAttrList=['uuid','assetType','fileType','userInfo']
+    #baseAttrList=['assetType','fileType','userInfo']
+    baseAttrDic={'uuid':'','assetType':'','fileType':'','userInfo':''}
+    userAttrDic={}
+    jmetaInfo={'baseInfo':baseAttrDic}
     #首先搜索文件的jmeta文件,如果存在,则读取jmeta并根据meta创建ui
-    fname=os.path.splitext(inPath)
-    if (os.path.exists(fname[0]+'.jmeta')):
-        fileo=open(fname[0]+'.jmeta','r')
+
+    jMetaName=os.path.splitext(inPath)[0]+'.jmeta'
+    if os.path.isdir(inPath):
+        jMetaName=os.path.splitext(inPath)[0]+'/Dir_'+os.path.basename(inPath)+'.jmeta'
+    
+    if (os.path.exists(jMetaName)):
+        fileo=open(jMetaName,'r')
         jmetaInfo=json.load(fileo)
         fileo.close()
-        
+    if jmetaInfo.has_key('baseInfo'):
+        baseAttrDic=jmetaInfo['baseInfo']
+    if jmetaInfo.has_key('userInfo'):
+        userAttrDic=jmetaInfo['userInfo']
     index=0
-    #基础属性
+    #基础属性面板
     for attrItem in baseAttrList:
         #逐个创建属性面板
         print (attrItem)
-        t0=cmds.textField('J_pm_subWin_'+attrItem+'_k',text=attrItem[0],parent='J_projectManeger_subWin_FromLayout0')
-        t1=cmds.textField('J_pm_subWin_'+attrItem+'_v',text=attrItem[1],parent='J_projectManeger_subWin_FromLayout0')
+        t0=cmds.text('J_pm_subWin_'+attrItem+'_k',label=attrItem,parent='J_projectManeger_subWin_FromLayout0')
+        t1=cmds.textField('J_pm_subWin_'+attrItem+'_v',text=baseAttrDic[attrItem],parent='J_projectManeger_subWin_FromLayout0')
         cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
             ac=[(t0,'top',23*index+6,"J_projectManager_subWin_obj"),\
                 (t1,'top',23*index+6,"J_projectManager_subWin_obj"),\
@@ -145,5 +157,79 @@ def J_projectManeger_subWin_init(inPath):
             af=[(t0,'left',1),(t1,'right',1)],\
             ap=[(t0,'right',0,20)]) 
         index+=1
+    index+=1
+    #创建自定义属性面板
+    for attrItemK,attrItemV in userAttrDic.items():
+        #逐个创建属性面板
+        #print (attrItem)
+        t0=cmds.text('J_pm_subWin_'+attrItemK+'_k',label=attrItemK,parent='J_projectManeger_subWin_FromLayout0')
+        t1=cmds.textField('J_pm_subWin_'+attrItemV+'_v',text=attrItemV,parent='J_projectManeger_subWin_FromLayout0')
+        cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
+            ac=[(t0,'top',23*index+12,"J_projectManager_subWin_obj"),\
+                (t1,'top',23*index+12,"J_projectManager_subWin_obj"),\
+                (t1,'left',1,t0)],\
+            af=[(t0,'left',1),(t1,'right',1)],\
+            ap=[(t0,'right',0,20)]) 
+        index+=1
+        
+#保存信息倒jmeta
+def J_projectManeger_subWin_saveJmeta(*args):
+    fpath =cmds.scrollField('J_projectManager_subWin_obj',q=1,text=1)
+    #设定meta文件存储目录
+    jMetaName=os.path.splitext(fpath)[0]+'.jmeta'
+    if os.path.isdir(fpath):
+        jMetaName=os.path.splitext(fpath)[0]+'/Dir_'+os.path.basename(fpath)+'.jmeta'
+    #根据属性填充meta文件
+    jmetaInfo={}
+    jmetaInfo['baseInfo']={}
+    jmetaInfo['userInfo']={}
+    baseAttrDic={'uuid':'','assetType':'','fileType':'','userInfo':''}
+    userAttrDic={}
+    
+    #现获取属性控件列表
+    controlList=[]
+    for item in cmds.lsUI( type='control' ):
+        if item.startswith('J_pm_subWin_') and item.endswith('_k'):
+            controlList.append(item)
+    for kItem in controlList:
+        #区分基础属性,和自定义属性
+        attrName=kItem.replace('J_pm_subWin_','')[0:-2]
+        if baseAttrDic.has_key(attrName):
+            baseAttrDic[attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1)
+        else:
+            userAttrDic[attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1)
+    jmetaInfo['baseInfo']=baseAttrDic
+    jmetaInfo['userInfo']=userAttrDic
+    #保存信息文件
+    outFile=open(jMetaName,'w')
+    outFile.write(json.dumps(jmetaInfo,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":")))
+    outFile.close()
+#添加属性按钮
+def J_projectManeger_subWin_addInfo(*args):
+    result = cmds.promptDialog(
+		title='new attr',
+		message='Enter Name:',
+		button=['OK', 'Cancel'],
+		defaultButton='OK',
+		cancelButton='Cancel',
+		dismissString='Cancel')
+    attrText=''
+    if result == 'OK':
+        attrText = cmds.promptDialog(query=True, text=True)
+    controlList=[]
+    for item in cmds.lsUI( type='control' ):
+        if item.startswith('J_pm_subWin_') and item.endswith('_k'):
+            controlList.append(item)    
+    if (attrText!=''):  
+        index=len(controlList)+1
+        t0=cmds.text('J_pm_subWin_'+attrText+'_k',label=attrText,parent='J_projectManeger_subWin_FromLayout0')
+        t1=cmds.textField('J_pm_subWin_'+attrText+'_v',text=attrText,parent='J_projectManeger_subWin_FromLayout0')
+        cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
+            ac=[(t0,'top',23*index+12,"J_projectManager_subWin_obj"),\
+                (t1,'top',23*index+12,"J_projectManager_subWin_obj"),\
+                (t1,'left',1,t0)],\
+            af=[(t0,'left',1),(t1,'right',1)],\
+            ap=[(t0,'right',0,20)]) 
+
 if __name__=='__main__':
     J_projectManeger_setProject()
