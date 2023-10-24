@@ -165,6 +165,9 @@ def J_projectManeger_subWin_init(inPath):
         #print (attrItem)
         t0=cmds.text('J_pm_subWin_'+attrItem+'_k',label=attrItem,parent='J_projectManeger_subWin_FromLayout0')
         t1=cmds.textField('J_pm_subWin_'+attrItem+'_v',text=baseAttrDic[attrItem],parent='J_projectManeger_subWin_FromLayout0')
+
+        popmenu=cmds.popupMenu(parent=t1)
+        cmds.menuItem(c='J_projectManeger_subWin_copyToClipBoard("'+t1+'")',label=u'复制',parent=popmenu) 
         cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
             ac=[(t0,'top',23*index+6,"J_projectManager_subWin_obj"),\
                 (t1,'top',23*index+6,"J_projectManager_subWin_obj"),\
@@ -249,5 +252,8 @@ def J_projectManeger_subWin_addInfo(*args):
             af=[(t0,'left',1),(t1,'right',9)],\
             ap=[(t0,'right',0,20)]) 
 
+def J_projectManeger_subWin_copyToClipBoard(*arg):
+    tx=cmds.textField(arg[0],q=1,text=1)
+    os.system('echo '+tx+'|clip')
 if __name__=='__main__':
     J_projectManeger_setProject()
