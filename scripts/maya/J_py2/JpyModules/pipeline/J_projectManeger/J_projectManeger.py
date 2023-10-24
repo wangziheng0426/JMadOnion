@@ -23,7 +23,7 @@ def J_projectManeger_init():
     #构建项目目录
     cmds.treeView(treeV,edit=1, addItem=(projectPath, "") )
     cmds.treeView(treeV,edit=1, image=(projectPath, 1,'SP_DirClosedIcon.png') )
-    cmds.treeView(treeV,edit=1, image=(projectPath, 2,'profilerSettings.png') )
+    cmds.treeView(treeV,edit=1, image=(projectPath, 2,'info.png') )
     
     if os.path.exists(projectPath):
         #如果当前打开的文件在工程目录下,则创建目录结构,如果不在,就根据工程目录生产
@@ -124,9 +124,9 @@ def J_projectManeger_subWin_init(inPath):
     cmds.button('J_projectManager_subWin_addInfo',e=1,c=J_projectManeger_subWin_addInfo) ; 
     #如果不存在jmeta则是用默认属性列表
     
-    baseAttrList=['uuid','assetType','fileType','userInfo']
+    baseAttrList=['uuid','assetType','fileType','user']
     #baseAttrList=['assetType','fileType','userInfo']
-    baseAttrDic={'uuid':'','assetType':'','fileType':'','userInfo':''}
+    baseAttrDic={'uuid':'','assetType':'','fileType':'','user':''}
     userAttrDic={}
     jmetaInfo={'baseInfo':baseAttrDic}
     #首先搜索文件的jmeta文件,如果存在,则读取jmeta并根据meta创建ui,如果不存在，则逐层搜索文件夹，读取文件夹的信息
@@ -167,7 +167,7 @@ def J_projectManeger_subWin_init(inPath):
         t1=cmds.textField('J_pm_subWin_'+attrItem+'_v',text=baseAttrDic[attrItem],parent='J_projectManeger_subWin_FromLayout0')
 
         popmenu=cmds.popupMenu(parent=t1)
-        cmds.menuItem(c='J_projectManeger_subWin_copyToClipBoard("'+t1+'")',label=u'复制',parent=popmenu) 
+        cmds.menuItem(c='JpyModules.pipeline.J_projectManeger.J_projectManeger_subWin_copyToClipBoard("'+t1+'")',label=u'复制',parent=popmenu) 
         cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
             ac=[(t0,'top',23*index+6,"J_projectManager_subWin_obj"),\
                 (t1,'top',23*index+6,"J_projectManager_subWin_obj"),\
@@ -177,7 +177,8 @@ def J_projectManeger_subWin_init(inPath):
         index+=1
     index+=1
     cmds.textField('J_pm_subWin_uuid_v',e=1,editable=0)
-
+    cmds.textField('J_pm_subWin_user_v',e=1,text=mel.eval('getenv "USERNAME"'))
+    
     #创建自定义属性面板
     for attrItemK,attrItemV in userAttrDic.items():
         #逐个创建属性面板
@@ -203,7 +204,7 @@ def J_projectManeger_subWin_saveJmeta(*args):
     jmetaInfo={}
     jmetaInfo['baseInfo']={}
     jmetaInfo['userInfo']={}
-    baseAttrDic={'uuid':'','assetType':'','fileType':'','userInfo':''}
+    baseAttrDic={'uuid':'','assetType':'','fileType':'','user':''}
     userAttrDic={}
     
     #现获取属性控件列表
