@@ -165,7 +165,7 @@ def J_projectManeger_subWin_init(inPath):
         #print (attrItem)
         t0=cmds.text('J_pm_subWin_'+attrItem+'_k',label=attrItem,parent='J_projectManeger_subWin_FromLayout0')
         t1=cmds.textField('J_pm_subWin_'+attrItem+'_v',text=baseAttrDic[attrItem],parent='J_projectManeger_subWin_FromLayout0')
-
+        #右键菜单
         popmenu=cmds.popupMenu(parent=t1)
         cmds.menuItem(c='JpyModules.pipeline.J_projectManeger.J_projectManeger_subWin_copyToClipBoard("'+t1+'")',label=u'复制',parent=popmenu) 
         cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
@@ -184,7 +184,10 @@ def J_projectManeger_subWin_init(inPath):
         #逐个创建属性面板
         #print (attrItem)
         t0=cmds.text('J_pm_subWin_'+attrItemK+'_k',label=attrItemK,parent='J_projectManeger_subWin_FromLayout0')
-        t1=cmds.textField('J_pm_subWin_'+attrItemV+'_v',text=attrItemV,parent='J_projectManeger_subWin_FromLayout0')
+        t1=cmds.textField('J_pm_subWin_'+attrItemK+'_v',text=attrItemV,parent='J_projectManeger_subWin_FromLayout0')
+        #右键菜单
+        popmenu=cmds.popupMenu(parent=t1)
+        cmds.menuItem(c='JpyModules.pipeline.J_projectManeger.J_projectManeger_subWin_copyToClipBoard("'+t1+'")',label=u'复制',parent=popmenu) 
         cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
             ac=[(t0,'top',23*index+12,"J_projectManager_subWin_obj"),\
                 (t1,'top',23*index+12,"J_projectManager_subWin_obj"),\
