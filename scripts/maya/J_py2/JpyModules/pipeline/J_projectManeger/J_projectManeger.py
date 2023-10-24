@@ -10,7 +10,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import maya.api.OpenMaya as om2
-import re,os,json
+import re,os,json,uuid
 import JpyModules
 #相机导fbx
 def J_projectManeger_init():
@@ -39,8 +39,8 @@ def J_projectManeger_init():
                 if pItem!='':
                     projectPathTemp=projectPathTemp+'/'+pItem   
                     J_projectManeger_doubleClick(projectPathTemp,'')
-            cmds.treeView('J_projectManager_TreeView',e=1, selectItem=(sceneFileName,True))
-
+            cmds.treeView(treeV,e=1, selectItem=(sceneFileName,True))
+            cmds.treeView(treeV,e=1, showItem=sceneFileName)
     #设置界面命令
     #双击命令
     cmds.treeView(treeV,edit=1, itemDblClickCommand2=J_projectManeger_doubleClick )
@@ -129,16 +129,31 @@ def J_projectManeger_subWin_init(inPath):
     baseAttrDic={'uuid':'','assetType':'','fileType':'','userInfo':''}
     userAttrDic={}
     jmetaInfo={'baseInfo':baseAttrDic}
-    #首先搜索文件的jmeta文件,如果存在,则读取jmeta并根据meta创建ui
+    #首先搜索文件的jmeta文件,如果存在,则读取jmeta并根据meta创建ui,如果不存在，则逐层搜索文件夹，读取文件夹的信息
 
     jMetaName=os.path.splitext(inPath)[0]+'.jmeta'
     if os.path.isdir(inPath):
-        jMetaName=os.path.splitext(inPath)[0]+'/Dir_'+os.path.basename(inPath)+'.jmeta'
-    
+        jMetaName=os.path.splitext(inPath)[0]+'/'+os.path.basename(inPath)+'_dir.jmeta'
+    #找到meta则打开，找不到就往上找
     if (os.path.exists(jMetaName)):
         fileo=open(jMetaName,'r')
         jmetaInfo=json.load(fileo)
         fileo.close()
+    else:
+        #找不到当前对象的jmeta，则一直往上找
+        dirName=os.path.dirname(inPath)
+        while dirName!=os.path.dirname(dirName):
+            #查找文件的jmeta
+            jmetaFile=dirName+'/'+os.path.basename(dirName)+'_dir.jmeta'
+            if os.path.exists(jmetaFile):
+                fileo=open(jmetaFile)
+                jmetaInfo=json.load(fileo)
+                fileo.close()
+                break
+            dirName=os.path.dirname(dirName)
+        #没有jmate的情况下，自动生成uuid
+        jmetaInfo['baseInfo']['uuid']=uuid.uuid1()
+    #
     if jmetaInfo.has_key('baseInfo'):
         baseAttrDic=jmetaInfo['baseInfo']
     if jmetaInfo.has_key('userInfo'):
@@ -147,17 +162,19 @@ def J_projectManeger_subWin_init(inPath):
     #基础属性面板
     for attrItem in baseAttrList:
         #逐个创建属性面板
-        print (attrItem)
+        #print (attrItem)
         t0=cmds.text('J_pm_subWin_'+attrItem+'_k',label=attrItem,parent='J_projectManeger_subWin_FromLayout0')
         t1=cmds.textField('J_pm_subWin_'+attrItem+'_v',text=baseAttrDic[attrItem],parent='J_projectManeger_subWin_FromLayout0')
         cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
             ac=[(t0,'top',23*index+6,"J_projectManager_subWin_obj"),\
                 (t1,'top',23*index+6,"J_projectManager_subWin_obj"),\
                 (t1,'left',1,t0)],\
-            af=[(t0,'left',1),(t1,'right',1)],\
+            af=[(t0,'left',1),(t1,'right',9)],\
             ap=[(t0,'right',0,20)]) 
         index+=1
     index+=1
+    cmds.textField('J_pm_subWin_uuid_v',e=1,editable=0)
+
     #创建自定义属性面板
     for attrItemK,attrItemV in userAttrDic.items():
         #逐个创建属性面板
@@ -168,7 +185,7 @@ def J_projectManeger_subWin_init(inPath):
             ac=[(t0,'top',23*index+12,"J_projectManager_subWin_obj"),\
                 (t1,'top',23*index+12,"J_projectManager_subWin_obj"),\
                 (t1,'left',1,t0)],\
-            af=[(t0,'left',1),(t1,'right',1)],\
+            af=[(t0,'left',1),(t1,'right',9)],\
             ap=[(t0,'right',0,20)]) 
         index+=1
         
@@ -178,7 +195,7 @@ def J_projectManeger_subWin_saveJmeta(*args):
     #设定meta文件存储目录
     jMetaName=os.path.splitext(fpath)[0]+'.jmeta'
     if os.path.isdir(fpath):
-        jMetaName=os.path.splitext(fpath)[0]+'/Dir_'+os.path.basename(fpath)+'.jmeta'
+        jMetaName=os.path.splitext(fpath)[0]+'/'+os.path.basename(fpath)+'_dir.jmeta'
     #根据属性填充meta文件
     jmetaInfo={}
     jmetaInfo['baseInfo']={}
@@ -204,6 +221,7 @@ def J_projectManeger_subWin_saveJmeta(*args):
     outFile=open(jMetaName,'w')
     outFile.write(json.dumps(jmetaInfo,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":")))
     outFile.close()
+    cmds.deleteUI('J_projectManeger_subWin',window=1)
 #添加属性按钮
 def J_projectManeger_subWin_addInfo(*args):
     result = cmds.promptDialog(
@@ -228,7 +246,7 @@ def J_projectManeger_subWin_addInfo(*args):
             ac=[(t0,'top',23*index+12,"J_projectManager_subWin_obj"),\
                 (t1,'top',23*index+12,"J_projectManager_subWin_obj"),\
                 (t1,'left',1,t0)],\
-            af=[(t0,'left',1),(t1,'right',1)],\
+            af=[(t0,'left',1),(t1,'right',9)],\
             ap=[(t0,'right',0,20)]) 
 
 if __name__=='__main__':

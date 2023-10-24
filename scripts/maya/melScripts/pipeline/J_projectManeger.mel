@@ -73,7 +73,6 @@ global proc int lttt(string $str)
 	return 1;
 }
 
-
 global proc J_projectManeger_subWin()//主窗口
 {
     if (`window -ex J_projectManeger_subWin`)
@@ -89,7 +88,6 @@ global proc J_projectManeger_subWin()//主窗口
         -af J_projectManager_subWin_obj left 1
         -af J_projectManager_subWin_obj right 1
         -af J_projectManager_subWin_obj top 1
-
 
         -af J_projectManager_subWin_addInfo left 1
         -ap J_projectManager_subWin_addInfo right 0 50        
