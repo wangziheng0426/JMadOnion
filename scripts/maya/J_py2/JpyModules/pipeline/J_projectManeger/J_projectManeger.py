@@ -12,7 +12,8 @@ import maya.mel as mel
 import maya.api.OpenMaya as om2
 import re,os,json,uuid
 import JpyModules
-#相机导fbx
+#
+
 def J_projectManeger_init():
     treeV='J_projectManager_TreeView'
     cmds.treeView( treeV, edit=True, removeAll = True )
@@ -29,9 +30,8 @@ def J_projectManeger_init():
         #如果当前打开的文件在工程目录下,则创建目录结构,如果不在,就根据工程目录生产
         sceneFileName=cmds.file(query=True,sceneName=True)
         
-        for fitem in os.listdir(projectPath): 
-            if not fitem.endswith('.json')  and not fitem.endswith('.jmeta') :              
-                J_projectManeger_treeAddItem(treeV,projectPath,projectPath+'/'+fitem)
+        for fitem in os.listdir(projectPath):              
+            J_projectManeger_treeAddItem(treeV,projectPath,projectPath+'/'+fitem)
         #确认文件再工程目录下
         if sceneFileName.startswith(projectPath):
             projectPathTemp=projectPath
@@ -50,24 +50,25 @@ def J_projectManeger_init():
 
 #添加条目
 def J_projectManeger_treeAddItem(treeV,parentItem,item):
-    if not cmds.treeView(treeV,q=1, itemExists=item ):
-        cmds.treeView(treeV,edit=1, addItem=(item, parentItem))
-    itemDisplayName=os.path.basename(item)
-    cmds.treeView(treeV,edit=1, displayLabel=(item, itemDisplayName))
-    #改图标
-    iconDic={'folder':'SP_DirClosedIcon.png','openfolder':'SP_DirOpenIcon.png','.ma':'kAlertQuestionIcon.png',\
-        '.mb':'kAlertQuestionIcon.png','needSave':'kAlertStopIcon.png','tex':'out_file.png','file':'SP_FileIcon',\
-        '.mov':'playblast.png','.mp4':'playblast.png' ,'.avi':'playblast.png' ,'.m4v':'playblast.png',\
-        '.fbx':'fbxReview.png','.abc':'trackGhost.png'}
-    splitName=os.path.splitext(item)
-    iconKey='file'
-    #分配图标
-    if splitName[1]=='':iconKey='folder'
-    if splitName[1].lower() in {".jpg",'.tga','.jpeg','tif','.png','.hdr','.tiff',}:iconKey='tex'
-    if iconDic.has_key(splitName[1]):iconKey=splitName[1]
+    if not item.endswith('.json')  and not item.endswith('.jmeta') :      
+        if not cmds.treeView(treeV,q=1, itemExists=item ):
+            cmds.treeView(treeV,edit=1, addItem=(item, parentItem))
+        itemDisplayName=os.path.basename(item)
+        cmds.treeView(treeV,edit=1, displayLabel=(item, itemDisplayName))
+        #改图标
+        iconDic={'folder':'SP_DirClosedIcon.png','openfolder':'SP_DirOpenIcon.png','.ma':'kAlertQuestionIcon.png',\
+            '.mb':'kAlertQuestionIcon.png','needSave':'kAlertStopIcon.png','tex':'out_file.png','file':'SP_FileIcon',\
+            '.mov':'playblast.png','.mp4':'playblast.png' ,'.avi':'playblast.png' ,'.m4v':'playblast.png',\
+            '.fbx':'fbxReview.png','.abc':'animateSnapshot.png'}
+        splitName=os.path.splitext(item)
+        iconKey='file'
+        #分配图标
+        if splitName[1]=='':iconKey='folder'
+        if splitName[1].lower() in {".jpg",'.tga','.jpeg','tif','.png','.hdr','.tiff',}:iconKey='tex'
+        if iconDic.has_key(splitName[1]):iconKey=splitName[1]
 
-    cmds.treeView(treeV,edit=1, image=(item, 1,iconDic[iconKey]) )
-    cmds.treeView(treeV,edit=1, image=(item, 2,'polyGear.png') )
+        cmds.treeView(treeV,edit=1, image=(item, 1,iconDic[iconKey]) )
+        cmds.treeView(treeV,edit=1, image=(item, 2,'polyGear.png') )
 
 #双击打开文件
 def J_projectManeger_doubleClick(itemName,itemLabel):
@@ -81,9 +82,8 @@ def J_projectManeger_doubleClick(itemName,itemLabel):
             for ritem in cmds.treeView(treeV,q=1, children=itemName )[1:]:
                 if cmds.treeView(treeV,q=1, itemExists=ritem ):
                     cmds.treeView(treeV,e=1, removeItem=ritem )
-        for fitem in os.listdir(itemName):    
-            if not fitem.endswith('.json')  and not fitem.endswith('.jmate') :       
-                J_projectManeger_treeAddItem(treeV,itemName,itemName+'/'+fitem)
+        for fitem in os.listdir(itemName):
+            J_projectManeger_treeAddItem(treeV,itemName,itemName+'/'+fitem)
     if os.path.splitext(itemName)[1].lower()  in {".mp4",'.avi','.mov','.m4v'}:
         os.startfile(itemName)
 #打开文件所在目录
