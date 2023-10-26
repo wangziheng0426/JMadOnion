@@ -29,6 +29,12 @@ class J_projectManeger():
         cmds.treeView(self.treeV,edit=1, image=(self.projectPath, 1,'SP_DirClosedIcon.png') )
         cmds.treeView(self.treeV,edit=1, image=(self.projectPath, 2,'info.png') )
         
+        cmds.button('J_projectManager_loadPath',e=1,c=self.J_projectManeger_setProject) 
+        #右键菜单
+        popm=cmds.popupMenu(parent=self.treeV)
+        cmds.menuItem(parent=popm,label=u"索引到文件",c=self.J_projectManeger_openFilePath )
+        cmds.menuItem(parent=popm,label=u"复制相对目录",c=self.J_projectManeger_copyRelativeFilePath )
+        
         if os.path.exists(self.projectPath):
             #如果当前打开的文件在工程目录下,则创建目录结构,如果不在,就根据工程目录生成
             sceneFileName=cmds.file(query=True,sceneName=True)            
@@ -88,22 +94,14 @@ class J_projectManeger():
                     if cmds.treeView(self.treeV,q=1, itemExists=ritem ):
                         cmds.treeView(self.treeV,e=1, removeItem=ritem )
             for fitem in os.listdir(itemName):
-                self.J_projectManeger_treeAddItem(self.treeV,itemName,itemName+'/'+fitem)
+                self.J_projectManeger_treeAddItem(itemName,itemName+'/'+fitem)
         if os.path.splitext(itemName)[1].lower()  in {".mp4",'.avi','.mov','.m4v'}:
             os.startfile(itemName)
-    #打开文件所在目录
-    def J_projectManeger_openFilePath(self):
-        sel=cmds.treeView(self.treeV,q=1, selectItem=1)
-        if len(sel)>0:
-            if os.path.isdir(sel[0]):
-                os.startfile(sel[0])
-            else:
-                #os.startfile(os.path.dirname(sel[0]))
-                temp=sel[0].replace('/','\\')
-                os.system('explorer /select, '+temp)
-        print (sel)
+    #打开设置窗口
+    def J_projectManeger_openSubWin(self,itemName,itemLabel):        
+        JpyModules.pipeline.J_projectManeger.J_projectManeger_itemAttr(itemName)
     #设置工程目录
-    def J_projectManeger_setProject(self):
+    def J_projectManeger_setProject(self,*arg):
         self.projectPath= cmds.fileDialog2(fileMode=2)
         if self.projectPath!=None: 
             self.projectPath=self.projectPath[0]
@@ -117,12 +115,28 @@ class J_projectManeger():
         cmds.treeView('J_projectManager_TreeView',e=1, clearSelection=1)
         cmds.treeView('J_projectManager_TreeView',e=1, selectItem=(itemName,True))
         return True
-    def J_projectManeger_openSubWin(self,itemName,itemLabel):        
-        subWin=JpyModules.pipeline.J_projectManeger.J_projectManeger_itemAttr(itemName)
+    #打开文件所在目录
+    def J_projectManeger_openFilePath(self,*arg):
+        sel=cmds.treeView(self.treeV,q=1, selectItem=1)
+        if len(sel)>0:
+            if os.path.isdir(sel[0]):
+                os.startfile(sel[0])
+            else:
+                #os.startfile(os.path.dirname(sel[0]))
+                temp=sel[0].replace('/','\\')
+                os.system('explorer /select, '+temp)
+        print (sel)
+    def J_projectManeger_copyRelativeFilePath(self,*arg):
+        sel=cmds.treeView(self.treeV,q=1, selectItem=1)
+        if len(sel)>0:
+            relativePath=sel[0].replace(self.projectPath,'')
+            print relativePath
+            os.system('echo '+relativePath+'|clip')
+        
 #############################################################################################
 #子窗口逻辑
 class J_projectManeger_itemAttr():
-    j_meta={}
+    j_meta=''
     #仅显示可修改的meta属性
     baseAttrList=['uuid','assetType','fileType','user']
     def __init__(self,inPath):
@@ -147,7 +161,7 @@ class J_projectManeger_itemAttr():
             t1=cmds.textField('J_pm_subWin_'+attrItem+'_v',text=baseAttrDic[attrItem],parent='J_projectManeger_subWin_FromLayout0')
             #右键菜单
             popmenu=cmds.popupMenu(parent=t1)
-            cmds.menuItem(c=partial(self.J_projectManeger_subWin_copyToClipBoard,t1),label=u'复制',parent=popmenu) 
+            cmds.menuItem(c=partial(self.J_projectManeger_subWin_copyToClipBoard,t1),label=u'复制信息',parent=popmenu) 
             cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
                 ac=[(t0,'top',23*index+6,"J_projectManager_subWin_obj"),\
                     (t1,'top',23*index+6,"J_projectManager_subWin_obj"),\
@@ -167,8 +181,12 @@ class J_projectManeger_itemAttr():
             t0=cmds.text('J_pm_subWin_'+attrItemK+'_k',label=attrItemK,parent='J_projectManeger_subWin_FromLayout0')
             t1=cmds.textField('J_pm_subWin_'+attrItemK+'_v',text=attrItemV,parent='J_projectManeger_subWin_FromLayout0')
             #右键菜单
-            popmenu=cmds.popupMenu(parent=t1)
-            cmds.menuItem(c=partial(self.J_projectManeger_subWin_copyToClipBoard,t1),label=u'复制',parent=popmenu) 
+            popmenu0=cmds.popupMenu(parent=t0)
+            cmds.menuItem(c=partial(self.J_projectManeger_subWin_delInfo,t0),label=u'删除属性',parent=popmenu0) 
+            
+            popmenu1=cmds.popupMenu(parent=t1)
+            cmds.menuItem(c=partial(self.J_projectManeger_subWin_copyToClipBoard,t1),label=u'复制信息',parent=popmenu1) 
+  
             cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
                 ac=[(t0,'top',23*index+12,"J_projectManager_subWin_obj"),\
                     (t1,'top',23*index+12,"J_projectManager_subWin_obj"),\
@@ -178,7 +196,7 @@ class J_projectManeger_itemAttr():
             index+=1
             
     #保存信息倒jmeta
-    def J_projectManeger_subWin_saveJmeta(self):
+    def J_projectManeger_subWin_saveJmeta(self,*arg):
         #现获取属性控件列表
         controlList=[]
         for item in cmds.lsUI( type='control' ):
@@ -189,14 +207,15 @@ class J_projectManeger_itemAttr():
             attrName=kItem.replace('J_pm_subWin_','')[0:-2]
             if self.j_meta.metaInfo['baseInfo'].has_key(attrName):
                 self.j_meta.metaInfo['baseInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1)
-            if self.j_meta.metaInfo['userInfo'].has_key(attrName):
+            #if self.j_meta.metaInfo['userInfo'].has_key(attrName):
+            else:
                 self.j_meta.metaInfo['userInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1)
         #保存信息文件
-        self.j_meta.J_saveMeta
+        self.j_meta.J_saveMeta()
         cmds.deleteUI('J_projectManeger_subWin',window=1)
         
     #添加属性按钮
-    def J_projectManeger_subWin_addInfo(self):
+    def J_projectManeger_subWin_addInfo(self,*arg):
         result = cmds.promptDialog(
             title='new attr',
             message='Enter Name:',
@@ -212,17 +231,33 @@ class J_projectManeger_itemAttr():
             if item.startswith('J_pm_subWin_') and item.endswith('_k'):
                 controlList.append(item)    
         if (attrText!=''):  
-            index=len(controlList)+1
+            index=len(controlList)
             t0=cmds.text('J_pm_subWin_'+attrText+'_k',label=attrText,parent='J_projectManeger_subWin_FromLayout0')
             t1=cmds.textField('J_pm_subWin_'+attrText+'_v',text=attrText,parent='J_projectManeger_subWin_FromLayout0')
+            #右键菜单
+            popmenu0=cmds.popupMenu(parent=t0)
+            cmds.menuItem(c=partial(self.J_projectManeger_subWin_delInfo,t0),label=u'删除属性',parent=popmenu0) 
+            
+            popmenu1=cmds.popupMenu(parent=t1)
+            cmds.menuItem(c=partial(self.J_projectManeger_subWin_copyToClipBoard,t1),label=u'复制信息',parent=popmenu1) 
+            
             cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
                 ac=[(t0,'top',23*index+12,"J_projectManager_subWin_obj"),\
                     (t1,'top',23*index+12,"J_projectManager_subWin_obj"),\
                     (t1,'left',1,t0)],\
                 af=[(t0,'left',1),(t1,'right',9)],\
                 ap=[(t0,'right',0,20)]) 
+    #删除属性按钮
+    def J_projectManeger_subWin_delInfo(self,*arg):
+
+        attrName=arg[0].split('J_pm_subWin_')[-1][0:-2]
+        if self.j_meta.metaInfo['userInfo'].has_key(attrName):
+            del self.j_meta.metaInfo['userInfo'][attrName]
+            self.j_meta.J_saveMeta()
+        inpath=cmds.scrollField('J_projectManager_subWin_obj',q=1,text=1)
+        self.__init__(inpath)
     #右键命令
-    def J_projectManeger_subWin_copyToClipBoard(*arg):
+    def J_projectManeger_subWin_copyToClipBoard(self,*arg):
         tx=cmds.textField(arg[0],q=1,text=1)
         os.system('echo '+tx+'|clip')
 if __name__=='__main__':
