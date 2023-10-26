@@ -54,7 +54,7 @@ global proc J_projectManeger()//主窗口
     
     
 
-    python("JpyModules.pipeline.J_projectManeger.J_projectManeger_init()");
+    python("JpyModules.pipeline.J_projectManeger.J_projectManeger()");
     python("JpyModules.public.J_deleteUnknownNode()");
     python("JpyModules.public.J_cleanVaccine_gene()");
     showWindow J_projectManager;
@@ -67,11 +67,7 @@ global proc J_projectManegerRunScriptJob()
     scriptJob -uid "J_resourceExporterWin" $temp;
 
 }
-global proc int lttt(string $str)
-{
-	print("selectCallBack :- str = " + $str  + "\n");
-	return 1;
-}
+
 
 global proc J_projectManeger_subWin()//主窗口
 {
