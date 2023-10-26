@@ -82,7 +82,7 @@ class J_projectManeger():
     #双击打开文件
     def J_projectManeger_doubleClick(self,itemName,itemLabel):
         #显示当前双击的文件名
-        print (itemName)
+        #print (itemName)
         #双击的文件是maya文件或者fbx则直接打开
         if os.path.splitext(itemName)[1].lower()  in {".ma",'.mb','.fbx'}:
             cmds.file(itemName,prompt=False,open=True,loadReferenceDepth='none',force=True)
@@ -125,12 +125,12 @@ class J_projectManeger():
                 #os.startfile(os.path.dirname(sel[0]))
                 temp=sel[0].replace('/','\\')
                 os.system('explorer /select, '+temp)
-        print (sel)
+        # (sel)
     def J_projectManeger_copyRelativeFilePath(self,*arg):
         sel=cmds.treeView(self.treeV,q=1, selectItem=1)
         if len(sel)>0:
             relativePath=sel[0].replace(self.projectPath,'')
-            print relativePath
+            #print relativePath
             os.system('echo '+relativePath+'|clip')
         
 #############################################################################################
@@ -209,7 +209,7 @@ class J_projectManeger_itemAttr():
                 self.j_meta.metaInfo['baseInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1)
             #if self.j_meta.metaInfo['userInfo'].has_key(attrName):
             else:
-                self.j_meta.metaInfo['userInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1)
+                self.j_meta.metaInfo['userInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1).strip() 
         #保存信息文件
         self.j_meta.J_saveMeta()
         cmds.deleteUI('J_projectManeger_subWin',window=1)
