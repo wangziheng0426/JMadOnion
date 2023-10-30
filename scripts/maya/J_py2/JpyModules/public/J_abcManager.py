@@ -10,6 +10,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 import os,sys,json
 import maya.api.OpenMaya as om2
+import pymel.core as pm
 #导出abc缓存,模式0普通模式,直接导出所选模型为一个整体abc文件
 #模式1单独导出每个模型文件,
 def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileName='',j_abcCachePath=''):
@@ -46,6 +47,7 @@ def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileNa
     logStr["settings"]["frameRate"]=cmds.currentUnit(query=True,time=True)
     logStr["settings"]["frameRange"]=[cmds.playbackOptions(query=True,minTime=True),
         cmds.playbackOptions(query=True,maxTime=True)]
+    logStr["settings"]['mode']=0
 
     #整体导出一个abc    
     count=0
@@ -53,8 +55,18 @@ def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileNa
         #写log倒材质↓
         logStr[count]={}#每个abc对应一组数据，0模式所有指定导出一个abc文件
         logStr[count]['abcFile']=cacheFileName+'.abc'#保存abc文件名
-        logStr[count]['selectedNode']=','.join(nodesToExport)#记录选择的节点
+        logStr[count]['selectedNode']=nodesToExport#记录选择的节点
         logStr[count]['meshs']={}#记录选择的节点下的所有mesh
+        logStr[count]['referenceFile']=''#记录选择的节点的映射文件
+        refFileList=[]
+        for item in nodesToExport:
+            if cmds.referenceQuery(item,isNodeReferenced=True):
+                refNode=cmds.referenceQuery(item,tr=1,referenceNode=1)
+                refFileList.append(cmds.referenceQuery(refNode,filename=1))
+            else:
+                refFileList.append('NoRef')
+        logStr[count]['referenceFile']= refFileList
+        #logStr[count]['namespace']=''#记录选择的节点的名字空间
         #根据设置导出材质球，添加信息，默认会输出材质球和信息
         if exportMat:
             for meshItem in J_getAllMeshs(nodesToExport):            
@@ -74,6 +86,7 @@ def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileNa
         mel.eval(exportString)
     #按照选择的对象每个单独导出一个abc
     if mode==1:
+        logStr["settings"]['mode']=1
         #配置导出命令
         exportString='AbcExport -j "-frameRange '+str(timeLineStart)+' '+str(timeLineEnd)
         if(len(exportAttr)>0):            
@@ -89,8 +102,15 @@ def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileNa
             #log
             logStr[count]={}
             logStr[count]['abcFile']=cacheFileName+'_'+itemName+'.abc'
-            logStr[count]['selectedNode']=item
-            logStr[count]['meshs']={}        
+            logStr[count]['selectedNode']=[item]
+            logStr[count]['meshs']={}    
+            logStr[count]['referenceFile']=['NoRef']#记录选择的节点的映射文件
+            if cmds.referenceQuery(item,isNodeReferenced=True):
+                refNode=cmds.referenceQuery(item,tr=1,referenceNode=1)
+                logStr[count]['referenceFile']=[cmds.referenceQuery(refNode,filename=1)]
+
+
+            #logStr[count]['namespace']=''#记录选择的节点的名字空间 
             #导出材质球，添加信息
             if exportMat:
                 for meshItem in J_getAllMeshs([item]):                
@@ -190,11 +210,13 @@ def J_exportMaterails():
 def J_importAbc():
     #读取jcl日志
     jclFile = cmds.fileDialog2(fileMode=1, caption="Import clothInfo")[0]
+    if jclFile==None: 
+        return
     jclDir=os.path.dirname(jclFile)
     fileId=open(jclFile,'r')
     abcInfo=json.load(fileId)
     fileId.close()
-    importlog=''
+
     cmds.currentUnit(time=abcInfo["settings"]["frameRate"])
     cmds.playbackOptions(minTime=abcInfo["settings"]["frameRange"][0])
     cmds.playbackOptions(maxTime=abcInfo["settings"]["frameRange"][1])
@@ -202,25 +224,15 @@ def J_importAbc():
     matImportedList=[]
     for k0,v0 in abcInfo.items():
         if k0=='settings':continue
-        selectedNodeParent=[]
-        for nItem in v0['selectedNode'].split("|")[:-1]:
-            selectedNodeParent.append(nItem.split(":")[-1])
-        selectedNodeParent='|'.join(selectedNodeParent)
-
         #第一层字典以序号作为key，每个字典对应一套abc文件和模型材质信息，关键字："abcFile"
         abcFile=v0["abcFile"]
         groupNode=cmds.createNode('transform',name=('J_abc_'+str(k0)+"_"+abcFile[:-4].split("@")[len(abcFile.split("@"))-1]))
         abcFile=os.path.dirname(jclFile)+"/"+v0["abcFile"]
+        #导入abc
         if os.path.exists(abcFile):
             mel.eval('AbcImport -mode import -reparent '+groupNode+' \"'+abcFile +'\";')
         #第二层字典关键字mesh包含模型名称和材质名称，导入材质球  
         for k1,v1 in v0['meshs'].items():
-            newMeshTrName=[]
-            for nItem1 in k1.split("|"):
-                newMeshTrName.append(nItem1.split(":")[-1])
-            newMeshTrName='|'+groupNode+('|'.join(newMeshTrName))[len(selectedNodeParent):]
-
-            #if cmds.objExists(newMeshTrName):  
             # 导入材质球   
             if v1!='':
                 for matFileName in v1.split(","):
@@ -511,5 +523,5 @@ def J_renameShadingEngine():
                     cmds.rename(seItem,mat[0])
 if __name__ == "__main__":
     #J_exportAbc(exportAttr=["SGInfo"])
-    J_exportAbc()
-   
+    #J_exportAbc()
+    J_importAbc()
