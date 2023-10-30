@@ -57,8 +57,7 @@ class J_meta():
         print (self.metaPath)
     #创建jmeta文件
     def J_createMeta(self,inputPath,projectPath):    
-        self.metaInfo['baseInfo']={'uuid':'','assetType':'',\
-            'fileType':'','user':mel.eval('getenv "USERNAME"'),'fullPath':'',\
+        self.metaInfo['baseInfo']={'uuid':'','user':mel.eval('getenv "USERNAME"'),'fullPath':'',\
             'relativePath':'','projectPath':projectPath}
         self.metaInfo['userInfo']={}
         #新建meta时创建uuid,记录文件绝对目录,工程目录,相对目录
