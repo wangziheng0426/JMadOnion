@@ -9,14 +9,29 @@
 
 import os,json,uuid
 import maya.mel as mel
+import maya.cmds as cmds
 #输入一个路径,如果是jmeta文件则直接读取,如果不是,则查询是否有jmeta文件,有则读取,没有则新建
 class J_meta():
     metaInfo={}
     metaPath=''
-    def __init__(self,inputPath,projectPath):    
+    #生成jmeta文件，需要输入文件是绝对路径，工程目录可以选添
+    def __init__(self,inputPath,projectPath=''):    
         inputPath=inputPath.replace('\\','/')
+        #如果未输入工程目录，则读取maya的工程目录
+        if projectPath=='':
+            projectPath=cmds.workspace(query=True,rd=True)
+        #如果发现当前文件不在maya默认工程目录下，则从当前文件目录向上查找projectSetting.jmeta，将找到的第一个文件认定为工程目录
+        if not inputPath.startswith(projectPath):
+            dirName=inputPath
+            while os.path.dirname(dirName)!=dirName:
+                if os.path.isdir(dirName):
+                    for itemx in os.listdir(dirName):
+                        if itemx.endswith('_projectSetting.jmeta'):
+                            projectPath=dirName
+                            break
+                dirName=os.path.dirname(dirName)
         projectPath=projectPath.replace('\\','/')
-        if os.path.exists(inputPath) :
+        if os.path.exists(inputPath) and os.path.exists(projectPath) :
             #匹配jmeta文件
             if inputPath.endswith('.jmeta'):
                 self.metaPath=inputPath               
@@ -29,7 +44,7 @@ class J_meta():
             if not os.path.exists(self.metaPath):
                 #没有则新建，并向上搜索meta读取其中属性，uuid，hash不读取
                 dirName=inputPath
-                while dirName.startswith(projectPath) :
+                while dirName.startswith(projectPath):
                     #查找文件的jmeta
                     parentJmetafile=dirName+'.jmeta'
                     #逐层向上找jmeta.如果已经找到工程目录一层，则不再向上找
@@ -59,11 +74,16 @@ class J_meta():
     def J_createMeta(self,inputPath,projectPath):    
         self.metaInfo['baseInfo']={'uuid':'','user':mel.eval('getenv "USERNAME"'),'fullPath':'',\
             'relativePath':'','projectPath':projectPath}
+        
         self.metaInfo['userInfo']={}
+        if inputPath==projectPath:
+            self.metaInfo['userInfo']={'charactorPath':'','propPath':'',\
+                'setPath':''}
         #新建meta时创建uuid,记录文件绝对目录,工程目录,相对目录
         self.metaInfo['baseInfo']['uuid']=str(uuid.uuid1())
         self.metaInfo['baseInfo']['fullPath']=inputPath
-
+        if inputPath.startswith(projectPath):
+            self.metaInfo['baseInfo']['relativePath']=inputPath.replace(projectPath,'')
         
     #重置
     def J_saveMeta(self):
