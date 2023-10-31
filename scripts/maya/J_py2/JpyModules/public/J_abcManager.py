@@ -48,7 +48,7 @@ def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileNa
     logStr["settings"]["frameRange"]=[cmds.playbackOptions(query=True,minTime=True),
         cmds.playbackOptions(query=True,maxTime=True)]
     logStr["settings"]['mode']=0
-
+    logStr["settings"]['projectPath']=cmds.workspace(q=1,rd=1)[0:-1]
     #整体导出一个abc    
     count=0
     if mode==0:   
@@ -118,10 +118,10 @@ def J_exportAbc(mode=1,exportMat=True,nodesToExport=[],exportAttr=[],cacheFileNa
             exportStringa+=' -file '+j_abcCachePath+'/'+cacheFileName+'_'+itemName+'.abc"'
             mel.eval(exportStringa)
             count=count+1
-    if exportMat:
-        outFile=open(j_abcCachePath+'/abcLog.jcl','w')
-        outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":"))) 
-        outFile.close()
+    #if exportMat:
+    outFile=open(j_abcCachePath+'/'+cacheFileName+'_Log.jcl','w')
+    outFile.write(json.dumps(logStr,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":"))) 
+    outFile.close()
     #cmds.select(nodesToExport)
     #os.startfile(j_abcCachePath)    
 #为模型添加自定义属性，并将材质信息写入，最后导出材质球，返回导出材质文件列表

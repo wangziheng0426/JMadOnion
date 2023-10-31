@@ -2,7 +2,7 @@
 ##  @package J_resourceExporter
 #
 ##  @brief   
-##  @author æ¡”
+##  @author ½Û
 ##  @version 1.0
 ##  @date   12:03 2023/10/10
 #  History:  
@@ -25,23 +25,23 @@ class J_projectManeger():
         if self.projectPath.endswith('/'):
             self.projectPath=self.projectPath[0:-1]
             cmds.textField('J_projectManager_projectPath',e=1,text=self.projectPath)
-        #æ„å»ºé¡¹ç›®ç›®å½•
+        #¹¹½¨ÏîÄ¿Ä¿Â¼
         cmds.treeView(self.treeV,edit=1, addItem=(self.projectPath, "") )
         cmds.treeView(self.treeV,edit=1, image=(self.projectPath, 1,'SP_DirClosedIcon.png') )
         cmds.treeView(self.treeV,edit=1, image=(self.projectPath, 2,'info.png') )
         
         cmds.button('J_projectManager_loadPath',e=1,c=self.J_projectManeger_setProject) 
-        #å³é”®èœå•
+        #ÓÒ¼ü²Ëµ¥
         popm=cmds.popupMenu(parent=self.treeV)
-        cmds.menuItem(parent=popm,label=u"ç´¢å¼•åˆ°æ–‡ä»¶",c=self.J_projectManeger_openFilePath )
-        cmds.menuItem(parent=popm,label=u"å¤åˆ¶ç›¸å¯¹ç›®å½•",c=self.J_projectManeger_copyRelativeFilePath )
+        cmds.menuItem(parent=popm,label=u"Ë÷Òıµ½ÎÄ¼ş",c=self.J_projectManeger_openFilePath )
+        cmds.menuItem(parent=popm,label=u"¸´ÖÆÏà¶ÔÄ¿Â¼",c=self.J_projectManeger_copyRelativeFilePath )
         
         if os.path.exists(self.projectPath):
-            #å¦‚æœå½“å‰æ‰“å¼€çš„æ–‡ä»¶åœ¨å·¥ç¨‹ç›®å½•ä¸‹,åˆ™åˆ›å»ºç›®å½•ç»“æ„,å¦‚æœä¸åœ¨,å°±æ ¹æ®å·¥ç¨‹ç›®å½•ç”Ÿæˆ
+            #Èç¹ûµ±Ç°´ò¿ªµÄÎÄ¼şÔÚ¹¤³ÌÄ¿Â¼ÏÂ,Ôò´´½¨Ä¿Â¼½á¹¹,Èç¹û²»ÔÚ,¾Í¸ù¾İ¹¤³ÌÄ¿Â¼Éú³É
             sceneFileName=cmds.file(query=True,sceneName=True)            
             for fitem in os.listdir(self.projectPath):              
                 self.J_projectManeger_treeAddItem(self.projectPath,self.projectPath+'/'+fitem)
-            #ç¡®è®¤æ–‡ä»¶å†å·¥ç¨‹ç›®å½•ä¸‹
+            #È·ÈÏÎÄ¼şÔÙ¹¤³ÌÄ¿Â¼ÏÂ
             if sceneFileName.startswith(self.projectPath):
                 projectPathTemp=self.projectPath
                 for pItem in os.path.dirname(sceneFileName).replace(self.projectPath,'').split('/'):
@@ -50,45 +50,45 @@ class J_projectManeger():
                         self.J_projectManeger_doubleClick(projectPathTemp,'')
                 cmds.treeView(self.treeV,e=1, selectItem=(sceneFileName,True))
                 cmds.treeView(self.treeV,e=1, showItem=sceneFileName)
-        #è®¾ç½®ç•Œé¢å‘½ä»¤
-        #åŒå‡»å‘½ä»¤
+        #ÉèÖÃ½çÃæÃüÁî
+        #Ë«»÷ÃüÁî
         cmds.treeView(self.treeV,edit=1, itemDblClickCommand2=self.J_projectManeger_doubleClick )        
         cmds.treeView(self.treeV,edit=1, contextMenuCommand=self.J_projectManeger_popupMenuCommand )
         cmds.treeView(self.treeV,edit=1, pressCommand=[(2,self.J_projectManeger_openSubWin)])
 
-    #æ·»åŠ æ¡ç›®
+    #Ìí¼ÓÌõÄ¿
     def J_projectManeger_treeAddItem(self,parentItem,item):
-        #jsonæ–‡ä»¶å’Œjmetaæ–‡ä»¶ä¸è¿›å…¥ui
+        #jsonÎÄ¼şºÍjmetaÎÄ¼ş²»½øÈëui
         if not item.endswith('.json')  and not item.endswith('.jmeta') :      
-            #ä¸å­˜åœ¨è¿™ä¸ªå…ƒç´ åˆ™åˆ›å»º
+            #²»´æÔÚÕâ¸öÔªËØÔò´´½¨
             if not cmds.treeView(self.treeV,q=1, itemExists=item ):
                 cmds.treeView(self.treeV,edit=1, addItem=(item, parentItem))
-            #ä¿®æ”¹æ˜¾ç¤ºåç§°
+            #ĞŞ¸ÄÏÔÊ¾Ãû³Æ
             itemDisplayName=os.path.basename(item)
             cmds.treeView(self.treeV,edit=1, displayLabel=(item, itemDisplayName))
-            #æ”¹å›¾æ ‡
+            #¸ÄÍ¼±ê
             iconDic={'folder':'SP_DirClosedIcon.png','openfolder':'SP_DirOpenIcon.png','.ma':'kAlertQuestionIcon.png',\
                 '.mb':'kAlertQuestionIcon.png','needSave':'kAlertStopIcon.png','tex':'out_file.png','file':'SP_FileIcon',\
                 '.mov':'playblast.png','.mp4':'playblast.png' ,'.avi':'playblast.png' ,'.m4v':'playblast.png',\
                 '.fbx':'fbxReview.png','.abc':'animateSnapshot.png'}
             splitName=os.path.splitext(item)
             iconKey='file'
-            #åˆ†é…å›¾æ ‡
+            #·ÖÅäÍ¼±ê
             if splitName[1]=='':iconKey='folder'
             if splitName[1].lower() in {".jpg",'.tga','.jpeg','tif','.png','.hdr','.tiff',}:iconKey='tex'
             if iconDic.has_key(splitName[1]):iconKey=splitName[1]
             cmds.treeView(self.treeV,edit=1, image=(item, 1,iconDic[iconKey]) )
             cmds.treeView(self.treeV,edit=1, image=(item, 2,'polyGear.png') )
 
-    #åŒå‡»æ‰“å¼€æ–‡ä»¶
+    #Ë«»÷´ò¿ªÎÄ¼ş
     def J_projectManeger_doubleClick(self,itemName,itemLabel):
-        #æ˜¾ç¤ºå½“å‰åŒå‡»çš„æ–‡ä»¶å
-        #åŒå‡»çš„æ–‡ä»¶æ˜¯mayaæ–‡ä»¶æˆ–è€…fbxåˆ™ç›´æ¥æ‰“å¼€
+        #ÏÔÊ¾µ±Ç°Ë«»÷µÄÎÄ¼şÃû
+        #Ë«»÷µÄÎÄ¼şÊÇmayaÎÄ¼ş»òÕßfbxÔòÖ±½Ó´ò¿ª
         if os.path.splitext(itemName)[1].lower()  in {".ma",'.mb','.fbx'}:
             cmds.file(itemName,prompt=False,open=True,loadReferenceDepth='none',force=True)
-        #åŒå‡»ç›®å½•ï¼Œåˆ™åˆ›å»ºå­å±‚å¯¹è±¡
+        #Ë«»÷Ä¿Â¼£¬Ôò´´½¨×Ó²ã¶ÔÏó
         if os.path.isdir(itemName):
-            #è¯»å–ä¸‹å±‚ç›®å½•,å¦‚æœå·²ç»æœ‰å­é›†,åˆ™å…ˆæ¸…é™¤
+            #¶ÁÈ¡ÏÂ²ãÄ¿Â¼,Èç¹ûÒÑ¾­ÓĞ×Ó¼¯,ÔòÏÈÇå³ı
             if len(cmds.treeView(self.treeV,q=1, children=itemName ))>1:
                 for ritem in cmds.treeView(self.treeV,q=1, children=itemName )[1:]:
                     if cmds.treeView(self.treeV,q=1, itemExists=ritem ):
@@ -97,12 +97,12 @@ class J_projectManeger():
                 self.J_projectManeger_treeAddItem(itemName,itemName+'/'+fitem)
         if os.path.splitext(itemName)[1].lower()  in {".mp4",'.avi','.mov','.m4v'}:
             os.startfile(itemName)
-    #æ‰“å¼€è®¾ç½®çª—å£
+    #´ò¿ªÉèÖÃ´°¿Ú
     def J_projectManeger_openSubWin(self,itemName,itemLabel):        
-        #æ‰“å¼€å­çª—å£
+        #´ò¿ª×Ó´°¿Ú
         mel.eval('J_projectManeger_subWin()')
         self.subwin=JpyModules.pipeline.J_projectManeger.J_projectManeger_itemAttr(itemName)
-    #è®¾ç½®å·¥ç¨‹ç›®å½•
+    #ÉèÖÃ¹¤³ÌÄ¿Â¼
     def J_projectManeger_setProject(self,*arg):
         self.projectPath= cmds.fileDialog2(fileMode=2)
         if self.projectPath!=None: 
@@ -112,12 +112,12 @@ class J_projectManeger():
         cmds.textField('J_projectManager_projectPath',e=1,text=self.projectPath)
         mel.eval('setProject \"'+self.projectPath+"\"")
         self.__init__()
-    #å³é”®é¢„åˆ¶èœå•,ä¸ºäº†èƒ½è·å–è¡¨æ ¼æ•°æ®ï¼Œéœ€è¦å…ˆé€‰æ‹©å¯¹åº”è¡Œ
+    #ÓÒ¼üÔ¤ÖÆ²Ëµ¥,ÎªÁËÄÜ»ñÈ¡±í¸ñÊı¾İ£¬ĞèÒªÏÈÑ¡Ôñ¶ÔÓ¦ĞĞ
     def J_projectManeger_popupMenuCommand(self,itemName):
         cmds.treeView('J_projectManager_TreeView',e=1, clearSelection=1)
         cmds.treeView('J_projectManager_TreeView',e=1, selectItem=(itemName,True))
         return True
-    #æ‰“å¼€æ–‡ä»¶æ‰€åœ¨ç›®å½•
+    #´ò¿ªÎÄ¼şËùÔÚÄ¿Â¼
     def J_projectManeger_openFilePath(self,*arg):
         sel=cmds.treeView(self.treeV,q=1, selectItem=1)
         if len(sel)>0:
@@ -135,25 +135,25 @@ class J_projectManeger():
             os.system('echo '+relativePath+'|clip')
         
 #############################################################################################
-#å­çª—å£é€»è¾‘
+#×Ó´°¿ÚÂß¼­
 class J_projectManeger_itemAttr():
     j_meta=''
-    #ä»…æ˜¾ç¤ºå¯ä¿®æ”¹çš„metaå±æ€§
+    #½öÏÔÊ¾¿ÉĞŞ¸ÄµÄmetaÊôĞÔ
     baseAttrList=['uuid','user']
     def __init__(self,inPath):        
-        #åˆ›å»ºä¸€åˆ—textæ˜¾ç¤ºå±æ€§,ä¸¤åˆ—textfieldå¡«å±æ€§
+        #´´½¨Ò»ÁĞtextÏÔÊ¾ÊôĞÔ,Á½ÁĞtextfieldÌîÊôĞÔ
         cmds.scrollField('J_projectManager_subWin_obj',e=1,text=inPath)
         cmds.button('J_projectManager_subWin_saveInfo',e=1,c=self.J_projectManeger_subWin_saveJmeta) ; 
         cmds.button('J_projectManager_subWin_addInfo',e=1,c=self.J_projectManeger_subWin_addInfo) ; 
-        #è¯»å–meta
+        #¶ÁÈ¡meta
         projectPath=cmds.textField('J_projectManager_projectPath',q=1,text=1)
         self.j_meta=JpyModules.pipeline.J_meta(inPath,projectPath)
         self.J_projectManeger_subWin_createTextList()
 
 
-    #ç”Ÿæˆå±æ€§é¢æ¿åˆ—è¡¨
+    #Éú³ÉÊôĞÔÃæ°åÁĞ±í
     def J_projectManeger_subWin_createTextList(self):
-        #å…ˆåˆ é™¤å·²æœ‰çš„å…ƒç´ ,å†é‡æ–°åˆ›å»º,éœ€è¦å…ˆæ¸…ç†å¼¹å‡ºèœå•,ä¸ç„¶mayaä¼šå´©æºƒ
+        #ÏÈÉ¾³ıÒÑÓĞµÄÔªËØ,ÔÙÖØĞÂ´´½¨,ĞèÒªÏÈÇåÀíµ¯³ö²Ëµ¥,²»È»maya»á±ÀÀ£
         if cmds.formLayout('J_projectManeger_subWin_FromLayout1',q=1,exists=1):
             cmds.deleteUI('J_projectManeger_subWin_FromLayout1')
             print ('del')
@@ -162,67 +162,67 @@ class J_projectManeger_itemAttr():
         cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
             ac=[('J_projectManeger_subWin_FromLayout1','top',3,"J_projectManager_subWin_obj")],\
             ap=[('J_projectManeger_subWin_FromLayout1','right',1,99),('J_projectManeger_subWin_FromLayout1','left',1,1)]) 
-        #åŸºç¡€å±æ€§é¢æ¿
+        #»ù´¡ÊôĞÔÃæ°å
         index=0
         baseAttrDic=self.j_meta.metaInfo['baseInfo']
         for attrItem in self.baseAttrList:
-            #é€ä¸ªåˆ›å»ºå±æ€§é¢æ¿
+            #Öğ¸ö´´½¨ÊôĞÔÃæ°å
             if baseAttrDic.has_key(attrItem):
                 self.J_projectManeger_subWin_createTextField(attrItem,baseAttrDic[attrItem],index)
                 index=index+1
         if  cmds.textField('J_pm_subWin_uuid_v',q=1,exists=1):
             cmds.textField('J_pm_subWin_uuid_v',e=1,editable=0)        
         userAttrDic=self.j_meta.metaInfo['userInfo']
-        #åˆ›å»ºè‡ªå®šä¹‰å±æ€§é¢æ¿
+        #´´½¨×Ô¶¨ÒåÊôĞÔÃæ°å
         if len(userAttrDic)>0:
             for attrItemK,attrItemV in userAttrDic.items():
-                #é€ä¸ªåˆ›å»ºå±æ€§é¢æ¿
+                #Öğ¸ö´´½¨ÊôĞÔÃæ°å
                 self.J_projectManeger_subWin_createTextField(attrItemK,attrItemV,index)
                 index=index+1
-    #åˆ›å»ºè¡¨æ ¼å…ƒç´ 
+    #´´½¨±í¸ñÔªËØ
     def J_projectManeger_subWin_createTextField(self,textLabel,textFieldText,index):
         t0='J_pm_subWin_'+textLabel+'_k'
         t1='J_pm_subWin_'+textLabel+'_v'
         if not cmds.text(t0,q=1,exists=1):
             t0=cmds.text(t0,label=textLabel,w=84,parent='J_projectManeger_subWin_FromLayout1')
-            #å³é”®èœå•
+            #ÓÒ¼ü²Ëµ¥
             popmenu0=cmds.popupMenu('J_pm_subWin_pop0_'+textLabel,parent=t0)
             cmds.menuItem('J_pm_subWin_popMi0_'+textLabel,\
-                c=partial(self.J_projectManeger_subWin_delInfo,t0),label=u'åˆ é™¤å±æ€§',parent=popmenu0) 
+                c=partial(self.J_projectManeger_subWin_delInfo,t0),label=u'É¾³ıÊôĞÔ',parent=popmenu0) 
 
             cmds.formLayout('J_projectManeger_subWin_FromLayout1',e=1,\
                 af=[(t0,'top',23*index+6),(t0,'left',1)],)
         if not cmds.textField(t1,q=1,exists=1):
             t1=cmds.textField(t1,text=textFieldText,parent='J_projectManeger_subWin_FromLayout1')
-            #å³é”®èœå•
+            #ÓÒ¼ü²Ëµ¥
             
             popmenu1=cmds.popupMenu('J_pm_subWin_pop1_'+textLabel,parent=t1)
             cmds.menuItem('J_pm_subWin_popMi1_'+textLabel,\
-                c=partial(self.J_projectManeger_subWin_copyToClipBoard,t1),label=u'å¤åˆ¶ä¿¡æ¯',parent=popmenu1) 
+                c=partial(self.J_projectManeger_subWin_copyToClipBoard,t1),label=u'¸´ÖÆĞÅÏ¢',parent=popmenu1) 
 
             cmds.formLayout('J_projectManeger_subWin_FromLayout1',e=1,\
                 af=[(t1,'top',23*index+6),(t1,'right',1),(t1,'left',85)]) 
-    #ä¿å­˜ä¿¡æ¯å€’jmeta
+    #±£´æĞÅÏ¢µ¹jmeta
     def J_projectManeger_subWin_saveJmeta(self,*arg):
-        #ç°è·å–å±æ€§æ§ä»¶åˆ—è¡¨
+        #ÏÖ»ñÈ¡ÊôĞÔ¿Ø¼şÁĞ±í
         controlList=[]
         for item in cmds.lsUI( type='control' ):
             if item.startswith('J_pm_subWin_') and item.endswith('_k'):
                 controlList.append(item)
         self.j_meta.metaInfo['userInfo'].clear()
         for kItem in controlList:
-            #åŒºåˆ†åŸºç¡€å±æ€§,å’Œè‡ªå®šä¹‰å±æ€§            
+            #Çø·Ö»ù´¡ÊôĞÔ,ºÍ×Ô¶¨ÒåÊôĞÔ            
             attrName=kItem.replace('J_pm_subWin_','')[0:-2]
             if self.j_meta.metaInfo['baseInfo'].has_key(attrName):
                 self.j_meta.metaInfo['baseInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1)
             #if self.j_meta.metaInfo['userInfo'].has_key(attrName):
             else:
                 self.j_meta.metaInfo['userInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1).strip() 
-        #ä¿å­˜ä¿¡æ¯æ–‡ä»¶
+        #±£´æĞÅÏ¢ÎÄ¼ş
         self.j_meta.J_saveMeta()
         cmds.deleteUI('J_projectManeger_subWin',window=1)
         
-    #æ·»åŠ å±æ€§æŒ‰é’®
+    #Ìí¼ÓÊôĞÔ°´Å¥
     def J_projectManeger_subWin_addInfo(self,*arg):
         result = cmds.promptDialog(
             title='new attr',
@@ -235,11 +235,11 @@ class J_projectManeger_itemAttr():
         if result == 'OK':
             attrText = cmds.promptDialog(query=True, text=True)
         if self.j_meta.metaInfo['userInfo'].has_key(attrText):
-            print (attrText+u":æ­¤å­—æ®µå·²å­˜åœ¨")
+            print (attrText+u":´Ë×Ö¶ÎÒÑ´æÔÚ")
         else:
             self.j_meta.metaInfo['userInfo'][attrText]=''
         self.J_projectManeger_subWin_createTextList()
-    #åˆ é™¤å±æ€§æŒ‰é’®
+    #É¾³ıÊôĞÔ°´Å¥
     def J_projectManeger_subWin_delInfo(self,*arg):
         attrName=arg[0].split('J_pm_subWin_')[-1][0:-2]
         if self.j_meta.metaInfo['userInfo'].has_key(attrName):
@@ -255,7 +255,7 @@ class J_projectManeger_itemAttr():
             #inpath=cmds.scrollField('J_projectManager_subWin_obj',q=1,text=1)
             #self.__init__(inpath)
             #self.J_projectManeger_subWin_createTextList()
-    #å³é”®å‘½ä»¤
+    #ÓÒ¼üÃüÁî
     def J_projectManeger_subWin_copyToClipBoard(self,*arg):
         tx=cmds.textField(arg[0],q=1,text=1)
         os.system('echo '+tx+'|clip')

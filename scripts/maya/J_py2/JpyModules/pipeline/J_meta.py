@@ -2,7 +2,7 @@
 ##  @package J_meta
 #
 ##  @brief   
-##  @author æ¡”
+##  @author ½Û
 ##  @version 1.0
 ##  @date   12:03 2023/10/25
 #  History:  
@@ -10,17 +10,17 @@
 import os,json,uuid
 import maya.mel as mel
 import maya.cmds as cmds
-#è¾“å…¥ä¸€ä¸ªè·¯å¾„,å¦‚æœæ˜¯jmetaæ–‡ä»¶åˆ™ç›´æ¥è¯»å–,å¦‚æœä¸æ˜¯,åˆ™æŸ¥è¯¢æ˜¯å¦æœ‰jmetaæ–‡ä»¶,æœ‰åˆ™è¯»å–,æ²¡æœ‰åˆ™æ–°å»º
+#ÊäÈëÒ»¸öÂ·¾¶,Èç¹ûÊÇjmetaÎÄ¼şÔòÖ±½Ó¶ÁÈ¡,Èç¹û²»ÊÇ,Ôò²éÑ¯ÊÇ·ñÓĞjmetaÎÄ¼ş,ÓĞÔò¶ÁÈ¡,Ã»ÓĞÔòĞÂ½¨
 class J_meta():
     metaInfo={}
     metaPath=''
-    #ç”Ÿæˆjmetaæ–‡ä»¶ï¼Œéœ€è¦è¾“å…¥æ–‡ä»¶æ˜¯ç»å¯¹è·¯å¾„ï¼Œå·¥ç¨‹ç›®å½•å¯ä»¥é€‰æ·»
+    #Éú³ÉjmetaÎÄ¼ş£¬ĞèÒªÊäÈëÎÄ¼şÊÇ¾ø¶ÔÂ·¾¶£¬¹¤³ÌÄ¿Â¼¿ÉÒÔÑ¡Ìí
     def __init__(self,inputPath,projectPath=''):    
         inputPath=inputPath.replace('\\','/')
-        #å¦‚æœæœªè¾“å…¥å·¥ç¨‹ç›®å½•ï¼Œåˆ™è¯»å–mayaçš„å·¥ç¨‹ç›®å½•
+        #Èç¹ûÎ´ÊäÈë¹¤³ÌÄ¿Â¼£¬Ôò¶ÁÈ¡mayaµÄ¹¤³ÌÄ¿Â¼
         if projectPath=='':
             projectPath=cmds.workspace(query=True,rd=True)
-        #å¦‚æœå‘ç°å½“å‰æ–‡ä»¶ä¸åœ¨mayaé»˜è®¤å·¥ç¨‹ç›®å½•ä¸‹ï¼Œåˆ™ä»å½“å‰æ–‡ä»¶ç›®å½•å‘ä¸ŠæŸ¥æ‰¾projectSetting.jmetaï¼Œå°†æ‰¾åˆ°çš„ç¬¬ä¸€ä¸ªæ–‡ä»¶è®¤å®šä¸ºå·¥ç¨‹ç›®å½•
+        #Èç¹û·¢ÏÖµ±Ç°ÎÄ¼ş²»ÔÚmayaÄ¬ÈÏ¹¤³ÌÄ¿Â¼ÏÂ£¬Ôò´Óµ±Ç°ÎÄ¼şÄ¿Â¼ÏòÉÏ²éÕÒprojectSetting.jmeta£¬½«ÕÒµ½µÄµÚÒ»¸öÎÄ¼şÈÏ¶¨Îª¹¤³ÌÄ¿Â¼
         if not inputPath.startswith(projectPath):
             dirName=inputPath
             while os.path.dirname(dirName)!=dirName:
@@ -32,45 +32,45 @@ class J_meta():
                 dirName=os.path.dirname(dirName)
         projectPath=projectPath.replace('\\','/')
         if os.path.exists(inputPath) and os.path.exists(projectPath) :
-            #åŒ¹é…jmetaæ–‡ä»¶
+            #Æ¥ÅäjmetaÎÄ¼ş
             if inputPath.endswith('.jmeta'):
                 self.metaPath=inputPath               
             else:                
                 self.metaPath=inputPath+'.jmeta'
-            #å¦‚æœè¾“å…¥ç›®å½•å°±æ˜¯å·¥ç¨‹ç›®å½•,åˆ™åœ¨å·¥ç¨‹ç›®å½•ä¸‹ç”Ÿæˆmeta
+            #Èç¹ûÊäÈëÄ¿Â¼¾ÍÊÇ¹¤³ÌÄ¿Â¼,ÔòÔÚ¹¤³ÌÄ¿Â¼ÏÂÉú³Émeta
             if inputPath==projectPath:
                 self.metaPath=inputPath+'/'+os.path.basename(inputPath)+'_projectSetting.jmeta'
-            #metaå­˜åœ¨åˆ™è¯»å–,ä¸å­˜åœ¨åˆ™æ–°å»º,æ–°å»ºæ—¶é€å±‚å‘ä¸Šæœç´¢ä¸Šå±‚æ–‡ä»¶å¤¹jmeta
+            #meta´æÔÚÔò¶ÁÈ¡,²»´æÔÚÔòĞÂ½¨,ĞÂ½¨Ê±Öğ²ãÏòÉÏËÑË÷ÉÏ²ãÎÄ¼ş¼Ğjmeta
             if not os.path.exists(self.metaPath):
-                #æ²¡æœ‰åˆ™æ–°å»ºï¼Œå¹¶å‘ä¸Šæœç´¢metaè¯»å–å…¶ä¸­å±æ€§ï¼Œuuidï¼Œhashä¸è¯»å–
+                #Ã»ÓĞÔòĞÂ½¨£¬²¢ÏòÉÏËÑË÷meta¶ÁÈ¡ÆäÖĞÊôĞÔ£¬uuid£¬hash²»¶ÁÈ¡
                 dirName=inputPath
                 while dirName.startswith(projectPath):
-                    #æŸ¥æ‰¾æ–‡ä»¶çš„jmeta
+                    #²éÕÒÎÄ¼şµÄjmeta
                     parentJmetafile=dirName+'.jmeta'
-                    #é€å±‚å‘ä¸Šæ‰¾jmeta.å¦‚æœå·²ç»æ‰¾åˆ°å·¥ç¨‹ç›®å½•ä¸€å±‚ï¼Œåˆ™ä¸å†å‘ä¸Šæ‰¾
+                    #Öğ²ãÏòÉÏÕÒjmeta.Èç¹ûÒÑ¾­ÕÒµ½¹¤³ÌÄ¿Â¼Ò»²ã£¬Ôò²»ÔÙÏòÉÏÕÒ
                     if dirName==projectPath:
                         parentJmetafile=dirName+'/'+os.path.basename(dirName)+'_projectSetting.jmeta'
                     if os.path.exists(parentJmetafile):
-                        print (u'æ‰¾åˆ°ä¸Šå±‚jmeta,è¯»å–:'+parentJmetafile)
+                        print (u'ÕÒµ½ÉÏ²ãjmeta,¶ÁÈ¡:'+parentJmetafile)
                         fileo=open(parentJmetafile,'r')
                         self.metaInfo=json.load(fileo)
                         fileo.close()
                         break          
                     dirName=os.path.dirname(dirName)
                     
-                #ä¸Šå±‚ç›®å½•ä¹Ÿæ²¡æ‰¾åˆ°jmateçš„æƒ…å†µä¸‹ï¼Œè‡ªåŠ¨ç”Ÿæˆ                   
+                #ÉÏ²ãÄ¿Â¼Ò²Ã»ÕÒµ½jmateµÄÇé¿öÏÂ£¬×Ô¶¯Éú³É                   
                 if len(self.metaInfo)<1:
                     self.J_createMeta(inputPath,projectPath)
-                    print (u'æ²¡æœ‰æ‰¾åˆ°ä»»ä½•jmeta,æ–°å»ºjmetaæ•°æ®')
-                #æ–°å»ºmetaæˆ–è€…è¯»å–ä¸Šå±‚metaéœ€è¦é‡ç½®uuid
+                    print (u'Ã»ÓĞÕÒµ½ÈÎºÎjmeta,ĞÂ½¨jmetaÊı¾İ')
+                #ĞÂ½¨meta»òÕß¶ÁÈ¡ÉÏ²ãmetaĞèÒªÖØÖÃuuid
                 self.metaInfo['baseInfo']['uuid']=str(uuid.uuid1())
             else:
                 
                 self.J_loadMeta() 
         else:
-            print (inputPath+u':ä¸å­˜åœ¨')
+            print (inputPath+u':²»´æÔÚ')
         print (self.metaPath)
-    #åˆ›å»ºjmetaæ–‡ä»¶
+    #´´½¨jmetaÎÄ¼ş
     def J_createMeta(self,inputPath,projectPath):    
         self.metaInfo['baseInfo']={'uuid':'','user':mel.eval('getenv "USERNAME"'),'fullPath':'',\
             'relativePath':'','projectPath':projectPath}
@@ -79,24 +79,24 @@ class J_meta():
         if inputPath==projectPath:
             self.metaInfo['userInfo']={'charactorPath':'','propPath':'',\
                 'setPath':''}
-        #æ–°å»ºmetaæ—¶åˆ›å»ºuuid,è®°å½•æ–‡ä»¶ç»å¯¹ç›®å½•,å·¥ç¨‹ç›®å½•,ç›¸å¯¹ç›®å½•
+        #ĞÂ½¨metaÊ±´´½¨uuid,¼ÇÂ¼ÎÄ¼ş¾ø¶ÔÄ¿Â¼,¹¤³ÌÄ¿Â¼,Ïà¶ÔÄ¿Â¼
         self.metaInfo['baseInfo']['uuid']=str(uuid.uuid1())
         self.metaInfo['baseInfo']['fullPath']=inputPath
         if inputPath.startswith(projectPath):
             self.metaInfo['baseInfo']['relativePath']=inputPath.replace(projectPath,'')
         
-    #é‡ç½®
+    #ÖØÖÃ
     def J_saveMeta(self):
         fileo=open(self.metaPath,'w')
         fileo.write(json.dumps(self.metaInfo,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":")))
         fileo.close()
-        print (u'ä¿å­˜jmetaä¿¡æ¯åˆ°:'+self.metaPath)
-    #è¯»å–
+        print (u'±£´æjmetaĞÅÏ¢µ½:'+self.metaPath)
+    #¶ÁÈ¡
     def J_loadMeta(self):
         fileo=open(self.metaPath,'r')
         self.metaInfo=json.load(fileo)
         fileo.close()
-        print (u'è¯»å–jmetaæ–‡ä»¶:'+self.metaPath)
+        print (u'¶ÁÈ¡jmetaÎÄ¼ş:'+self.metaPath)
 
     
     
