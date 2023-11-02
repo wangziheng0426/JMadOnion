@@ -91,7 +91,7 @@ global proc string J_playBlastTool()//≈ƒ∆¡π§æﬂ
                 checkBox -l  "ÀÆ”°" -onCommand ("J_playBlast_loadLogo(\"J_playBlastWaterMarkCheckBox\")") J_playBlastWaterMarkCheckBox;
 
                 button -h 36 -label "≈ƒ∆¡" -command "J_playBlastOutPut" J_playBlastRunPBBu;
-                button -h 36 -label "‰÷»æ‘§¿¿" -command "J_playBlastOutPut" J_playBlastRenderBu;
+                button -h 36 -label "‰÷»æ‘§¿¿" -command "J_playRenderOutPut" J_playBlastRenderBu;
                 formLayout -e 
                     -af J_playBlastWaterMarkCheckBox left 4
                     -af J_playBlastWaterMarkCheckBox top 3
@@ -208,7 +208,7 @@ global proc J_playBlastOutPut()
     string $temp="JpyModules.animation.J_playBlast.J_playBlast_outPut(res=["+$res[0]+","+$res[1]+"],waterMark='"+$waterMark+"')";
     python($temp);
 }
-global proc J_playBlastOutPut()
+global proc J_playRenderOutPut()
 {
     python("JpyModules.render.J_renderPreview()");
 }

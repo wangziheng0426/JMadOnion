@@ -121,8 +121,10 @@ def J_renderPreview(resolution=[],camera='',animationRange=[],renderer="arnold",
         if renderer!="":
             cmds.setAttr("defaultRenderGlobals.currentRenderer",renderer,type='string')
         if renderer=='arnold':
+            if not cmds.objExists('defaultArnoldDriver'):
+                mel.eval('unifiedRenderGlobalsWindow')                
             cmds.setAttr("defaultArnoldDriver.ai_translator", "png", type="string")
-            cmds.setAttr("defaultArnoldDriver.prefix", renderPrefix, type="string")
+            cmds.setAttr("defaultArnoldDriver.prefix", renderPrefix, type="string")                
         #修改图片保存设置
         cmds.colorManagementPrefs(e=1,outputTransformEnabled=1)
         cmds.optionVar(intValue=("renderViewSaveMode", 1))
