@@ -13,7 +13,7 @@ import shutil,time
 import json
 import os
 import sys
-def J_playBlast_outPut(res=[1920,1080],skipFrame=0,viewer=True,waterMark=""):    
+def J_playBlast_outPut(res=[1920,1080],skipFrame=0,viewer=True,waterMark="",audio=''):    
     import JpyModules
     #文件路径
     filePath=JpyModules.public.J_getMayaFileFolder()+'/'    
@@ -67,7 +67,8 @@ def J_playBlast_outPut(res=[1920,1080],skipFrame=0,viewer=True,waterMark=""):
             JpyModules.public.J_ffmpeg.createAssFile(filePath+fileName+'_pbimages/'+fileName+'.ass',frameRate,[int(timeLineStart+skipFrame),
                                 int(timeLineEnd)],[res[0],res[1],1,0.08,0.95],camInfo,[0,255,0,80])
     #配置ffmpeg运行命令
-    m4vFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(filePath+fileName+'_pbimages/',imageList,frameRate=frameRate,waterMark=waterMark,outFile=filePath+fileName+'.m4v')
+    m4vFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(filePath+fileName+'_pbimages',\
+        imageList,frameRate=frameRate,waterMark=waterMark,outFile=filePath+fileName+'.m4v',audio=audio)
     # if os.path.exists(filePath+fileName+'.m4v'):
     #     os.remove(filePath+fileName+'.m4v') 
     #     print (filePath+fileName+'.m4v'+u"已删除")

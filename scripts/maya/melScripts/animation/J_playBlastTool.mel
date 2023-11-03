@@ -89,7 +89,7 @@ global proc string J_playBlastTool()//ÅÄÆÁ¹¤¾ß
             frameLayout -cll 1 -cl 0  -l "ÅÄÆÁÐÅÏ¢"  J_playBlastPBFrameLayOut;
                 formLayout  -nd 100  J_playBlastPBFormLayOut;        
                 checkBox -l  "Ë®Ó¡" -onCommand ("J_playBlast_loadLogo(\"J_playBlastWaterMarkCheckBox\")") J_playBlastWaterMarkCheckBox;
-
+                checkBox -l  "ÒôÆµ" -onCommand ("J_playBlast_loadLogo(\"J_playBlastAudioCheckBox\")") J_playBlastAudioCheckBox;
                 button -h 36 -label "ÅÄÆÁ" -command "J_playBlastOutPut" J_playBlastRunPBBu;
                 button -h 36 -label "äÖÈ¾Ô¤ÀÀ" -command "J_playRenderOutPut" J_playBlastRenderBu;
                 formLayout -e 
@@ -97,12 +97,16 @@ global proc string J_playBlastTool()//ÅÄÆÁ¹¤¾ß
                     -af J_playBlastWaterMarkCheckBox top 3
                     -ap J_playBlastWaterMarkCheckBox right 0 98
                     
+                    -ap J_playBlastAudioCheckBox left 0 1 
+                    -ac J_playBlastAudioCheckBox top 3 J_playBlastWaterMarkCheckBox
+                    -ap J_playBlastAudioCheckBox right 0 98
+
                     -ap J_playBlastRunPBBu left 0 1 
-                    -ac J_playBlastRunPBBu top 3 J_playBlastWaterMarkCheckBox
+                    -ac J_playBlastRunPBBu top 3 J_playBlastAudioCheckBox
                     -ap J_playBlastRunPBBu right 0 49
 
                     -ap J_playBlastRenderBu left 0 50 
-                    -ac J_playBlastRenderBu top 3 J_playBlastWaterMarkCheckBox
+                    -ac J_playBlastRenderBu top 3 J_playBlastAudioCheckBox
                     -ap J_playBlastRenderBu right 0 99
 
                 J_playBlastPBFormLayOut;
@@ -151,7 +155,8 @@ global proc J_playBlast_showHUD()
 }
 global proc J_playBlast_loadLogo(string $checkBoxItem)
 {
-    string $file[]=`fileDialog2 -fileMode 1 -fileFilter "PIC Files (*.png *.jpg *.jpeg)"`;
+    string $file[]=`fileDialog2 -fileMode 1 -fileFilter "Pic&Wav (*.png *.jpg *.jpeg *.wav *.mp3)"`;
+    if (size($file)>0)
     checkBox -e -l $file[0] $checkBoxItem;
 }
 
@@ -164,14 +169,14 @@ global proc J_playBlast_showHUD_0()
     {
         delete `listRelatives -p $J_hudNodes`;
     }
-    string $J_hudNodes[]=`ls -type J_hud`;
+    $J_hudNodes=`ls -type J_hud`;
     if (size($J_hudNodes)>0)
     {
         delete `listRelatives -p $J_hudNodes`;
     }
     else
     {
-    string $hunNode=`createNode "J_hud"`;
+    createNode "J_hud";
     }
 }
 global proc J_playBlast_showHUD_1()
@@ -183,7 +188,7 @@ global proc J_playBlast_showHUD_1()
     {
         delete `listRelatives -p $J_hudNodes`;
     }
-    string $J_hudNodes[]=`ls -type J_hud_a`;
+    $J_hudNodes=`ls -type J_hud_a`;
     if (size($J_hudNodes)>0)
     {
         delete `listRelatives -p $J_hudNodes`;
@@ -204,8 +209,13 @@ global proc J_playBlastOutPut()
     {
         $waterMark=`checkBox -q  -label "J_playBlastWaterMarkCheckBox"`;
     }
-        
-    string $temp="JpyModules.animation.J_playBlast.J_playBlast_outPut(res=["+$res[0]+","+$res[1]+"],waterMark='"+$waterMark+"')";
+    string $audio="";
+    if (`checkBox -q  -value "J_playBlastAudioCheckBox"`)
+    {
+        $audio=`checkBox -q  -label "J_playBlastAudioCheckBox"`;
+    } 
+    string $temp="JpyModules.animation.J_playBlast.J_playBlast_outPut(res=["+$res[0]+","+$res[1]+"],waterMark='"+$waterMark+"',audio=\""+$audio+"\")";
+    //print $temp;
     python($temp);
 }
 global proc J_playRenderOutPut()

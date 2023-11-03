@@ -13,16 +13,17 @@ import os,sys,json,time,shutil,subprocess
 
 #导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
 #模式2单独导出每个模型文件
-def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',outFile='',ass=''):
+def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',outFile='',ass='',audio=''):
+    if (compressPath.endswith('/'))or (compressPath.endswith('\\')):
+        compressPath=compressPath[:-1]
     #路径不存在则退出
     if not os.path.exists(compressPath):
         print ("path not exists!")
         #print (__file__.split('/scripts/maya')[0]+'/other/thirdParty/ffmpeg.exe')
         return
-    #未指定输出文件名,则使用文件夹下第一个文件的名称
+    #未指定输出文件名,则使用文件夹名称
     if outFile=='':
-        if len(os.listdir(compressPath))>0:
-            outFile='_',join(os.listdir(compressPath)[0].split('.'))+'.m4v'
+        outFile=os.path.basename(compressPath)+'.m4v'
     #调用时如果未传入字幕文件，则搜索目录是否有字幕ass文件，如果有则加入，没有则不管
     if ass=='':
         for root,dirs,files in os.walk(compressPath):
@@ -35,13 +36,13 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
         textureFormat=['png','tga','jpg','jpeg','tif',]
         print (u'文件列表为空，搜索目录下文件进行压缩')
         for fitem in os.listdir(compressPath):
-            if os.path.isfile(compressPath+fitem):
+            if os.path.isfile(compressPath+'/'+fitem):
                 if os.path.basename(fitem).split('.')[-1].lower() in textureFormat:
                     fileList.append(fitem)
 
 
     #序列帧文件列表
-    compressFileName=compressPath+'compress.list'
+    compressFileName=compressPath+'/compress.list'
     compressFile=open(compressFileName,'w')
     imageList=''    
 
@@ -57,10 +58,11 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
         print ("ffmpeg is missing!")
         return
     runStr=ffmpegPath+' -y -r '+str(frameRate)+' -f concat -safe 0 -i '+"\""+compressFileName+"\""
-
+    if os.path.exists(audio):
+        runStr+=' -i \"'+audio+'\" '
     if os.path.exists(waterMark):
         if waterMark.endswith(".png"):
-            runStr+= ' -i \"'+waterMark+'\" '
+            runStr+= ' -i \"'+waterMark+'\" '         
             #runStr+= ' -i '+waterMark+' '
             runStr+=' -filter_complex '
             #runStr+=' overlay=0:0'
