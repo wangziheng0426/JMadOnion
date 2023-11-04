@@ -10,7 +10,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import os,shutil
-def J_renderPreview(resolution=[],camera='',animationRange=[],renderer="arnold",skipFrame=0,renderMode=1,waterMark=""):
+def J_renderPreview(resolution=[],camera='',animationRange=[],renderer="arnold",skipFrame=0,renderMode=1,waterMark="",audio=''):
     #给lambert1添加自定义属性作为标记，如果值为0，则重置渲染参数，值为1则直接渲染
     if not cmds.attributeQuery('J_ResetRenderSetting',node='lambert1',ex=1):
         cmds.addAttr('lambert1',longName='J_ResetRenderSetting',dt='string')
@@ -151,7 +151,7 @@ def J_renderPreview(resolution=[],camera='',animationRange=[],renderer="arnold",
                     int(cmds.getAttr("defaultRenderGlobals.byFrameStep"))):
         fileList.append(os.path.basename(renderPrefix)+"_1.%04d.png"%item)
     finalFile=JpyModules.public.J_ffmpeg.compressFileSeqTovideo(compressPath=renderPath,frameRate=frameRate,
-        fileList=fileList,waterMark=waterMark,outFile=filePath+renderFileName+".m4v")
+        fileList=fileList,waterMark=waterMark,audio=audio,outFile=filePath+renderFileName+".m4v")
     #print fileList
     #删除渲染图
     # try:

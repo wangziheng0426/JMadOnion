@@ -158,6 +158,8 @@ global proc J_playBlast_loadLogo(string $checkBoxItem)
     string $file[]=`fileDialog2 -fileMode 1 -fileFilter "Pic&Wav (*.png *.jpg *.jpeg *.wav *.mp3)"`;
     if (size($file)>0)
     checkBox -e -l $file[0] $checkBoxItem;
+    else
+    checkBox -edit -v  0 J_playBlastAudioCheckBox;
 }
 
 global proc J_playBlast_showHUD_0()

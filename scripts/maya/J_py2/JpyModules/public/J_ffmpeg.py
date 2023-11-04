@@ -72,14 +72,14 @@ def compressFileSeqTovideo(compressPath,fileList=[],frameRate=24,waterMark='',ou
     if ass=='':
         runStr+="\""+outFile+"\""
     else:
-        runStr+="\""+compressPath+'addWaterMarkfile.mp4'+"\""
+        runStr+="\""+compressPath+'/addWaterMarkfile.mp4'+"\""
     
     spr=subprocess.Popen(runStr)
     status=spr.wait()
     print (runStr)
     #由于 filter_complex滤镜和 vf滤镜不能混用，暂时多压缩一次
     if ass!='':
-        runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+"\""+ compressPath+'addWaterMarkfile.mp4'+"\""
+        runStr=ffmpegPath+' -y -r '+str(frameRate)+' -i '+"\""+ compressPath+'/addWaterMarkfile.mp4'+"\""
         runStr+=' -vf subtitles="\\\''+ass+'\\\'\" ' 
         runStr+=' -c:v h264 -crf 18  ' +"\""+outFile+"\""
         spr1=subprocess.Popen(runStr)

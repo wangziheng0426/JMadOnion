@@ -57,7 +57,14 @@ def J_playBlast_uiInit():
     if os.path.exists(cmds.workspace(query=True,rd=True)+'/waterMark.png'):
         cmds.checkBox('J_playBlastWaterMarkCheckBox',edit=True,l=(cmds.workspace(query=True,rd=True)+'waterMark.png') )
         cmds.checkBox('J_playBlastWaterMarkCheckBox',edit=True,v =1)
-
+    #获取音频信息
+    aPlayBackSliderPython=mel.eval('$tmpVar=$gPlayBackSlider')
+    soundNode=cmds.timeControl( aPlayBackSliderPython, q=True, sound=1)
+    if cmds.objExists(soundNode):
+        audioFile=cmds.getAttr(soundNode+'.filename')
+        if os.path.exists(audioFile):
+            cmds.checkBox('J_playBlastAudioCheckBox',edit=True,l=audioFile)
+            cmds.checkBox('J_playBlastAudioCheckBox',edit=True,v =1)
 def J_playBlast_changeSize():
     items=cmds.formLayout('J_playBlastHUDFormLayOut',query=True,childArray=True )
     curWidth=cmds.textField(items[15],text=True,query=True).split('/')[0].split('*')[0]
