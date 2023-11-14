@@ -65,7 +65,7 @@ global proc J_projectManegerRunScriptJob()
 }
 
 
-global proc J_projectManeger_subWin()//主窗口
+global proc J_projectManeger_subWin()//子窗口
 {
     if (`window -ex J_projectManeger_subWin`)
         deleteUI -window J_projectManeger_subWin;
@@ -74,6 +74,8 @@ global proc J_projectManeger_subWin()//主窗口
     formLayout  -numberOfDivisions 100  J_projectManeger_subWin_FromLayout0;
         
         scrollField -text "对象名称" -wordWrap 1 -editable 0 -h 40 J_projectManager_subWin_obj;
+        columnLayout -adjustableColumn 1 -rowSpacing 1 J_projectManager_subWin_colLay;
+        setParent ..;
         button -l "添加条目" -c  "" J_projectManager_subWin_addInfo;        
         button -l "保存信息" -c  "" J_projectManager_subWin_saveInfo;     
     formLayout -e 
@@ -88,6 +90,11 @@ global proc J_projectManeger_subWin()//主窗口
         -ap J_projectManager_subWin_saveInfo left 1 51
         -af J_projectManager_subWin_saveInfo right 1        
         -af J_projectManager_subWin_saveInfo bottom 1 
+
+        -af J_projectManager_subWin_colLay left 1
+        -af J_projectManager_subWin_colLay right 1
+        -ac J_projectManager_subWin_colLay top 1 J_projectManager_subWin_obj
+        -ac J_projectManager_subWin_colLay bottom 1 J_projectManager_subWin_saveInfo
 
     J_projectManeger_subWin_FromLayout0;
 

@@ -13,6 +13,7 @@ import maya.api.OpenMaya as om2
 import re,os,json,uuid
 import JpyModules
 from functools import partial
+#
 class J_projectManeger():
     filePathItemList=[]
     treeV='J_projectManager_TreeView'
@@ -34,21 +35,26 @@ class J_projectManeger():
         popm=cmds.popupMenu(parent=self.treeV)
         cmds.menuItem(parent=popm,label=u"索引到文件",c=self.J_projectManeger_openFilePath )
         cmds.menuItem(parent=popm,label=u"复制相对目录",c=self.J_projectManeger_copyRelativeFilePath )
+        cmds.menuItem(parent=popm,label=u"复制绝对目录",c=self.J_projectManeger_copyAbsoluteFilePath )
+        
         
         if os.path.exists(self.projectPath):
             #如果当前打开的文件在工程目录下,则创建目录结构,如果不在,就根据工程目录生成
-            sceneFileName=cmds.file(query=True,sceneName=True)            
+            sceneFileName=cmds.file(query=True,sceneName=True)
+            #添加目录元素
             for fitem in os.listdir(self.projectPath):              
                 self.J_projectManeger_treeAddItem(self.projectPath,self.projectPath+'/'+fitem)
-            #确认文件再工程目录下
-            if sceneFileName.startswith(self.projectPath):
+            #确认文件再工程目录下#所有目录转小写比对
+            if sceneFileName.lower().startswith(self.projectPath.lower()):
                 projectPathTemp=self.projectPath
+                #工程目录最后没有斜杠
                 for pItem in os.path.dirname(sceneFileName).replace(self.projectPath,'').split('/'):
                     if pItem!='':
                         projectPathTemp=projectPathTemp+'/'+pItem   
                         self.J_projectManeger_doubleClick(projectPathTemp,'')
-                cmds.treeView(self.treeV,e=1, selectItem=(sceneFileName,True))
-                cmds.treeView(self.treeV,e=1, showItem=sceneFileName)
+                if cmds.treeView(self.treeV,q=1, itemExists=sceneFileName ):
+                    cmds.treeView(self.treeV,e=1, selectItem=(sceneFileName,True))
+                    cmds.treeView(self.treeV,e=1, showItem=sceneFileName)
         #设置界面命令
         #双击命令
         cmds.treeView(self.treeV,edit=1, itemDblClickCommand2=self.J_projectManeger_doubleClick )        
@@ -88,12 +94,13 @@ class J_projectManeger():
         #双击目录，则创建子层对象
         if os.path.isdir(itemName):
             #读取下层目录,如果已经有子集,则先清除
-            if len(cmds.treeView(self.treeV,q=1, children=itemName ))>1:
-                for ritem in cmds.treeView(self.treeV,q=1, children=itemName )[1:]:
-                    if cmds.treeView(self.treeV,q=1, itemExists=ritem ):
-                        cmds.treeView(self.treeV,e=1, removeItem=ritem )
-            for fitem in os.listdir(itemName):
-                self.J_projectManeger_treeAddItem(itemName,itemName+'/'+fitem)
+            if cmds.treeView(self.treeV,q=1, itemExists=itemName ):
+                if len(cmds.treeView(self.treeV,q=1, children=itemName ))>1:
+                    for ritem in cmds.treeView(self.treeV,q=1, children=itemName )[1:]:
+                        if cmds.treeView(self.treeV,q=1, itemExists=ritem ):
+                            cmds.treeView(self.treeV,e=1, removeItem=ritem )
+                for fitem in os.listdir(itemName):
+                    self.J_projectManeger_treeAddItem(itemName,itemName+'/'+fitem)
         if os.path.splitext(itemName)[1].lower()  in {".mp4",'.avi','.mov','.m4v'}:
             os.startfile(itemName)
     #打开设置窗口
@@ -132,7 +139,10 @@ class J_projectManeger():
         if len(sel)>0:
             relativePath=sel[0].replace(self.projectPath,'')
             os.system('echo '+relativePath+'|clip')
-        
+    def J_projectManeger_copyAbsoluteFilePath(self,*arg):
+        sel=cmds.treeView(self.treeV,q=1, selectItem=1)
+        if len(sel)>0:
+            os.system('echo '+sel[0]+'|clip')      
 #############################################################################################
 #子窗口逻辑
 class J_projectManeger_itemAttr():
@@ -152,15 +162,6 @@ class J_projectManeger_itemAttr():
 
     #生成属性面板列表
     def J_projectManeger_subWin_createTextList(self):
-        #先删除已有的元素,再重新创建,需要先清理弹出菜单,不然maya会崩溃
-        if cmds.formLayout('J_projectManeger_subWin_FromLayout1',q=1,exists=1):
-            cmds.deleteUI('J_projectManeger_subWin_FromLayout1')
-            print ('del')
-        
-        cmds.formLayout('J_projectManeger_subWin_FromLayout1',numberOfDivisions=100,parent='J_projectManeger_subWin_FromLayout0')
-        cmds.formLayout('J_projectManeger_subWin_FromLayout0',e=1,\
-            ac=[('J_projectManeger_subWin_FromLayout1','top',3,"J_projectManager_subWin_obj")],\
-            ap=[('J_projectManeger_subWin_FromLayout1','right',1,99),('J_projectManeger_subWin_FromLayout1','left',1,1)]) 
         #基础属性面板
         index=0
         baseAttrDic=self.j_meta.metaInfo['baseInfo']
@@ -169,8 +170,8 @@ class J_projectManeger_itemAttr():
             if baseAttrDic.has_key(attrItem):
                 self.J_projectManeger_subWin_createTextField(attrItem,baseAttrDic[attrItem],index)
                 index=index+1
-        if  cmds.textField('J_pm_subWin_uuid_v',q=1,exists=1):
-            cmds.textField('J_pm_subWin_uuid_v',e=1,editable=0)        
+        if  cmds.textFieldGrp('J_pm_subWin_uuid',q=1,exists=1):
+            cmds.textFieldGrp('J_pm_subWin_uuid',e=1,editable=0)        
         userAttrDic=self.j_meta.metaInfo['userInfo']
         #创建自定义属性面板
         if len(userAttrDic)>0:
@@ -180,43 +181,37 @@ class J_projectManeger_itemAttr():
                 index=index+1
     #创建表格元素
     def J_projectManeger_subWin_createTextField(self,textLabel,textFieldText,index):
-        t0='J_pm_subWin_'+textLabel+'_k'
-        t1='J_pm_subWin_'+textLabel+'_v'
-        if not cmds.text(t0,q=1,exists=1):
-            t0=cmds.text(t0,label=textLabel,w=84,parent='J_projectManeger_subWin_FromLayout1')
+        textFieldGrpName='J_pm_subWin_'+textLabel
+        temp0=''
+        if not cmds.textFieldGrp(textFieldGrpName,q=1,exists=1):
+            temp0=cmds.textFieldGrp(textFieldGrpName,label=textLabel, text=textFieldText,\
+                parent='J_projectManager_subWin_colLay')
             #右键菜单
-            popmenu0=cmds.popupMenu('J_pm_subWin_pop0_'+textLabel,parent=t0)
+            popmenu0=cmds.popupMenu('J_pm_subWin_pop0_'+textLabel,parent=temp0)
             cmds.menuItem('J_pm_subWin_popMi0_'+textLabel,\
-                c=partial(self.J_projectManeger_subWin_delInfo,t0),label=u'删除属性',parent=popmenu0) 
-
-            cmds.formLayout('J_projectManeger_subWin_FromLayout1',e=1,\
-                af=[(t0,'top',23*index+6),(t0,'left',1)],)
-        if not cmds.textField(t1,q=1,exists=1):
-            t1=cmds.textField(t1,text=textFieldText,parent='J_projectManeger_subWin_FromLayout1')
-            #右键菜单
-            
-            popmenu1=cmds.popupMenu('J_pm_subWin_pop1_'+textLabel,parent=t1)
+                c=partial(self.J_projectManeger_subWin_delInfo,temp0),label=u'删除属性',parent=popmenu0) 
             cmds.menuItem('J_pm_subWin_popMi1_'+textLabel,\
-                c=partial(self.J_projectManeger_subWin_copyToClipBoard,t1),label=u'复制信息',parent=popmenu1) 
-
-            cmds.formLayout('J_projectManeger_subWin_FromLayout1',e=1,\
-                af=[(t1,'top',23*index+6),(t1,'right',1),(t1,'left',85)]) 
+                c=partial(self.J_projectManeger_subWin_copyToClipBoard,temp0),label=u'复制信息',parent=popmenu0) 
+            
     #保存信息倒jmeta
     def J_projectManeger_subWin_saveJmeta(self,*arg):
         #现获取属性控件列表
         controlList=[]
         for item in cmds.lsUI( type='control' ):
-            if item.startswith('J_pm_subWin_') and item.endswith('_k'):
+            if item.startswith('J_pm_subWin_') :
                 controlList.append(item)
         self.j_meta.metaInfo['userInfo'].clear()
         for kItem in controlList:
             #区分基础属性,和自定义属性            
-            attrName=kItem.replace('J_pm_subWin_','')[0:-2]
+            attrName=kItem.replace('J_pm_subWin_','')
             if self.j_meta.metaInfo['baseInfo'].has_key(attrName):
-                self.j_meta.metaInfo['baseInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1)
-            #if self.j_meta.metaInfo['userInfo'].has_key(attrName):
+                self.j_meta.metaInfo['baseInfo'][attrName]=\
+                    cmds.textFieldGrp(kItem,q=1,text=1)
             else:
-                self.j_meta.metaInfo['userInfo'][attrName]=cmds.textField(kItem[0:-2]+'_v',q=1,text=1).strip() 
+                self.j_meta.metaInfo['userInfo'][attrName]=\
+                    cmds.textFieldGrp(kItem,q=1,text=1).strip()
+        self.j_meta.metaInfo['baseInfo']['projectPath']=\
+            cmds.scrollField('J_projectManager_subWin_obj',q=1,text=1)
         #保存信息文件
         self.j_meta.J_saveMeta()
         cmds.deleteUI('J_projectManeger_subWin',window=1)
@@ -240,24 +235,20 @@ class J_projectManeger_itemAttr():
         self.J_projectManeger_subWin_createTextList()
     #删除属性按钮
     def J_projectManeger_subWin_delInfo(self,*arg):
-        attrName=arg[0].split('J_pm_subWin_')[-1][0:-2]
+        attrName=cmds.textFieldGrp(arg[0],q=1,label=1)
+        attrValue=cmds.textFieldGrp(arg[0],q=1,text=1)
         if self.j_meta.metaInfo['userInfo'].has_key(attrName):
-            #self.j_meta.metaInfo['userInfo'].pop(attrName)
-            t0='J_pm_subWin_'+attrName+'_k'
-            t1='J_pm_subWin_'+attrName+'_v'
-            if cmds.text(t0,q=1,exists=1):
-                cmds.deleteUI(t0)
-            if cmds.textField(t1,q=1,exists=1):
-                cmds.deleteUI(t1)
-            #print (self.j_meta.metaInfo)
-            #self.j_meta.J_saveMeta()
-            #inpath=cmds.scrollField('J_projectManager_subWin_obj',q=1,text=1)
-            #self.__init__(inpath)
-            #self.J_projectManeger_subWin_createTextList()
+            self.j_meta.metaInfo['userInfo'].pop(attrName)
+
+            if cmds.textFieldGrp(arg[0],q=1,exists=1):
+                cmds.deleteUI(arg[0],control=1)
+                cmds.evalDeferred('cmds.deleteUI(\"'+arg[0]+'\",control=1)')
+
     #右键命令
     def J_projectManeger_subWin_copyToClipBoard(self,*arg):
-        tx=cmds.textField(arg[0],q=1,text=1)
-        os.system('echo '+tx+'|clip')
+        tx=cmds.textFieldGrp(arg[0],q=1,text=1)
+        if tx!='':
+            os.system('echo '+tx+'|clip')
 if __name__=='__main__':
     temp=J_projectManeger()
-    temp.J_projectManeger_setProject()
+    #temp.J_projectManeger_setProject()

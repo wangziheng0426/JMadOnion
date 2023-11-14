@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////
-///\file J_resourceExporter.mel
+///\file animationExporter.mel
 ///\brief fbx导出工具
 ///
 ///\author 桔
@@ -203,6 +203,7 @@ global proc J_resourceExporterExportAniBut()
     //如果在ref列表里选择了对象,则导出选择的ref,未选任何ref节点,则导出所选对象
     if (size($selRef)>0)
     {
+        string $mFile=`file -query -sceneName`;
         //按ref导出
         for ($item in $selRef)
         {  
@@ -214,6 +215,7 @@ global proc J_resourceExporterExportAniBut()
             else
             {
                 python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefNodeToFbx('"+$item +"')");
+                file  -force  -prompt  true  -open  $mFile;
             }
         }
     }
@@ -259,6 +261,7 @@ global proc J_resourceExporterBatchExportAniBut()
                 if (`checkBox -q -v J_resourceExporter_chbox04`==1)
                 {
                     python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Fbx('"+$itemC+"')"); 
+                    file -force  -prompt  true  -open  $fItem;
                 }
                 else
                 {
@@ -278,6 +281,7 @@ global proc J_resourceExporterBatchExportAniBut()
                 else
                 {
                     python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefNodeToFbx('"+$refNode +"')");
+                    file -force  -prompt  true  -open  $fItem;
                 }               
             }
         }

@@ -69,7 +69,7 @@ class J_meta():
                 self.J_loadMeta() 
         else:
             print (inputPath+u':不存在')
-        print (self.metaPath)
+        #print (self.metaPath)
     #创建jmeta文件
     def J_createMeta(self,inputPath,projectPath):    
         self.metaInfo['baseInfo']={'uuid':'','user':mel.eval('getenv "USERNAME"'),'fullPath':'',\
@@ -77,8 +77,8 @@ class J_meta():
         
         self.metaInfo['userInfo']={}
         if inputPath==projectPath:
-            self.metaInfo['userInfo']={'charactorPath':'','propPath':'',\
-                'setPath':''}
+            self.metaInfo['userInfo']={'characterPath':'','propPath':'',\
+                'setPath':'','assetPath':''}
         #新建meta时创建uuid,记录文件绝对目录,工程目录,相对目录
         self.metaInfo['baseInfo']['uuid']=str(uuid.uuid1())
         self.metaInfo['baseInfo']['fullPath']=inputPath
@@ -88,7 +88,8 @@ class J_meta():
     #重置
     def J_saveMeta(self):
         fileo=open(self.metaPath,'w')
-        fileo.write(json.dumps(self.metaInfo,encoding='utf-8',ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":")))
+        fileo.write(json.dumps(self.metaInfo\
+            ,encoding='utf-8',ensure_ascii=True,sort_keys=True,indent=4,separators=(",",":")))
         fileo.close()
         print (u'保存jmeta信息到:'+self.metaPath)
     #读取
@@ -103,15 +104,3 @@ class J_meta():
 if __name__=='__main__':
     xx=J_meta(r'C:\Users\Administrator\Desktop\abcTest\scene',r'C:\Users\Administrator\Desktop\abcTest')
     print (xx.metaInfo)
-
-
-
-
-
-
-
-
-
-
-
-
