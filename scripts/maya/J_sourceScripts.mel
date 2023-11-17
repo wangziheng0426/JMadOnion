@@ -114,7 +114,7 @@ global proc J_scripts(string $J_mainPath,string $J_menuName)
         if($J_getWord==""){break;}
         
     }
-    menuItem -p $menu -label "更新工具" -c "J_updataDYtool" -to 1 ;
+    menuItem -p $menu -label "更新工具" -c "J_updataMadOnion" -to 1 ;
     fclose $J_fileId;
     ////////////////////////////////////////////////////////////////创建菜单
     ////////////////////////////////////////////////////////////////读取mel命令
@@ -177,7 +177,7 @@ global proc string J_getSysPath()
     return("error");
 }
 //更新工具
-global proc string J_updataDYtool()
+global proc string J_updataMadOnion()
 {
 string $toolp=`J_getSysPath`;
 python "import os";
@@ -186,6 +186,6 @@ python ("os.chdir('"+$toolp+"')");
 python "os.popen('git.exe pull')";
 python "os.chdir(tcwd)";
 
-print ('更新完成需要重启maya')
+print ('更新完成需要重启maya');
 
 }
