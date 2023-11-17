@@ -16,7 +16,7 @@
 ///\return success
 global proc string J_sourceScripts(string $inPath)
 {
-    string $pluginTitle="DY_Tool";
+    string $pluginTitle="MadOnion";
     //加载mel工具
     J_scripts(J_getScriptsPath(),$pluginTitle);
     //加载python内置模块
@@ -177,13 +177,14 @@ global proc string J_getSysPath()
     return("error");
 }
 //更新工具
-global proc string J_updataMadOnion()
+global proc  J_updataMadOnion()
 {
 string $toolp=`J_getSysPath`;
 python "import os";
 python "tcwd=os.getcwd()";
 python ("os.chdir('"+$toolp+"')");
-python "os.popen('git.exe pull')";
+python "temp=os.popen('git.exe pull')";
+python "print temp.readlines()";
 python "os.chdir(tcwd)";
 
 print ("更新完成需要重启maya");
