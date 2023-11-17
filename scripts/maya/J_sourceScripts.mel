@@ -186,6 +186,6 @@ python ("os.chdir('"+$toolp+"')");
 python "os.popen('git.exe pull')";
 python "os.chdir(tcwd)";
 
-print ('更新完成需要重启maya');
+print ("更新完成需要重启maya");
 
 }
