@@ -179,14 +179,7 @@ global proc string J_getSysPath()
 //更新工具
 global proc  J_updataMadOnion()
 {
-string $toolp=`J_getSysPath`;
-python "import os";
-python "tcwd=os.getcwd()";
-python ("os.chdir('"+$toolp+"')");
-python "temp=os.popen('git.exe pull')";
-python "print temp.readlines()";
-python "os.chdir(tcwd)";
 
-print ("更新完成需要重启maya");
+    python("JpyModules.public.J_autoUpDate()");
 
 }
