@@ -1,47 +1,104 @@
 # -*- coding:utf-8 -*-
 
 import numpy
-import J_VideoConverterUI,J_VideoConverterCutUI
+#import J_VideoConverterUI,J_VideoConverterCutUI
 import sys, os,functools,json,re
 import winreg
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
-print('目前系统的编码为：',sys.getdefaultencoding())
+#print('目前系统的编码为：',sys.getdefaultencoding())
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets,uic
 
 
-class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
-    settingFilePath=''
+class J_VideoConverter(QtWidgets.QMainWindow):
     ffmpegPath='c:/ffmpeg.exe'
-    model = QtGui.QStandardItemModel()
-    fileTypes=['.avi','.mp4','.wmv','.mkv','MP4','AVI','mov','.m2ts','.flv','.asf','.ts']
-    def __init__(self):
-        super(J_VideoConverter, self).__init__()
-        self.setupUi(self)
-        self.J_createSlots()
+    settingFilePath=None
+    model = None
+    fileTypes=['avi','mp4','wmv','mkv','MP4','AVI','mov','m2ts','flv','asf','ts']
+    def __init__(self,parent=None):
+        super(J_VideoConverter, self).__init__(parent)
+        run_path = os.path.dirname(__file__)
+        self.main_ui = uic.loadUi('{}/J_VideoConverterUI.ui'.format(run_path))
+        self.setCentralWidget(self.main_ui)
+        self.setWindowTitle('J_VideoConverter')
         self.mainUiInit()
-
+        self.J_createSlots()
     def mainUiInit(self):
-        # 配置表格属性
-
         # 读取设置文件目录
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                              r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+                              r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')        
+        self.model = QtGui.QStandardItemModel()
         self.settingFilePath = winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/videoConverterSetting.ini'
-        self.listViewInit()
+        self.main_ui.tableView_fileList.setModel(self.model)
+        # 拖拽事件
+        self.main_ui.tableView_fileList.installEventFilter(self)
+        # 设置表格宽度
+        for index,width in enumerate([160,40,40,70,40,40,60,360]):
+            self.main_ui.tableView_fileList.setColumnWidth(index, width)
+        # 读取设置文件目录
+        if os.path.exists(self.settingFilePath):
+            file = open(self.settingFilePath, 'r',encoding='utf-8')
+            settingPath=str(file.readline()).replace('\n','')
+            if os.path.exists(settingPath):
+                self.main_ui.lineEdit_inputField.setText(settingPath)
+            file.close()
+            self.createVideoList()
+        # 读取ffmpeg路径
         if not os.path.exists(self.ffmpegPath):
             self.ffmpegPath = os.getcwd() + '/ffmpeg.exe'
         if not os.path.exists(self.ffmpegPath):
             QtGui.QMessageBox.about(self, u'提示', u"ffmpeg 失踪了")
-    def listViewInit(self):
-        self.tableView_fileList.setModel(self.model)
-        if os.path.exists(self.settingFilePath):
-            file = open(self.settingFilePath, 'r',encoding='utf-8')
-            settingPath=str(file.readline())
-            self.lineEdit_inputField.setText(settingPath.replace('\n',''))
-            file.close()
-            self.listAllVideoFiles()
+    
+    # 拖拽事件
+    def eventFilter(self,obj,event):
+        if obj is self.main_ui.tableView_fileList :
+            if event.type() == QtCore.QEvent.Type.DragEnter:            
+                event.acceptProposedAction()
+                return True
+            elif event.type() == QtCore.QEvent.Type.Drop:
+                for url in event.mimeData().urls():
+                # 如果是文件,则直接加入,如果是文件夹,则向下搜索所有文件
+                    dragItem=url.toLocalFile().replace('\\','/')
+                    if os.path.isfile(dragItem):
+                        self.createNewTask(dragItem)
+                    else:
+                        for root,dirs,files in os.walk(dragItem,topdown=0):
+                            for fileItem in files:
+                                self.createNewTask(os.path.join(root,fileItem).replace('\\','/'))
+                # 如果路径不存在,则读取第一个视频的路径作为输出路径
+                if not os.path.exists(str(self.main_ui.lineEdit_inputField.displayText())):
+                    self.main_ui.lineEdit_inputField.setText(os.path.dirname(self.model.item(0,7).text()))
+
+                return True
+        # 如果事件未被处理，调用基类的 eventFilter 方法
+        return super(J_VideoConverter, self).eventFilter(obj, event)
+    # 创建视频列表
+    def createVideoList(self):
+        filePath = str(self.main_ui.lineEdit_inputField.displayText())
+        self.model.clear()
+        self.model.setHorizontalHeaderLabels(
+            [u'文件', u'开始', u'结束', u'分辨率', u'格式', u'压缩', u'后缀', u'路径'])
+        for root,dir,files in os.walk(filePath):
+            for item1 in files:
+                videofilePath = '\\'.join((root, item1)).replace('\\', '/')
+                if item1.split('.')[-1] in self.fileTypes:
+                    self.createNewTask(videofilePath)
+        for index,width in enumerate([160,60,60,70,40,40,60,360]):
+            self.main_ui.tableView_fileList.setColumnWidth(index, width)
+  
+    
+    # 链接按钮 ui
+    def J_createSlots(self):
+        self.main_ui.pushButton_inputField.clicked.connect(self.setFileDirectory)
+        self.main_ui.pushButton_convert.clicked.connect(self.createBatFile)
+        self.main_ui.pushButton_connect.clicked.connect(self.connectVideo)
+        self.main_ui.pushButton_saveList.clicked.connect(self.saveListToJfile)
+        self.main_ui.pushButton_openList.clicked.connect(self.loadListFromJfile)
+        self.main_ui.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr, [],'',''))
+        self.main_ui.pushButton_renameL.clicked.connect(self.J_renameFileNameFromList)
+        self.main_ui.pushButton_rename_2.clicked.connect(functools.partial(self.J_renameFileWithParFolder, ''))
+        self.main_ui.tableView_fileList.doubleClicked.connect(self.on_tableView_fileList_doubleClicked)
 
     def on_tableView_fileList_doubleClicked(self,modelIndex):
         if modelIndex.column()==0:
@@ -50,175 +107,172 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 
     #子窗口功能
     def OpenCutSettingDialog(self,modelIndex):
-        self.wChild=J_VideoConverterCutUI.Ui_setTime_win()
-        self.win=QtWidgets.QDialog(self)
-        self.wChild.setupUi(self.win)
-        st=str(self.model.item(modelIndex.row(),1).text())
+        run_path = os.path.dirname(__file__)
+        self.ch_ui = QtWidgets.QWidget()
+        uic.loadUi('{}/J_VideoConverterCutUI.ui'.format(run_path),self.ch_ui)
+        self.ch_ui.show()
+        
         #读名字
-        self.wChild.label_movName.setText(self.model.item(modelIndex.row(),0).text())
-        self.wChild.label_movNameP.setText(self.model.item(modelIndex.row(), 6).text())
+        self.ch_ui.label_movName.setText(self.model.item(modelIndex.row(),0).text())
+        self.ch_ui.label_movNameP.setText(self.model.item(modelIndex.row(), 6).text())
         #读时间
-
-        self.wChild.lineEdit_st1.setText(str(self.convertStrToTime(st)[0]))
-        self.wChild.lineEdit_st2.setText(str(self.convertStrToTime(st)[1]))
-        self.wChild.lineEdit_st3.setText(str(self.convertStrToTime(st)[2]))
+        st=str(self.model.item(modelIndex.row(),1).text())
+        self.ch_ui.lineEdit_st1.setText(str(self.convertStrToTime(st)[0]))
+        self.ch_ui.lineEdit_st2.setText(str(self.convertStrToTime(st)[1]))
+        self.ch_ui.lineEdit_st3.setText(str(self.convertStrToTime(st)[2]))
 
         et = str(self.model.item(modelIndex.row(), 2).text())
-        self.wChild.lineEdit_et1.setText(str(self.convertStrToTime(et)[0]))
-        self.wChild.lineEdit_et2.setText(str(self.convertStrToTime(et)[1]))
-        self.wChild.lineEdit_et3.setText(str(self.convertStrToTime(et)[2]))
+        self.ch_ui.lineEdit_et1.setText(str(self.convertStrToTime(et)[0]))
+        self.ch_ui.lineEdit_et2.setText(str(self.convertStrToTime(et)[1]))
+        self.ch_ui.lineEdit_et3.setText(str(self.convertStrToTime(et)[2]))
         #读crf
-        self.wChild.lineEdit_crf.setText(str(self.model.item(modelIndex.row(),5).text()))
+        self.ch_ui.lineEdit_crf.setText(str(self.model.item(modelIndex.row(),5).text()))
         #读尺寸
         ss= str(self.model.item(modelIndex.row(), 3).text())
         id=0
-        if self.wChild.comboBox_resolution.findText(ss)>-1:id=self.wChild.comboBox_resolution.findText(ss)
-        self.wChild.comboBox_resolution.setCurrentIndex(id)
+        if self.ch_ui.comboBox_resolution.findText(ss)>-1:
+            id=self.ch_ui.comboBox_resolution.findText(ss)
+        self.ch_ui.comboBox_resolution.setCurrentIndex(id)
         #连按钮
-        self.wChild.pushButton_cutVideo.clicked.connect(
-            functools.partial(self.createNewJobToList, modelIndex))
-        self.wChild.pushButton_nextVideo.clicked.connect(
-            functools.partial(self.saveSettingToTable, modelIndex,True))
-        self.wChild.pushButton_delete.clicked.connect(
+        self.ch_ui.pushButton_cutVideo.clicked.connect(
+            functools.partial(self.cutVideo, modelIndex))
+        self.ch_ui.pushButton_nextVideo.clicked.connect(
+            functools.partial(self.saveSettingToTableOpenNext, modelIndex))
+        self.ch_ui.pushButton_delete.clicked.connect(
             functools.partial(self.deleteLine, modelIndex))
-        self.win.exec()
-        #创建列表
-    def createNewJobToList(self,modelIndex):
-        self.saveSettingToTable(modelIndex, False)
-        rt = modelIndex.row()
-        ct = modelIndex.column()
-        mItem0 = QtGui.QStandardItem()
-        mItem0.setText(self.model.item(rt,0).text())
-        mItem0.setEditable(False)
-        self.model.insertRow(rt+1, mItem0)
-        #if str(self.model.item(rt,6).text())=='_jc':
-         #   self.model.item(rt, 6).setText('_jcA')
-        for i in range(1,self.model.columnCount()):
-            mItem1 = QtGui.QStandardItem()
-            mItem1.setText(self.model.item(rt,i).text())
-            self.model.setItem(rt+1,i,mItem1)
-        index=int(str(self.model.item(rt,6).text()).replace('_',''))
-        self.model.item(rt + 1, 6).setText("_%03d"% (index+1))
-        self.model.item(rt + 1, 2).setText('0:0:0')
-        self.saveSettingToTable(modelIndex,True)
-        self.saveListToJfile()
-        #保存参数
-    def saveSettingToTable(self,modelIndex,goNext):
-        st = self.wChild.lineEdit_st1.displayText() + ':' + self.wChild.lineEdit_st2.displayText() + ':' + self.wChild.lineEdit_st3.displayText()
-        et = self.wChild.lineEdit_et1.displayText() + ':' + self.wChild.lineEdit_et2.displayText() + ':' + self.wChild.lineEdit_et3.displayText()
-        crf= self.wChild.lineEdit_crf.displayText()
-        resolusion=''
-        if self.wChild.comboBox_resolution.currentText()!='ori':
-            resolusion =self.wChild.comboBox_resolution.currentText()
-        self.model.item(modelIndex.row(),1).setText(st)
-        self.model.item(modelIndex.row(), 2).setText(et)
-        self.model.item(modelIndex.row(),3).setText(resolusion)
-        self.model.item(modelIndex.row(), 5).setText(crf)
-        self.win.close()
 
-        if modelIndex.row()<self.model.rowCount()-1 and goNext:
+    #创建新任务
+    def createNewTask(self,videofilePath):
+        filename =os.path.splitext(videofilePath.replace('\\','/').split('/')[-1])[0]
+        if videofilePath.split('.')[-1] in self.fileTypes:
+            qItemList=[]
+            for index,item2 in enumerate([filename,'0:0:0','0:0:0','1280*720','hevc','24','_001',videofilePath]):
+                mItem0 = QtGui.QStandardItem()
+                if index==0:
+                    mItem0.setEditable(False)
+                mItem0.setText(item2)
+                qItemList.append(mItem0)
+            self.model.appendRow(qItemList)
+
+    #剪切视频
+    def cutVideo(self,modelIndex):
+        self.saveSettingToTable(modelIndex)
+        self.createNewTask(str(self.model.item(modelIndex.row(),7).text()))
+        rt = modelIndex.row()
+        # 修改新行参数
+        # 起始时间根据上一个视频的起始结束时间计算,选择较大的时间
+        st0 = self.model.item(rt, 1).text().split(':')
+        et0 = self.model.item(rt, 2).text().split(':')
+        st1=[]
+        for i in range(0,3):                       
+            if float(st0[i] )<float(et0[i]):
+                st1.append(str(float(et0[i])))
+            elif float(st0[i] )>0 :
+                st1.append(str(float(st0[i] ))) 
+            else:
+                st1.append('0')
+        st = st1[0].split('.')[0]+':'+st1[1].split('.')[0]+':'+st1[0]
+        self.model.item(self.model.rowCount()-1, 1).setText(st)
+        # 设置分辨率
+        self.model.item(self.model.rowCount()-1, 3).setText(self.model.item(rt, 3).text())
+        # 设置格式
+        self.model.item(self.model.rowCount()-1, 4).setText(self.model.item(rt, 4).text())
+        # 设置crf
+        self.model.item(self.model.rowCount()-1, 5).setText(self.model.item(rt, 5).text())
+        # 设置后缀
+        index=int(str(self.model.item(rt,6).text()).replace('_',''))
+        self.model.item(self.model.rowCount()-1, 6).setText("_%03d"% (index+1))
+        # 移动最后一行到当前行下一行
+        temp = self.model.takeRow(self.model.rowCount()-1)
+        self.model.insertRow(rt+1, temp)
+        # 如果不是最后一行，打开下一个视频  
+        if rt<self.model.rowCount()-1:
+            self.main_ui.tableView_fileList.clearSelection()
+            self.OpenCutSettingDialog(self.model.item(modelIndex.row() + 1, 0).index())
+
+
+    #保存参数
+    def saveSettingToTable(self,modelIndex):
+        st = self.getNumber(self.ch_ui.lineEdit_st1.displayText()).split('.')[0] + ':'+\
+            self.getNumber(self.ch_ui.lineEdit_st2.displayText()).split('.')[0] + ':' +\
+            self.getNumber(self.ch_ui.lineEdit_st3.displayText())
+        et = self.getNumber(self.ch_ui.lineEdit_et1.displayText()).split('.')[0] + ':' +\
+            self.getNumber(self.ch_ui.lineEdit_et2.displayText()).split('.')[0] + ':' +\
+            self.getNumber(self.ch_ui.lineEdit_et3.displayText())
+        crf= self.ch_ui.lineEdit_crf.displayText()
+        resolusion=''
+        if self.ch_ui.comboBox_resolution.currentText()!='ori':
+            resolusion =self.ch_ui.comboBox_resolution.currentText()
+        self.model.item(modelIndex.row(),1).setText(st)
+        self.model.item(modelIndex.row(),2).setText(et)
+        self.model.item(modelIndex.row(),3).setText(resolusion)
+        self.model.item(modelIndex.row(),5).setText(crf)
+        self.ch_ui.close()
+    # 保存参数,并打开下一个视频
+    def saveSettingToTableOpenNext(self,modelIndex,goNext):
+        self.saveSettingToTable(modelIndex)
+        if modelIndex.row()<self.model.rowCount()-1:
             self.OpenCutSettingDialog(self.model.item(modelIndex.row()+1,0).index())
-        self.saveListToJfile()
+    
+    def getNumber(self,strs):
+        nums=re.findall(r'\d+.+\d+',strs)
+        if len(nums)<1:
+            nums=re.findall(r'\d+',strs)
+        if len(nums)>0:
+            return str(float(nums[0]))
+        else:
+            return '0'
     def deleteLine(self,modelIndex):
         row = modelIndex.row()
-        self.model.removeRow(modelIndex.row())
-        self.win.close()
-        if row<self.model.rowCount()-1:
+        self.model.removeRow(row)
+        self.ch_ui.close()
+        if row<self.model.rowCount():
             self.OpenCutSettingDialog(self.model.item(row,0).index())
     #主窗口功能
-    def getDirectory(self):
+    def setFileDirectory(self):
         temp = QtWidgets.QFileDialog()
-        temp.setDirectory(str(self.lineEdit_inputField.displayText()))
+        temp.setDirectory(str(self.main_ui.lineEdit_inputField.displayText()))
         filePath = str(temp.getExistingDirectory(self).replace('\\', '/'))
-        self.lineEdit_inputField.setText(filePath)
-        self.listAllVideoFiles()
+        self.main_ui.lineEdit_inputField.setText(filePath)
+        self.createVideoList()
+        self.saveSettings()
 
-    def listAllVideoFiles(self):
-        filePath = str(self.lineEdit_inputField.displayText())
-        rowCount=0
-        self.model.clear()
-        self.model.setHorizontalHeaderLabels(
-            ['name', 'startTime', 'endTime', 'resolution', 'format', 'crf', 'newName', 'path'])
-        for item in os.walk(filePath):
-            for item1 in item[2]:
-                videofilePath = '\\'.join((item[0], item1)).replace('\\', '/')
-                for fileType in self.fileTypes:
-                    if videofilePath.lower().endswith(fileType):
-
-                        mItem0 = QtGui.QStandardItem()
-                        mItem0.setEditable(False)
-                        mItem0.setText(item1)
-                        self.model.setItem(rowCount, 0, mItem0)
-
-                        mItem1 = QtGui.QStandardItem()
-                        mItem1.setText('0:0:0')
-                        self.model.setItem(rowCount, 1, mItem1)
-
-                        mItem2 = QtGui.QStandardItem()
-                        mItem2.setText('0:0:0')
-                        self.model.setItem(rowCount, 2, mItem2)
-
-                        mItem3 = QtGui.QStandardItem()
-                        mItem3.setText('1280*720')
-                        self.model.setItem(rowCount, 3, mItem3)
-
-                        mItem3 = QtGui.QStandardItem()
-                        mItem3.setText('hevc')
-                        self.model.setItem(rowCount, 4, mItem3)
-
-                        mItem3 = QtGui.QStandardItem()
-                        mItem3.setText('22')
-                        self.model.setItem(rowCount, 5, mItem3)
-
-                        mItem4 = QtGui.QStandardItem()
-                        mItem4.setText('_001')
-                        self.model.setItem(rowCount, 6, mItem4)
-
-                        mItem3 = QtGui.QStandardItem()
-                        mItem3.setText(videofilePath)
-                        self.model.setItem(rowCount, 7, mItem3)
-
-                        rowCount=rowCount+1
-
-        self.tableView_fileList.setColumnWidth(0, 210)
-        self.tableView_fileList.setColumnWidth(1, 60)
-        self.tableView_fileList.setColumnWidth(2, 60)
-        self.tableView_fileList.setColumnWidth(3, 90)
-        self.tableView_fileList.setColumnWidth(4, 60)
-        self.tableView_fileList.setColumnWidth(5, 40)
-        self.tableView_fileList.setColumnWidth(6, 40)
-        self.tableView_fileList.setColumnWidth(7, 360)
 
     def saveListToJfile(self):
-        writeFileAll = open((str(self.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'), 'w',encoding='utf-8')
-        inputPath=str(self.lineEdit_inputField.displayText())
+        filePath = str(self.main_ui.lineEdit_inputField.displayText())
+        if not os.path.exists(filePath):
+            # 路径不存在,弹窗提示
+            diaglog = QtWidgets.QMessageBox('提示', '路径不存在')
+            return
+
+        writeFileAll = open((str(self.main_ui.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'), 'w',encoding='utf-8')
+        inputPath=str(self.main_ui.lineEdit_inputField.displayText())
         allFile=[]
         for iRow in range(0,self.model.rowCount()):
             row={}
             for iCol in range(0,8):
-                rrrrr=self.model.headerData(iCol,QtCore.Qt.Horizontal)
-                row[self.model.headerData(iCol,QtCore.Qt.Horizontal)]=\
+                row[self.model.headerData(iCol,QtCore.Qt.Orientation.Horizontal)]=\
                     str(self.model.item(iRow,iCol).text())
-                if self.model.headerData(iCol,QtCore.Qt.Horizontal)=='path':
-                    row[str(self.model.headerData(iCol, QtCore.Qt.Horizontal))] =\
+                if self.model.headerData(iCol,QtCore.Qt.Orientation.Horizontal)=='path':
+                    row[str(self.model.headerData(iCol, QtCore.Qt.Orientation.Horizontal))] =\
                         str(self.model.item(iRow, iCol).text()).replace(inputPath,'')
             allFile.append(row)
         writeFileAll.write(json.dumps(allFile))
         writeFileAll.close()
 
     def loadListFromJfile(self):
-        if not os.path.exists(str(self.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'):
+        if not os.path.exists(str(self.main_ui.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'):
             return
-        readFileAll = open((str(self.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'), 'r')
+        readFileAll = open((str(self.main_ui.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'), 'r')
         data= json.load(readFileAll)
         readFileAll.close()
         self.model.clear()
         self.model.setHorizontalHeaderLabels(
-            ['name', 'startTime', 'endTime', 'resolution', 'format', 'crf', 'newName', 'path'])
+            [u'文件', u'开始', u'结束', u'分辨率', u'格式', u'压缩', u'后缀', u'路径'])
         rowCount = 0
         for item0 in data:
             colCount=0
-            for item1 in ['name', 'startTime', 'endTime', 'resolution', 'format', 'crf', 'newName', 'path']:
+            for item1 in [u'文件', u'开始', u'结束', u'分辨率', u'格式', u'压缩', u'后缀', u'路径']:
                 mItem0 = QtGui.QStandardItem()
                 if item1==u'name':
                     mItem0.setEditable(False)
@@ -229,16 +283,10 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 self.model.setItem(rowCount, colCount, mItem0)
                 colCount=colCount+1
             rowCount=rowCount+1
-        self.tableView_fileList.setColumnWidth(0, 210)
-        self.tableView_fileList.setColumnWidth(1, 60)
-        self.tableView_fileList.setColumnWidth(2, 60)
-        self.tableView_fileList.setColumnWidth(3, 90)
-        self.tableView_fileList.setColumnWidth(4, 60)
-        self.tableView_fileList.setColumnWidth(5, 40)
-        self.tableView_fileList.setColumnWidth(6, 40)
-        self.tableView_fileList.setColumnWidth(7, 360)
+        for index,width in enumerate([160,60,60,70,40,40,60,360]):
+            self.main_ui.tableView_fileList.setColumnWidth(index, width)
     def connectVideo(self):
-        inPath = str(self.lineEdit_inputField.displayText())
+        inPath = str(self.main_ui.lineEdit_inputField.displayText())
         allFile = ''
         writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w')
         fileDic = self.findSimilarFileInList()
@@ -273,14 +321,14 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
 ################################################批量改名功能
     def J_renameFileWithStr(self,jKey,jNewKey,jpPath):
         if len(jKey)==0:
-            temp=str(self.lineEdit_oriName.displayText())
+            temp=str(self.main_ui.lineEdit_oriName.displayText())
             jKey=[]
             for i in temp.split(','):
                 jKey.append(i)
         if jNewKey=='':
-            jNewKey = str(self.lineEdit_desName.displayText())
+            jNewKey = str(self.main_ui.lineEdit_desName.displayText())
         if jpPath=='':
-            jpPath = str(self.lineEdit_inputField.displayText())
+            jpPath = str(self.main_ui.lineEdit_inputField.displayText())
         if not os.path.exists(jpPath):
             return
         #print jKey,jNewKey,jpPath
@@ -310,11 +358,11 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                         print  (item + "-->" + newName)
                     except:
                         print (item)
-        self.listAllVideoFiles()
+        self.createVideoList()
     def J_renameFileNameFromList(self):
-        inPath = str(self.lineEdit_inputField.displayText())
-        jKey=str(self.lineEdit_oriName.displayText()).split(',')
-        jNewKey = str(self.lineEdit_desName.displayText())
+        inPath = str(self.main_ui.lineEdit_inputField.displayText())
+        jKey=str(self.main_ui.lineEdit_oriName.displayText()).split(',')
+        jNewKey = str(self.main_ui.lineEdit_desName.displayText())
         for iRow in range(0, self.model.rowCount()):
             fileName=str(self.model.item(iRow, 0).text())
             jpPath=str(self.model.item(iRow, 7).text()).replace(fileName,'')
@@ -328,11 +376,11 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                         os.rename(jpPath + fileName, jpPath  + newFileName)
                     except:
                         print (fileName + "rename failed")
-        self.listAllVideoFiles()
+        self.createVideoList()
     ######################################################################################
     def J_renameFileWithParFolder(self,jpPath):
         if jpPath=='':
-            jpPath = str(self.lineEdit_inputField.displayText())
+            jpPath = str(self.main_ui.lineEdit_inputField.displayText())
         jpPath = jpPath.replace('\\', '/')
         allch = os.listdir(jpPath)
         count = 0
@@ -354,14 +402,14 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                 if (len(os.listdir(jpPath + '/' + item)) > 0):
                     self.J_renameFileWithParFolder(jpPath + '/' + item)
 
-            self.listAllVideoFiles()
+            self.createVideoList()
                 #####################################################################批量改名功能
 ######创建执行文件，同时输出Jliving 任务列表
     def createBatFile(self):
         strtowrite=''
-
         combinId=[0,0]
-        for i in range(0,self.tableView_fileList.model().rowCount()):
+        fileCombinList = {}
+        for i in range(0,self.main_ui.tableView_fileList.model().rowCount()):
             startTimeStr=str(self.model.item(i,1).text())
             endTimeStr=str(self.model.item(i,2).text())
             #判断如果不是时间就用帧数
@@ -369,62 +417,50 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
             startSec=startTime[0]*3600+startTime[1]*60+startTime[2]
             endTime=self.convertStrToTime(endTimeStr)
             endSec = endTime[0] * 3600 + endTime[1] * 60 + endTime[2]
-            encodeSeconds=''
+            compressTime=''
             resolusion=''
             if endSec-startSec>0:
-                encodeSeconds=' -t '+str(int(endSec - startSec) //3600) + ':'\
+                compressTime=' -t '+str(int(endSec - startSec) //3600) + ':'\
                 + str(int((endSec - startSec)%3600)//60) + ':'\
                 + str((endSec - startSec)%60) + ' '
-            elif self.checkBox_ignoreEnd.checkState()==2:
-                encodeSeconds='null'
+            else:
+                compressTime=' '
             if str(self.model.item(i,3).text())!='':
                 resolusion=' -s ' +str(self.model.item(i,3).text())+' '
-            ####加入新行
-            if encodeSeconds!='null':
-                strtowrite+= self.ffmpegPath+' -i \"'+str(self.model.item(i,7).text())+'\"'\
-                            + ' -ss '+str((startTime[0]))+':'+str((startTime[1]))+':'+str(startTime[2])+ ' '\
-                            +encodeSeconds\
-                            + resolusion\
-                            + ' -c:v '+str(self.model.item(i,4).text())+' '\
-                            + ' -crf ' +str(self.model.item(i,5).text())+' '\
-                            + ' -y \"'+'.'.join(str(self.model.item(i,7).text()).split('.')[0:-1]) \
-                            + str(self.model.item(i,6).text())+'.mp4\"\n\n'
-            ####判断是否需要合并文件
-            if str(self.model.item(i,6).text())=='_001':
-                combinId[0]=i;
-            if str(self.model.item(i,6).text())!='_001':
-                combinId[1] = i;
-            getEnd=False
-            if i==self.tableView_fileList.model().rowCount()-1:
-                getEnd=True
-            elif str(self.model.item(i,7).text())!=str(self.model.item(i+1,7).text()):
-                getEnd = True
-            if getEnd and combinId[1] >combinId[0] and self.checkBox_combinVideo.isChecked() :
-                combinFileListName = '.'.join(str(self.model.item(i,7).text()).split('.')[0:-1])+ '_combinJ.Cbn'
-                combinFileName = '.'.join(str(self.model.item(i,7).text()).split('.')[0:-1])+  '_newJ.mp4'
+            ####加入新行 
+            strtowrite+= self.ffmpegPath+' -i \"'+str(self.model.item(i,7).text())+'\"'\
+                        + ' -ss '+str((startTime[0]))+':'+str((startTime[1]))+':'+str(startTime[2])+ ' '\
+                        + compressTime\
+                        + resolusion\
+                        + ' -c:v '+str(self.model.item(i,4).text())+' '\
+                        + ' -crf ' +str(self.model.item(i,5).text())+' '\
+                        + ' -y \"'+'.'.join(str(self.model.item(i,7).text()).split('.')[0:-1]) \
+                        + str(self.model.item(i,6).text())+'.mp4\"\n\n'
+            if  str(self.model.item(i,0).text()) not in fileCombinList.keys():
+                fileCombinList[str(self.model.item(i,0).text())] = []
+            fileCombinList[str(self.model.item(i,0).text())].append('.'.join(str(self.model.item(i,7).text()).split('.')[0:-1]) +\
+                 str(self.model.item(i,6).text())+'.mp4')
+        # 查询所有行,确定需要合并的文件,第一种状况,是手动拆分的文件,第二种状况是文件名相似的文件
+        
+        for k,v in fileCombinList.items():
+            if len(v)>1:
+                combinFileListName = '.'.join(v[0].split('.')[0:-1]) + '_J.Cbn'
+                combinFileName = '.'.join(v[0].split('.')[0:-1]) + '_J.mp4'
                 videoToCombin = ''
-                for j in range(combinId[0], combinId[1]+1):
-                    videoToCombin += ('file \'' +
-                                      '.'.join(str(self.model.item(j,0).text()).split('.')[0:-1]) +
-                                      str(self.model.item(j, 6).text())+'.mp4'+
-                                      '\'\n')
-                    videoToCombin+='\n'
-                writeCombinFile = open(combinFileListName, 'w',encoding='utf-8')
-                temp=videoToCombin
-                writeCombinFile.write(temp)
+                for i in v:
+                    videoToCombin += ('file \'' + i + '\'\n')
+                writeCombinFile = open(combinFileListName, 'w')
+                writeCombinFile.write(videoToCombin)
                 writeCombinFile.close()
+                strtowrite += (self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n")
 
-                strtowrite += (self.ffmpegPath+' -safe 0 -f concat -i \"' +
-                               combinFileListName + '\" -c copy \"' +
-                               combinFileName + '\"\n' + "\n")
-
-
-        if self.checkBox_shutdown.checkState()==2:
+        if self.main_ui.checkBox_shutdown.checkState()==2:
             strtowrite+='shutdown -f -s -t 60 \n  -t 0:0:0  '
-
-        if os.path.exists((str(self.lineEdit_inputField.displayText()) + '/runAll.bat')):
-            os.remove((str(self.lineEdit_inputField.displayText()) + '/runAll.bat'))
-        writeFileAll = open((str(self.lineEdit_inputField.displayText()) + '/runAll.bat'), 'w',encoding='gbk' )
+        if not os.path.exists(str(self.main_ui.lineEdit_inputField.displayText())):
+            return
+        if os.path.exists((str(self.main_ui.lineEdit_inputField.displayText()) + '/runAll.bat')):
+            os.remove((str(self.main_ui.lineEdit_inputField.displayText()) + '/runAll.bat'))
+        writeFileAll = open((str(self.main_ui.lineEdit_inputField.displayText()) + '/runAll.bat'), 'w',encoding='gbk' )
         writeFileAll.write(strtowrite)
     def convertStrToTime(self,strs):
         strlist=strs.split(':')
@@ -435,29 +471,19 @@ class J_VideoConverter(QtWidgets.QMainWindow, J_VideoConverterUI.Ui_MainWindow):
                     if i==2:
                         res[i] = float(strlist[i])
                     else:
-                        res[i] = int(strlist[i])
+                        res[i] = int(strlist[i].split('.')[0])
                 except ValueError:
                     pass
         return res
 
-    ################################ 链接按钮
-    def J_createSlots(self):
-        self.pushButton_inputField.clicked.connect(self.getDirectory)
-        self.pushButton_convert.clicked.connect(self.createBatFile)
-        self.pushButton_connect.clicked.connect(self.connectVideo)
-        self.pushButton_saveList.clicked.connect(self.saveListToJfile)
-        self.pushButton_openList.clicked.connect(self.loadListFromJfile)
-        self.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr, [],'',''))
-        self.pushButton_renameL.clicked.connect(self.J_renameFileNameFromList)
-        self.pushButton_rename_2.clicked.connect(functools.partial(self.J_renameFileWithParFolder, ''))
 
-
+    # 保存目录设置
     def saveSettings(self):
         file = open(self.settingFilePath, 'w',encoding='utf-8')
         #保存选择的目录
-        strToSave = str(self.lineEdit_inputField.displayText()) + '\n'
-        #strToSave = strToSave+ str(self.lineEdit_outPutField.displayText()) + '\n'
-        file.writelines(str(strToSave), )
+        strToSave = str(self.main_ui.lineEdit_inputField.displayText())
+        if strToSave != '':
+            file.writelines(str(strToSave), )
         file.close()
     def closeEvent(self, *args, **kwargs):
         self.saveSettings()
@@ -466,7 +492,7 @@ def main():
     J_Window = J_VideoConverter()
     #J_Window.setAcceptDrops(True)
     J_Window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == '__main__':

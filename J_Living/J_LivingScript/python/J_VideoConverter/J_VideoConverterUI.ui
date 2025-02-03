@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>671</width>
-    <height>706</height>
+    <width>660</width>
+    <height>750</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>660</width>
+    <height>750</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>J_videoConverter</string>
@@ -21,22 +27,22 @@
        <bool>false</bool>
       </property>
       <property name="editTriggers">
-       <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+       <set>QAbstractItemView::EditTrigger::AnyKeyPressed|QAbstractItemView::EditTrigger::DoubleClicked|QAbstractItemView::EditTrigger::EditKeyPressed|QAbstractItemView::EditTrigger::SelectedClicked</set>
       </property>
       <property name="dragEnabled">
        <bool>true</bool>
       </property>
       <property name="dragDropMode">
-       <enum>QAbstractItemView::DragDrop</enum>
+       <enum>QAbstractItemView::DragDropMode::DragDrop</enum>
       </property>
       <property name="selectionMode">
-       <enum>QAbstractItemView::MultiSelection</enum>
+       <enum>QAbstractItemView::SelectionMode::MultiSelection</enum>
       </property>
       <property name="verticalScrollMode">
-       <enum>QAbstractItemView::ScrollPerPixel</enum>
+       <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
       </property>
       <property name="horizontalScrollMode">
-       <enum>QAbstractItemView::ScrollPerPixel</enum>
+       <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
       </property>
      </widget>
     </item>
@@ -44,20 +50,6 @@
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QCheckBox" name="checkBox_ignoreEnd">
-          <property name="text">
-           <string>忽略未定义结尾的文件</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBox_combinVideo">
-          <property name="text">
-           <string>合并切割的视频</string>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QCheckBox" name="checkBox_shutdown">
           <property name="text">
@@ -138,7 +130,7 @@
       <item row="1" column="0" colspan="2">
        <widget class="Line" name="line">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
        </widget>
       </item>
@@ -186,8 +178,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>671</width>
-     <height>23</height>
+     <width>660</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>
