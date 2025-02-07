@@ -388,7 +388,7 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         
         for k,v in fileCombinList.items():
             if len(v)>1:
-                combinFileListName = os.path.basename(v[0])+'/'+k + '_J.Cbn'
+                combinFileListName = os.path.dirname(v[0])+'/'+k + '_J.Cbn'
                 combinFileName = os.path.basename(v[0])+'/'+k  + '_J.mp4'
                 videoToCombin = ''
                 for i in v:
