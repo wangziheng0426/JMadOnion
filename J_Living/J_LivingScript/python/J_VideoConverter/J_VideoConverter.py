@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import numpy
+#import numpy
 #import J_VideoConverterUI,J_VideoConverterCutUI
 import sys, os,functools,json,re
 import winreg
@@ -97,7 +97,7 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         self.main_ui.pushButton_openList.clicked.connect(self.loadListFromJfile)
         self.main_ui.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr,''))
         self.main_ui.pushButton_rename1.clicked.connect(functools.partial(self.J_renameFileNameFromList,'',''))
-        self.main_ui.pushButton_rename2.clicked.connect(functools.partial(self.J_renameFileNameFromList,'fc2ppv-','fc2_'))
+        self.main_ui.pushButton_rename2.clicked.connect(functools.partial(self.J_renameFileNameFromList,'fc2ppv-,FC2PPV-,FC2-PPV-,hhd800.com@FC2-PPV-,FC2PPV,hhd800.com@','fc2_'))
         self.main_ui.pushButton_renameWithFolder.clicked.connect(functools.partial(self.J_renameFileWithParFolder, ''))
         self.main_ui.tableView_fileList.doubleClicked.connect(self.on_tableView_fileList_doubleClicked)
 
@@ -162,19 +162,9 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         self.createNewTask(str(self.model.item(modelIndex.row(),7).text()))
         rt = modelIndex.row()
         # 修改新行参数
-        # 起始时间根据上一个视频的起始结束时间计算,选择较大的时间
-        st0 = self.model.item(rt, 1).text().split(':')
-        et0 = self.model.item(rt, 2).text().split(':')
-        st1=[]
-        for i in range(0,3):                       
-            if float(st0[i] )<float(et0[i]):
-                st1.append(str(float(et0[i])))
-            elif float(st0[i] )>0 :
-                st1.append(str(float(st0[i] ))) 
-            else:
-                st1.append('0')
-        st = st1[0].split('.')[0]+':'+st1[1].split('.')[0]+':'+st1[0]
-        self.model.item(self.model.rowCount()-1, 1).setText(st)
+        et0 = self.model.item(rt, 2).text()
+        
+        self.model.item(self.model.rowCount()-1, 1).setText(et0)
         # 设置分辨率
         self.model.item(self.model.rowCount()-1, 3).setText(self.model.item(rt, 3).text())
         # 设置格式
@@ -182,8 +172,21 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         # 设置crf
         self.model.item(self.model.rowCount()-1, 5).setText(self.model.item(rt, 5).text())
         # 设置后缀
-        index=int(str(self.model.item(rt,6).text()).replace('_',''))
-        self.model.item(self.model.rowCount()-1, 6).setText("_%03d"% (index+1))
+        originStr=str(self.model.item(rt,6).text())
+        # 获取后缀的数字
+        number=re.findall(r'\d+',originStr)
+        if len(number)>0:
+            number=int(number[0])+1
+        else:   
+            number=1
+        # 获取字符和符号
+        strList=re.findall(r'\D+',originStr)
+        if len(strList)>0:
+            strList=strList[0]
+        else:
+            strList='j_'
+        postfix=(strList+"%03d"% (number))
+        self.model.item(self.model.rowCount()-1, 6).setText(postfix)
         # 移动最后一行到当前行下一行
         temp = self.model.takeRow(self.model.rowCount()-1)
         self.model.insertRow(rt+1, temp)
@@ -293,6 +296,9 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         if not os.path.exists(jpPath):
             return
         for root,dirs,files in os.walk(jpPath):
+            for item in dirs:
+                self.J_renameFile(os.path.join(root,item).replace('\\','/'))
+        for root,dirs,files in os.walk(jpPath):
             for item in files:
                 self.J_renameFile(os.path.join(root,item).replace('\\','/'))
         self.createVideoList()
@@ -308,22 +314,34 @@ class J_VideoConverter(QtWidgets.QMainWindow):
     def J_renameFile(self,filePath,jKey='',jNewKey=''):
         if jKey=='':
            jKey=str(self.main_ui.lineEdit_oriName.displayText()).split(',')
+        else:
+            jKey=jKey.split(',')
         if jNewKey=='':
             jNewKey = str(self.main_ui.lineEdit_desName.displayText())
-        
-        fileName='.'.join(os.path.basename(filePath).split('.')[0:-1])+'.'+os.path.basename(filePath).split('.')[-1]
+        else:
+            jNewKey=jNewKey
+        if os.path.isdir(filePath):
+            fileName=os.path.basename(filePath)
+        else:
+            fileName='.'.join(os.path.basename(filePath).split('.')[0:-1])+'.'+os.path.basename(filePath).split('.')[-1]
         fileFolder=os.path.dirname(filePath).replace('\\','/')
         newFileName = fileName
         for itemKey in jKey:
             if fileName.find(itemKey) > -1 and not fileName == itemKey:
                 newFileName = fileName.replace(itemKey, jNewKey)
             if newFileName != fileName:
-                if filePath.split('.')[-1] in self.fileTypes:
+                if os.path.isdir(filePath):
                     try:
-                        os.rename(filePath, fileFolder+'/' + newFileName)
-                        return fileFolder+'/' + newFileName
+                        os.rename(filePath, fileFolder + '/' + newFileName) 
                     except:
                         print (fileName + "rename failed")
+                else:
+                    if filePath.split('.')[-1] in self.fileTypes:
+                        try:
+                            os.rename(filePath, fileFolder+'/' + newFileName)
+                            return fileFolder+'/' + newFileName
+                        except:
+                            print (fileName + "rename failed")
         return None
 ######################################################################################
     def J_renameFileWithParFolder(self,jpPath):
@@ -389,12 +407,12 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         for k,v in fileCombinList.items():
             if len(v)>1:
                 combinFileListName = os.path.dirname(v[0])+'/'+k + '_J.Cbn'
-                combinFileName = os.path.basename(v[0])+'/'+k  + '_J.mp4'
+                combinFileName = os.path.dirname(v[0])+'/'+k  + '_Jcomp.mp4'
                 videoToCombin = ''
                 for i in v:
                     videoToCombin += ('file \'' + os.path.basename(i) + '\'\n')
-                writeCombinFile = open(combinFileListName, 'w')
-                writeCombinFile.write(videoToCombin)
+                writeCombinFile = open(combinFileListName, 'w',encoding='utf-8')
+                writeCombinFile.write(str(videoToCombin))
                 writeCombinFile.close()
                 strtowrite += (self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n")
 
@@ -406,21 +424,22 @@ class J_VideoConverter(QtWidgets.QMainWindow):
             os.remove((str(self.main_ui.lineEdit_inputField.displayText()) + '/runAll.bat'))
         writeFileAll = open((str(self.main_ui.lineEdit_inputField.displayText()) + '/runAll.bat'), 'w',encoding='gbk' )
         writeFileAll.write(strtowrite)
+        writeFileAll.close()    
     # 连接列表中名称相似的视频为一个视频文件
     def connectVideo(self):
         inPath = str(self.main_ui.lineEdit_inputField.displayText())
         if not os.path.exists(inPath):
             return
         allFile = ''
-        writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w')
+        writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w',encoding='utf-8')
         videoPath= os.path.dirname(str(self.model.item(0, 7).text())).replace('\\','/')
         videoName = str(self.model.item(0, 0).text())
         combinFileListName =videoPath+'/'+ videoName + '_combinJ.Cbn'
-        combinVideoFileName = videoPath+'/'+ videoName + '_c.mp4'
+        combinVideoFileName = videoPath+'/'+ videoName + '_combin.mp4'
         videoToCombin = ''
         for iRow in range(0,self.model.rowCount()):
             videoToCombin += ('file \'' + os.path.basename(str(self.model.item(iRow, 7).text())) + '\'\n')
-        writeCombinFile = open(combinFileListName, 'w')
+        writeCombinFile = open(combinFileListName, 'w',encoding='utf-8')
         writeCombinFile.write(videoToCombin)
         writeCombinFile.close()
         allFile +=(self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinVideoFileName + '\"\n' + "\n")
@@ -468,4 +487,4 @@ if __name__ == '__main__':
 
 
 
-# 打包 pyinstaller -F -w  J_VideoConverter.py --add-data="J_VideoConverterUI.ui;." --add-data="J_VideoConverterCutUI.ui;."
+# 打包 pyinstaller -F -w  ./J_Living/J_LivingScript/python/J_VideoConverter/J_VideoConverter.py --add-data="./J_Living/J_LivingScript/python/J_VideoConverter/J_VideoConverterUI.ui;." --add-data="./J_Living/J_LivingScript/python/J_VideoConverter/J_VideoConverterCutUI.ui;."

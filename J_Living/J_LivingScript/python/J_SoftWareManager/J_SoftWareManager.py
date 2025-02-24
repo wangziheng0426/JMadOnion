@@ -16,13 +16,14 @@ import sys,math
 
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerWin):
     settingFilePath=''
     modFolderPath=''
     plugInPath=''
 
     def __init__(self):
+        print(QtCore.__file__)
         super(J_SoftWareManager, self).__init__()
         self.setupUi(self)
         self.mainUiInit()
@@ -45,7 +46,7 @@ class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerW
                     self.plugInPath = line.replace('pluginpath@','')
                 line = fileTemp.readline().replace('\n', '')
             fileTemp.close()
-        model =QtGui.QFileSystemModel()
+        model =QtWidgets.QFileSystemModel()
         model.setRootPath('/')
         self.treeView_files.setModel(model)
     ######注册表读软件
@@ -59,7 +60,7 @@ class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerW
                 keyX1 = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, temp)
                 path= winreg.QueryValueEx(keyX1,'MAYA_INSTALL_LOCATION')[0]
 
-                radioButton = QtGui.QRadioButton(self.groupBox)
+                radioButton = QtWidgets.QRadioButton(self.groupBox)
                 radioButton.setObjectName('maya'+version)
                 radioButton.setText('maya' + version )
                 radioButton.accessibleName=path
@@ -86,7 +87,8 @@ class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerW
                 if self.lineEdit_senceFile.text()!='':
                     path='\"'+temp.accessibleName.replace('\\','/')+'bin/maya.exe'+'\"'+\
                         ' -file \"'+ self.lineEdit_senceFile.text()+'\"'
-                path=str(path)
+                #path=str(path)
+                #subprocess.Popen('start \\\"'+path+'\\\"',env=os.environ.copy(),shell=True)
                 t = threading.Thread(target=self.runmaya, args=(path,''))
                 t.start()
     #####读取插件，填表
@@ -96,7 +98,7 @@ class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerW
         if os.path.exists(mayaPlugInDir):
             for item in os.listdir(mayaPlugInDir):
                 if (os.path.isdir(mayaPlugInDir + '/' + item)):
-                    itemWid0 = QtGui.QTreeWidgetItem(self.treeWidget_plugIn)
+                    itemWid0 = QtWidgets.QTreeWidgetItem(self.treeWidget_plugIn)
                     itemWid0.setText(0, item)
                     itemWid0.setText(3, mayaPlugInDir )
                     itemWid0.setFlags(QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
@@ -121,7 +123,7 @@ class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerW
             for file in items[2]:
                 if file.lower().endswith('.mod') or file.lower().endswith('.module') :
                     #print items[0]+'/'+file
-                    itemWid0 = QtGui.QTreeWidgetItem(treeItem)
+                    itemWid0 = QtWidgets.QTreeWidgetItem(treeItem)
                     itemWid0.setText(0, items[0].split('\\')[-1])
                     itemWid0.setText(1, items[0])
     ######开启maya
@@ -134,13 +136,13 @@ class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerW
         #batFile=open('c:/temp.bat','w')
         #batFile.write(path.encode('gbk'))
         #batFile.close()
-        path=path.encode('gbk')
+        #path=path.encode('gbk')
 
-        subprocess.Popen(path)
+        subprocess.Popen(path,env=os.environ.copy(),shell=True)
 
     #######设置插件路径
     def J_setPluginPath(self):
-        temp = QtGui.QFileDialog()
+        temp = QtWidgets.QFileDialog()
         self.plugInPath = str(temp.getExistingDirectory(self).replace('\\', '/'))
     #####读取mod 并修改路径
     def J_changeModFilePath(self,selQTreeWidgetItem,):
@@ -177,7 +179,7 @@ class J_SoftWareManager(QtWidgets.QMainWindow, J_SoftWareManagerUi.Ui_J_managerW
         #保存选择的目录
         strToSave ='pluginpath@'+self.plugInPath
 
-        file.writelines(str(strToSave).encode('utf-8'), )
+        file.writelines(strToSave)
         file.close()
     def closeEvent(self, *args, **kwargs):
         self.saveSettings()

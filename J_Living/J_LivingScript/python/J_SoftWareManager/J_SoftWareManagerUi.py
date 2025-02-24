@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -15,12 +15,12 @@ except AttributeError:
         return s
 
 try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
+    _encoding = QtWidgets.QApplication.UnicodeUTF8
     def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+        return QtWidgets.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+        return QtWidgets.QApplication.translate(context, text, disambig)
 
 class Ui_J_managerWin(object):
     def setupUi(self, J_managerWin):
@@ -29,45 +29,45 @@ class Ui_J_managerWin(object):
         J_managerWin.resize(242, 605)
         J_managerWin.setMinimumSize(QtCore.QSize(200, 200))
         J_managerWin.setMaximumSize(QtCore.QSize(1024, 720))
-        self.centralwidget = QtGui.QWidget(J_managerWin)
+        self.centralwidget = QtWidgets.QWidget(J_managerWin)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
-        self.gridLayout_2 = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
-        self.treeView_files = QtGui.QTreeView(self.centralwidget)
+        self.treeView_files = QtWidgets.QTreeView(self.centralwidget)
         self.treeView_files.setObjectName(_fromUtf8("treeView_files"))
         self.gridLayout_2.addWidget(self.treeView_files, 2, 0, 1, 2)
-        self.lineEdit_projectPath = QtGui.QLineEdit(self.centralwidget)
+        self.lineEdit_projectPath = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_projectPath.setObjectName(_fromUtf8("lineEdit_projectPath"))
         self.gridLayout_2.addWidget(self.lineEdit_projectPath, 3, 0, 1, 1)
-        self.lineEdit_senceFile = QtGui.QLineEdit(self.centralwidget)
+        self.lineEdit_senceFile = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_senceFile.setObjectName(_fromUtf8("lineEdit_senceFile"))
         self.gridLayout_2.addWidget(self.lineEdit_senceFile, 4, 0, 1, 1)
-        self.pushButton_open = QtGui.QPushButton(self.centralwidget)
+        self.pushButton_open = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_open.setObjectName(_fromUtf8("pushButton_open"))
         self.gridLayout_2.addWidget(self.pushButton_open, 4, 1, 1, 1)
-        self.groupBox = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.groupBox.setEnabled(True)
         self.groupBox.setMinimumSize(QtCore.QSize(100, 100))
         self.groupBox.setMaximumSize(QtCore.QSize(16777215, 200))
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
-        self.gridLayout = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout = QtWidgets.QGridLayout(self.groupBox)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.gridLayout_2.addWidget(self.groupBox, 0, 0, 1, 2)
-        self.treeWidget_plugIn = QtGui.QTreeWidget(self.centralwidget)
-        self.treeWidget_plugIn.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+        self.treeWidget_plugIn = QtWidgets.QTreeWidget(self.centralwidget)
+        self.treeWidget_plugIn.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
         self.treeWidget_plugIn.setObjectName(_fromUtf8("treeWidget_plugIn"))
         self.gridLayout_2.addWidget(self.treeWidget_plugIn, 1, 0, 1, 2)
-        self.checkBox_chs = QtGui.QCheckBox(self.centralwidget)
+        self.checkBox_chs = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_chs.setObjectName(_fromUtf8("checkBox_chs"))
         self.gridLayout_2.addWidget(self.checkBox_chs, 3, 1, 1, 1)
         J_managerWin.setCentralWidget(self.centralwidget)
-        self.statusbar = QtGui.QStatusBar(J_managerWin)
+        self.statusbar = QtWidgets.QStatusBar(J_managerWin)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         J_managerWin.setStatusBar(self.statusbar)
-        self.menuBar = QtGui.QMenuBar(J_managerWin)
+        self.menuBar = QtWidgets.QMenuBar(J_managerWin)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 242, 23))
         self.menuBar.setObjectName(_fromUtf8("menuBar"))
-        self.menu = QtGui.QMenu(self.menuBar)
+        self.menu = QtWidgets.QMenu(self.menuBar)
         self.menu.setObjectName(_fromUtf8("menu"))
         J_managerWin.setMenuBar(self.menuBar)
         self.action = QtGui.QAction(J_managerWin)
