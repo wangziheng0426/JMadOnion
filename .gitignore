@@ -2,6 +2,7 @@
 *.exe
 *.jset
 *.rar
+*.spec
 /.idea/
 /.vscode
 /J_Living/J_LivingWorker/.vs/
@@ -9,7 +10,8 @@
 /J_Living/J_LivingWorker/obj/
 /J_Living/J_LivingScript/python/.idea/
 /J_Living/J_LivingScript/.idea/
-
+/build
+/dist
 /scripts/*.exe
 /scripts/*.pk
 /python/pyTools/build

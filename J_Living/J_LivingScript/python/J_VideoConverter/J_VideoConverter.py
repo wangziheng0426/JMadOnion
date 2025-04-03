@@ -97,7 +97,7 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         self.main_ui.pushButton_openList.clicked.connect(self.loadListFromJfile)
         self.main_ui.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr,''))
         self.main_ui.pushButton_rename1.clicked.connect(functools.partial(self.J_renameFileNameFromList,'',''))
-        self.main_ui.pushButton_rename2.clicked.connect(functools.partial(self.J_renameFileNameFromList,'fc2ppv-,FC2PPV-,FC2-PPV-,hhd800.com@FC2-PPV-,FC2PPV,hhd800.com@','fc2_'))
+        self.main_ui.pushButton_rename2.clicked.connect(functools.partial(self.J_renameFileNameFromList,'fc2ppv-,FC2PPV-,FC2-PPV-,hhd800.com@FC2-PPV-,FC2PPV','fc2_'))
         self.main_ui.pushButton_renameWithFolder.clicked.connect(functools.partial(self.J_renameFileWithParFolder, ''))
         self.main_ui.tableView_fileList.doubleClicked.connect(self.on_tableView_fileList_doubleClicked)
 
@@ -354,7 +354,11 @@ class J_VideoConverter(QtWidgets.QMainWindow):
                 filePath = os.path.join(root, file)
                 fileExt = os.path.splitext(file)[1]
                 folderName = os.path.basename(root)
+                # 如果仅有一个文件,则不添加后缀
                 newFileName = f"{folderName}_{index + 1:04d}{fileExt}"
+                if len(files) == 1:
+                    newFileName = f"{folderName}{fileExt}"
+                
                 newFilePath = os.path.join(root, newFileName)
                 if fileExt[1:] in self.fileTypes:
                     try:
@@ -368,6 +372,9 @@ class J_VideoConverter(QtWidgets.QMainWindow):
 
 ######创建执行文件，同时输出Jliving 任务列表
     def createBatFile(self):
+        outPath = str(self.main_ui.lineEdit_inputField.displayText())
+        if not os.path.exists(outPath):
+            return
         strtowrite=''
         combinId=[0,0]
         fileCombinList = {}
@@ -390,27 +397,30 @@ class J_VideoConverter(QtWidgets.QMainWindow):
             if str(self.model.item(i,3).text())!='':
                 resolusion=' -s ' +str(self.model.item(i,3).text())+' '
             ####加入新行 
+            # 输出文件路径
+            currentFileName = str(self.model.item(i, 0).text())
+            outFile = outPath+'/' +currentFileName+str(self.model.item(i,6).text())+'.mp4'
             strtowrite+= self.ffmpegPath+' -i \"'+str(self.model.item(i,7).text())+'\"'\
                         + ' -ss '+str((startTime[0]))+':'+str((startTime[1]))+':'+str(startTime[2])+ ' '\
                         + compressTime\
                         + resolusion\
                         + ' -c:v '+str(self.model.item(i,4).text())+' '\
                         + ' -crf ' +str(self.model.item(i,5).text())+' '\
-                        + ' -y \"'+'.'.join(str(self.model.item(i,7).text()).split('.')[0:-1]) \
-                        + str(self.model.item(i,6).text())+'.mp4\"\n\n'
-            if  str(self.model.item(i,0).text()) not in fileCombinList.keys():
-                fileCombinList[str(self.model.item(i,0).text())] = []
-            fileCombinList[str(self.model.item(i,0).text())].append('.'.join(str(self.model.item(i,7).text()).split('.')[0:-1]) +\
-                 str(self.model.item(i,6).text())+'.mp4')
+                        + ' -y \"'+ outFile\
+                        + '\"\n\n'
+            # 拆分的文件进行记录,方便后续合并 k是文件名 v是需要合并文件名称列表
+            if  currentFileName not in fileCombinList.keys():
+                fileCombinList[currentFileName] = []
+            fileCombinList[currentFileName].append(os.path.basename(outFile))
         # 查询所有行,确定需要合并的文件,第一种状况,是手动拆分的文件,第二种状况是文件名相似的文件
         
         for k,v in fileCombinList.items():
             if len(v)>1:
-                combinFileListName = os.path.dirname(v[0])+'/'+k + '_J.Cbn'
-                combinFileName = os.path.dirname(v[0])+'/'+k  + '_Jcomp.mp4'
+                combinFileListName =outPath+'/'+k + '_J.Cbn'
+                combinFileName = outPath+'/'+k  + '_jcomp.mp4'
                 videoToCombin = ''
                 for i in v:
-                    videoToCombin += ('file \'' + os.path.basename(i) + '\'\n')
+                    videoToCombin += ('file \'' + i + '\'\n')
                 writeCombinFile = open(combinFileListName, 'w',encoding='utf-8')
                 writeCombinFile.write(str(videoToCombin))
                 writeCombinFile.close()
@@ -418,11 +428,12 @@ class J_VideoConverter(QtWidgets.QMainWindow):
 
         if self.main_ui.checkBox_shutdown.checkState()==2:
             strtowrite+='shutdown -f -s -t 60 \n  -t 0:0:0  '
-        if not os.path.exists(str(self.main_ui.lineEdit_inputField.displayText())):
-            return
-        if os.path.exists((str(self.main_ui.lineEdit_inputField.displayText()) + '/runAll.bat')):
-            os.remove((str(self.main_ui.lineEdit_inputField.displayText()) + '/runAll.bat'))
-        writeFileAll = open((str(self.main_ui.lineEdit_inputField.displayText()) + '/runAll.bat'), 'w',encoding='gbk' )
+        
+        
+        outBat=outPath+'/run.bat'
+        if os.path.exists(outBat):
+            os.remove(outBat)
+        writeFileAll = open(outBat, 'w',encoding='gbk')        
         writeFileAll.write(strtowrite)
         writeFileAll.close()    
     # 连接列表中名称相似的视频为一个视频文件
@@ -431,11 +442,11 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         if not os.path.exists(inPath):
             return
         allFile = ''
-        writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w',encoding='utf-8')
+        
         videoPath= os.path.dirname(str(self.model.item(0, 7).text())).replace('\\','/')
         videoName = str(self.model.item(0, 0).text())
-        combinFileListName =videoPath+'/'+ videoName + '_combinJ.Cbn'
-        combinVideoFileName = videoPath+'/'+ videoName + '_combin.mp4'
+        combinFileListName =inPath+'/'+ videoName + '_combinJ.Cbn'
+        combinVideoFileName = inPath+'/'+ videoName + '_combin.mp4'
         videoToCombin = ''
         for iRow in range(0,self.model.rowCount()):
             videoToCombin += ('file \'' + os.path.basename(str(self.model.item(iRow, 7).text())) + '\'\n')
@@ -443,7 +454,8 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         writeCombinFile.write(videoToCombin)
         writeCombinFile.close()
         allFile +=(self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinVideoFileName + '\"\n' + "\n")
-
+        
+        writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w',encoding='gbk')
         writeFileAll.write(allFile)
         writeFileAll.close()
         return allFile
@@ -472,7 +484,7 @@ class J_VideoConverter(QtWidgets.QMainWindow):
             file.writelines(str(strToSave), )
         file.close()
     def closeEvent(self, *args, **kwargs):
-        self.saveListToJfile()
+        #self.saveListToJfile()
         self.saveSettings()
 def main():
     app = QtWidgets.QApplication(sys.argv)
