@@ -22,6 +22,9 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         self.main_ui = uic.loadUi('{}/J_VideoConverterUI.ui'.format(run_path))
         self.setCentralWidget(self.main_ui)
         self.setWindowTitle('J_VideoConverter')
+        settingPath=__file__[:-3]+'_userSetting.ini'
+        self.settingFile = QtCore.QSettings(settingPath,QtCore.QSettings.Format.IniFormat)
+
         self.mainUiInit()
         self.J_createSlots()
     def mainUiInit(self):
@@ -91,10 +94,8 @@ class J_VideoConverter(QtWidgets.QMainWindow):
     # 链接按钮 ui
     def J_createSlots(self):
         self.main_ui.pushButton_inputField.clicked.connect(self.setFileDirectory)
-        self.main_ui.pushButton_convert.clicked.connect(self.createBatFile)
-        self.main_ui.pushButton_connect.clicked.connect(self.connectVideo)
-        self.main_ui.pushButton_saveList.clicked.connect(self.saveListToJfile)
-        self.main_ui.pushButton_openList.clicked.connect(self.loadListFromJfile)
+        self.main_ui.pushButton_convert.clicked.connect(self.executJob)
+
         self.main_ui.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr,''))
         self.main_ui.pushButton_rename1.clicked.connect(functools.partial(self.J_renameFileNameFromList,'',''))
         self.main_ui.pushButton_rename2.clicked.connect(functools.partial(self.J_renameFileNameFromList,'fc2ppv-,FC2PPV-,FC2-PPV-,hhd800.com@FC2-PPV-,FC2PPV','fc2_'))
@@ -217,7 +218,8 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         self.saveSettingToTable(modelIndex)
         if modelIndex.row()<self.model.rowCount()-1:
             self.OpenCutSettingDialog(self.model.item(modelIndex.row()+1,0).index())
-    
+
+    # 获取数字,如果没有数字则返回0
     def getNumber(self,strs):
         nums=re.findall(r'\d+.+\d+',strs)
         if len(nums)<1:
@@ -371,7 +373,7 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         self.createVideoList()
 
 ######创建执行文件，同时输出Jliving 任务列表
-    def createBatFile(self):
+    def executJob(self):
         outPath = str(self.main_ui.lineEdit_inputField.displayText())
         if not os.path.exists(outPath):
             return
@@ -477,12 +479,13 @@ class J_VideoConverter(QtWidgets.QMainWindow):
 
     # 保存目录设置
     def saveSettings(self):
-        file = open(self.settingFilePath, 'w',encoding='utf-8')
-        #保存选择的目录
         strToSave = str(self.main_ui.lineEdit_inputField.displayText())
-        if strToSave != '':
-            file.writelines(str(strToSave), )
-        file.close()
+        self.settingFile.setValue("compressPath", strToSave)
+
+    def loadSettings(self):
+        # 展开到指定目录
+        self.main_ui.lineEdit_inputField.setText( self.settingFile.value("compressPath")  )
+
     def closeEvent(self, *args, **kwargs):
         #self.saveListToJfile()
         self.saveSettings()
