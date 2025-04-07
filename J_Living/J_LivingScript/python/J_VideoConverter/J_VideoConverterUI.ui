@@ -20,166 +20,258 @@
    <string>J_videoConverter</string>
   </property>
   <widget class="QWidget" name="cw">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QTableView" name="tableView_fileList">
-      <property name="autoScroll">
-       <bool>false</bool>
-      </property>
-      <property name="editTriggers">
-       <set>QAbstractItemView::EditTrigger::AnyKeyPressed|QAbstractItemView::EditTrigger::DoubleClicked|QAbstractItemView::EditTrigger::EditKeyPressed|QAbstractItemView::EditTrigger::SelectedClicked</set>
-      </property>
-      <property name="dragEnabled">
-       <bool>true</bool>
-      </property>
-      <property name="dragDropMode">
-       <enum>QAbstractItemView::DragDropMode::DragDrop</enum>
-      </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SelectionMode::MultiSelection</enum>
-      </property>
-      <property name="verticalScrollMode">
-       <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
-      </property>
-      <property name="horizontalScrollMode">
-       <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QCheckBox" name="checkBox_shutdown">
-          <property name="text">
-           <string>自动关机</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBox_gogogo">
-          <property name="text">
-           <string>直接运行</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="lineEdit_inputField">
-        <property name="inputMask">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_inputField">
-        <property name="text">
-         <string>读取源目录</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="2" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QPushButton" name="pushButton_openList">
-        <property name="text">
-         <string>打开</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_convert">
-        <property name="text">
-         <string>转换</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="3" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QPushButton" name="pushButton_saveList">
-        <property name="text">
-         <string>保存</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_connect">
-        <property name="text">
-         <string>连接视频</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>批量改名</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
-       <widget class="QLineEdit" name="lineEdit_oriName">
-        <property name="text">
-         <string>源字符</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="lineEdit_desName">
-        <property name="text">
-         <string>目标字符</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="6" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item>
-       <widget class="QPushButton" name="pushButton_rename">
-        <property name="text">
-         <string>搜索目录修改</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_rename1">
-        <property name="text">
-         <string>搜索列表修改</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="7" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_6">
-      <item>
-       <widget class="QPushButton" name="pushButton_rename2">
-        <property name="text">
-         <string>自动改名</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_renameWithFolder">
-        <property name="text">
-         <string>使用父文件夹名作为文件名</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>9</x>
+      <y>9</y>
+      <width>641</width>
+      <height>481</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0" colspan="2">
+      <widget class="QTableView" name="tableView_fileList">
+       <property name="autoScroll">
+        <bool>false</bool>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::NoDragDrop</enum>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::NoSelection</enum>
+       </property>
+       <property name="verticalScrollMode">
+        <enum>QAbstractItemView::ScrollPerItem</enum>
+       </property>
+       <property name="horizontalScrollMode">
+        <enum>QAbstractItemView::ScrollPerItem</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="lineEdit_inputField">
+       <property name="inputMask">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="pushButton_inputField">
+       <property name="text">
+        <string>设置目录</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>490</y>
+      <width>641</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>15</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>批量改名</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="lineEdit_oriName">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>源字符</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="lineEdit_desName">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>目标字符</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="pushButton_rename">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>搜索目录修改</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="pushButton_rename1">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>搜索列表修改</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QPushButton" name="pushButton_rename2">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>自动改名</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QPushButton" name="pushButton_renameWithFolder">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>自动批量命名</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>630</y>
+      <width>641</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="0" column="0">
+      <widget class="QRadioButton" name="radioButton">
+       <property name="text">
+        <string>压缩视频</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QRadioButton" name="radioButton_2">
+       <property name="text">
+        <string>拼接视频</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QRadioButton" name="radioButton_3">
+       <property name="text">
+        <string>输出命令行</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QRadioButton" name="radioButton_4">
+       <property name="text">
+        <string>远程压缩</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="4">
+      <widget class="QPushButton" name="pushButton_convert">
+       <property name="text">
+        <string>急急如律令</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -187,11 +279,35 @@
      <x>0</x>
      <y>0</y>
      <width>660</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menufile">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="actionopen"/>
+    <addaction name="actionsave"/>
+    <addaction name="actionsetting"/>
+   </widget>
+   <addaction name="menufile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionopen">
+   <property name="text">
+    <string>打开</string>
+   </property>
+  </action>
+  <action name="actionsave">
+   <property name="text">
+    <string>保存</string>
+   </property>
+  </action>
+  <action name="actionsetting">
+   <property name="text">
+    <string>设置</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
