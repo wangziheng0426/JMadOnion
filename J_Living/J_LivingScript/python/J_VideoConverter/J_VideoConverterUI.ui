@@ -20,7 +20,7 @@
    <string>J_videoConverter</string>
   </property>
   <widget class="QWidget" name="cw">
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>9</x>
@@ -36,22 +36,22 @@
         <bool>false</bool>
        </property>
        <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+        <set>QAbstractItemView::EditTrigger::DoubleClicked|QAbstractItemView::EditTrigger::SelectedClicked</set>
        </property>
        <property name="dragEnabled">
         <bool>true</bool>
        </property>
        <property name="dragDropMode">
-        <enum>QAbstractItemView::NoDragDrop</enum>
+        <enum>QAbstractItemView::DragDropMode::DragDrop</enum>
        </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::NoSelection</enum>
+        <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
        </property>
        <property name="verticalScrollMode">
-        <enum>QAbstractItemView::ScrollPerItem</enum>
+        <enum>QAbstractItemView::ScrollMode::ScrollPerItem</enum>
        </property>
        <property name="horizontalScrollMode">
-        <enum>QAbstractItemView::ScrollPerItem</enum>
+        <enum>QAbstractItemView::ScrollMode::ScrollPerItem</enum>
        </property>
       </widget>
      </item>
@@ -71,7 +71,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -222,7 +222,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -279,31 +279,31 @@
      <x>0</x>
      <y>0</y>
      <width>660</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufile">
     <property name="title">
      <string>文件</string>
     </property>
-    <addaction name="actionopen"/>
-    <addaction name="actionsave"/>
-    <addaction name="actionsetting"/>
+    <addaction name="action_open"/>
+    <addaction name="action_save"/>
+    <addaction name="action_setting"/>
    </widget>
    <addaction name="menufile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionopen">
+  <action name="action_open">
    <property name="text">
     <string>打开</string>
    </property>
   </action>
-  <action name="actionsave">
+  <action name="action_save">
    <property name="text">
     <string>保存</string>
    </property>
   </action>
-  <action name="actionsetting">
+  <action name="action_setting">
    <property name="text">
     <string>设置</string>
    </property>

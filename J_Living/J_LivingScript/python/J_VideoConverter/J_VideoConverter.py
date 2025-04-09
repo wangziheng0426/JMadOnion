@@ -24,7 +24,7 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         self.setWindowTitle('J_VideoConverter')
         settingPath=__file__[:-3]+'_userSetting.ini'
         self.settingFile = QtCore.QSettings(settingPath,QtCore.QSettings.Format.IniFormat)
-
+        self.headUp=[u'文件', u'开始', u'结束', u'分辨率', u'格式', u'压缩', u'后缀', u'路径']
         self.mainUiInit()
         self.J_createSlots()
     def mainUiInit(self):
@@ -32,27 +32,24 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                               r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')        
         self.model = QtGui.QStandardItemModel()
-        self.settingFilePath = winreg.QueryValueEx(key, "Personal")[0].replace('\\', '/') + '/videoConverterSetting.ini'
+        self.model.setHorizontalHeaderLabels(self.headUp)
         self.main_ui.tableView_fileList.setModel(self.model)
         # 拖拽事件
         self.main_ui.tableView_fileList.installEventFilter(self)
         # 设置表格宽度
         for index,width in enumerate([160,40,40,70,40,40,60,360]):
             self.main_ui.tableView_fileList.setColumnWidth(index, width)
-        # 读取设置文件目录
-        if os.path.exists(self.settingFilePath):
-            file = open(self.settingFilePath, 'r',encoding='utf-8')
-            settingPath=str(file.readline()).replace('\n','')
-            if os.path.exists(settingPath):
-                self.main_ui.lineEdit_inputField.setText(settingPath)
-            file.close()
-            self.createVideoList()
+        
         # 读取ffmpeg路径
         if not os.path.exists(self.ffmpegPath):
             self.ffmpegPath = os.getcwd() + '/ffmpeg.exe'
         if not os.path.exists(self.ffmpegPath):
             QtGui.QMessageBox.about(self, u'提示', u"ffmpeg 失踪了")
-    
+        self.loadSettings()
+        # 读取设置文件目录
+        self.compressPath =  self.main_ui.lineEdit_inputField.displayText()
+        if os.path.exists(self.compressPath):
+            self.createVideoList()
     # 拖拽事件
     def eventFilter(self,obj,event):
         if obj is self.main_ui.tableView_fileList :
@@ -78,11 +75,9 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         return super(J_VideoConverter, self).eventFilter(obj, event)
     # 创建视频列表
     def createVideoList(self):
-        filePath = str(self.main_ui.lineEdit_inputField.displayText())
         self.model.clear()
-        self.model.setHorizontalHeaderLabels(
-            [u'文件', u'开始', u'结束', u'分辨率', u'格式', u'压缩', u'后缀', u'路径'])
-        for root,dir,files in os.walk(filePath):
+        self.model.setHorizontalHeaderLabels(self.headUp)
+        for root,dir,files in os.walk(self.compressPath):
             for item1 in files:
                 videofilePath = '\\'.join((root, item1)).replace('\\', '/')
                 if item1.split('.')[-1] in self.fileTypes:
@@ -90,18 +85,22 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         for index,width in enumerate([160,60,60,70,40,40,60,360]):
             self.main_ui.tableView_fileList.setColumnWidth(index, width)
   
-    
+    def setCompressPath(self):
+        self.compressPath = str(self.main_ui.lineEdit_inputField.displayText()).replace('\\','/')
+
     # 链接按钮 ui
     def J_createSlots(self):
         self.main_ui.pushButton_inputField.clicked.connect(self.setFileDirectory)
         self.main_ui.pushButton_convert.clicked.connect(self.executJob)
-
-        self.main_ui.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr,''))
-        self.main_ui.pushButton_rename1.clicked.connect(functools.partial(self.J_renameFileNameFromList,'',''))
-        self.main_ui.pushButton_rename2.clicked.connect(functools.partial(self.J_renameFileNameFromList,'fc2ppv-,FC2PPV-,FC2-PPV-,hhd800.com@FC2-PPV-,FC2PPV','fc2_'))
+        self.main_ui.lineEdit_inputField.textChanged.connect(self.setCompressPath)
+        self.main_ui.pushButton_rename.clicked.connect(functools.partial(self.J_renameFileWithStr))
+        self.main_ui.pushButton_rename1.clicked.connect(functools.partial(self.J_renameFileNameFromList))
+        self.main_ui.pushButton_rename2.clicked.connect(functools.partial(self.J_autoRenameFile))
         self.main_ui.pushButton_renameWithFolder.clicked.connect(functools.partial(self.J_renameFileWithParFolder, ''))
         self.main_ui.tableView_fileList.doubleClicked.connect(self.on_tableView_fileList_doubleClicked)
-
+        #链接菜单栏命令
+        self.main_ui.action_save.triggered.connect(self.saveListToJfile)
+        self.main_ui.action_open.triggered.connect(self.loadListFromJfile)
     def on_tableView_fileList_doubleClicked(self,modelIndex):
         if modelIndex.column()==0:
             self.OpenCutSettingDialog(modelIndex)
@@ -151,8 +150,8 @@ class J_VideoConverter(QtWidgets.QMainWindow):
             qItemList=[]
             for index,item2 in enumerate([filename,'0:0:0','0:0:0','1280*720','hevc','24','_001',videofilePath]):
                 mItem0 = QtGui.QStandardItem()
-                if index==0:
-                    mItem0.setEditable(False)
+                # if index==0:
+                #     mItem0.setEditable(False)
                 mItem0.setText(item2)
                 qItemList.append(mItem0)
             self.model.appendRow(qItemList)
@@ -239,118 +238,130 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         temp = QtWidgets.QFileDialog()
         temp.setDirectory(str(self.main_ui.lineEdit_inputField.displayText()))
         filePath = str(temp.getExistingDirectory(self).replace('\\', '/'))
+
         self.main_ui.lineEdit_inputField.setText(filePath)
         self.createVideoList()
-        self.saveSettings()
 
 
-    def saveListToJfile(self):
-        filePath = str(self.main_ui.lineEdit_inputField.displayText())
-        if not os.path.exists(filePath):
+
+    def saveListToJfile(self,*args):
+        savePath=str(args[0])
+        print(os.path.exists(savePath))
+        if not savePath.endswith('.jm') or not os.path.exists(savePath):
             # 路径不存在,弹窗提示
-            diaglog = QtWidgets.QMessageBox('提示', '路径不存在')
+            diaglog = QtWidgets.QFileDialog.getSaveFileName(self, u'保存文件', '', u'*.jm')
+            if diaglog:
+                savePath=diaglog[0]
+        if not os.path.exists(savePath):
             return
-
-        writeFileAll = open((str(self.main_ui.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'), 'w',encoding='utf-8')
-        inputPath=str(self.main_ui.lineEdit_inputField.displayText())
+        writeFileAll = open(savePath, 'w',encoding='utf-8')
         allFile=[]
         for iRow in range(0,self.model.rowCount()):
             row={}
             for iCol in range(0,8):
-                row[self.model.headerData(iCol,QtCore.Qt.Orientation.Horizontal)]=\
-                    str(self.model.item(iRow,iCol).text())
-                if self.model.headerData(iCol,QtCore.Qt.Orientation.Horizontal)=='path':
-                    row[str(self.model.headerData(iCol, QtCore.Qt.Orientation.Horizontal))] =\
-                        str(self.model.item(iRow, iCol).text()).replace(inputPath,'')
+                cellData=str(self.model.item(iRow,iCol).text())
+                if self.model.headerData(iCol,QtCore.Qt.Orientation.Horizontal)=='路径':
+                    cellData=str(self.model.item(iRow,iCol).text()).replace(self.compressPath,'')
+                row[self.model.headerData(iCol,QtCore.Qt.Orientation.Horizontal)]=cellData
+
             allFile.append(row)
-        writeFileAll.write(json.dumps(allFile))
+        writeFileAll.write(json.dumps(allFile,separators=(',', ':'), ensure_ascii=False, indent=4))
         writeFileAll.close()
 
-    def loadListFromJfile(self):
-        if not os.path.exists(str(self.main_ui.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'):
+    def loadListFromJfile(self,*args):
+        loadPath=str(args[0])
+        if not loadPath.endswith('.jm') or not os.path.exists(loadPath):
+            # 路径不存在,弹窗提示
+            diaglog = QtWidgets.QFileDialog.getOpenFileName(self, u'打开文件', '', u'*.jm')
+            if diaglog:
+                loadPath=diaglog[0] 
+        if not os.path.exists(loadPath):
             return
-        readFileAll = open((str(self.main_ui.lineEdit_inputField.displayText()) + '/' + 'saveJob.jm'), 'r')
+        readFileAll = open(loadPath, 'r',encoding='utf-8')
         data= json.load(readFileAll)
         readFileAll.close()
         self.model.clear()
-        self.model.setHorizontalHeaderLabels(
-            [u'文件', u'开始', u'结束', u'分辨率', u'格式', u'压缩', u'后缀', u'路径'])
-        rowCount = 0
+        self.model.setHorizontalHeaderLabels(self.headUp)
         for item0 in data:
-            colCount=0
-            for item1 in [u'文件', u'开始', u'结束', u'分辨率', u'格式', u'压缩', u'后缀', u'路径']:
+            qItemList=[]
+            for item1 in self.headUp:
                 mItem0 = QtGui.QStandardItem()
-                if item1==u'name':
+                if item1==u'文件':
                     mItem0.setEditable(False)
-
                 mItem0.setText(item0[item1])
-                if item1=='path':
-                    mItem0.setText(str(self.lineEdit_inputField.displayText())  + str(item0[item1]))
-                self.model.setItem(rowCount, colCount, mItem0)
-                colCount=colCount+1
-            rowCount=rowCount+1
+                if item1==u'路径':
+                    if os.path.exists(item0[item1]):
+                        mItem0.setText(item0[item1])
+                    else:
+                        mItem0.setText(self.compressPath+item0[item1])
+                qItemList.append(mItem0)
+            self.model.appendRow(qItemList)
         for index,width in enumerate([160,60,60,70,40,40,60,360]):
             self.main_ui.tableView_fileList.setColumnWidth(index, width)
 ################################################批量改名功能
-    def J_renameFileWithStr(self,jpPath=''):
-        if jpPath=='':
-            jpPath = str(self.main_ui.lineEdit_inputField.displayText())
-        if not os.path.exists(jpPath):
+    def J_renameFileWithStr(self,*args):
+        if not os.path.exists(self.compressPath):
             return
-        for root,dirs,files in os.walk(jpPath):
-            for item in dirs:
-                self.J_renameFile(os.path.join(root,item).replace('\\','/'))
-        for root,dirs,files in os.walk(jpPath):
+        for root,dirs,files in os.walk(self.compressPath):
             for item in files:
                 self.J_renameFile(os.path.join(root,item).replace('\\','/'))
+            for item in dirs:
+                self.J_renameFile(os.path.join(root,item).replace('\\','/'))
         self.createVideoList()
-    def J_renameFileNameFromList(self,jKey='',jNewKey=''):
+    def J_autoRenameFile(self,*args):
         for iRow in range(0, self.model.rowCount()):
-            fileName=str(self.model.item(iRow, 0).text())
             filePath=str(self.model.item(iRow, 7).text())
-            renameRes=self.J_renameFile(filePath,jKey,jNewKey)
+            renameRes=self.J_renameFile(filePath,jKey='fc2ppv-,FC2PPV-,FC2-PPV-,hhd800.com@FC2-PPV-,FC2PPV',jNewKey='fc2_')
             if renameRes!=None:
                 self.model.item(iRow, 7).setText(renameRes)
-                self.model.item(iRow, 0).setText(os.path.basename(renameRes))
-    # 批量改名,根据输入的名称替换文件名中的字符
-    def J_renameFile(self,filePath,jKey='',jNewKey=''):
-        if jKey=='':
+                self.model.item(iRow, 0).setText('.'.join(os.path.basename(renameRes).split('.')[:-1]))
+        #self.createVideoList()
+    def J_renameFileNameFromList(self,*args):
+        for iRow in range(0, self.model.rowCount()):
+            filePath=str(self.model.item(iRow, 7).text())
+            renameRes=self.J_renameFile(filePath)
+            if renameRes!=None:
+                self.model.item(iRow, 7).setText(renameRes)
+                self.model.item(iRow, 0).setText('.'.join(os.path.basename(renameRes).split('.')[:-1]))
+    # 批量改名,根据输入的名称替换文件名中的字符,替换多个字符,以逗号隔开
+    def J_renameFile(self,filePath,jKey=None,jNewKey=None):
+        if jKey==None:
            jKey=str(self.main_ui.lineEdit_oriName.displayText()).split(',')
         else:
             jKey=jKey.split(',')
-        if jNewKey=='':
+        if jNewKey==None:
             jNewKey = str(self.main_ui.lineEdit_desName.displayText())
-        else:
-            jNewKey=jNewKey
+
         if os.path.isdir(filePath):
             fileName=os.path.basename(filePath)
         else:
             fileName='.'.join(os.path.basename(filePath).split('.')[0:-1])+'.'+os.path.basename(filePath).split('.')[-1]
         fileFolder=os.path.dirname(filePath).replace('\\','/')
         newFileName = fileName
+        renameRes = False
         for itemKey in jKey:
-            if fileName.find(itemKey) > -1 and not fileName == itemKey:
-                newFileName = fileName.replace(itemKey, jNewKey)
-            if newFileName != fileName:
-                if os.path.isdir(filePath):
+            newFileName = newFileName.replace(itemKey, jNewKey)
+        if newFileName != fileName:
+            if os.path.isdir(filePath):
+                try:
+                    os.rename(filePath, fileFolder + '/' + newFileName) 
+                    renameRes = True
+                except:
+                    print (fileName + "rename failed")
+            else:
+                if filePath.split('.')[-1] in self.fileTypes:
                     try:
-                        os.rename(filePath, fileFolder + '/' + newFileName) 
+                        os.rename(filePath, fileFolder+'/' + newFileName)
+                        renameRes = True
+                        #return fileFolder+'/' + newFileName
                     except:
                         print (fileName + "rename failed")
-                else:
-                    if filePath.split('.')[-1] in self.fileTypes:
-                        try:
-                            os.rename(filePath, fileFolder+'/' + newFileName)
-                            return fileFolder+'/' + newFileName
-                        except:
-                            print (fileName + "rename failed")
+        if renameRes:
+            return fileFolder + '/' + newFileName
         return None
 ######################################################################################
     def J_renameFileWithParFolder(self,jpPath):
-        if jpPath=='':
-            jpPath = str(self.main_ui.lineEdit_inputField.displayText())
-        jpPath = jpPath.replace('\\', '/')
-        for root, dirs, files in os.walk(jpPath):
+        for root, dirs, files in os.walk(self.compressPath):
             index=0
             for idx, file in enumerate(files):
                 filePath = os.path.join(root, file)
@@ -479,16 +490,22 @@ class J_VideoConverter(QtWidgets.QMainWindow):
 
     # 保存目录设置
     def saveSettings(self):
+
         strToSave = str(self.main_ui.lineEdit_inputField.displayText())
         self.settingFile.setValue("compressPath", strToSave)
+        self.settingFile.setValue("jKey", str(self.main_ui.lineEdit_oriName.displayText()))
+        self.settingFile.setValue("jNewKey", str(self.main_ui.lineEdit_desName.displayText()))
 
     def loadSettings(self):
         # 展开到指定目录
         self.main_ui.lineEdit_inputField.setText( self.settingFile.value("compressPath")  )
+        self.main_ui.lineEdit_oriName.setText( self.settingFile.value("jKey") )
+        self.main_ui.lineEdit_desName.setText( self.settingFile.value("jNewKey") )
 
     def closeEvent(self, *args, **kwargs):
         #self.saveListToJfile()
         self.saveSettings()
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     J_Window = J_VideoConverter()
