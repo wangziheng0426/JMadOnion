@@ -73,6 +73,12 @@ class J_VideoConverter(QtWidgets.QMainWindow):
                 return True
         # 如果事件未被处理，调用基类的 eventFilter 方法
         return super(J_VideoConverter, self).eventFilter(obj, event)
+    # 按键事件
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        # 检测 Ctrl+S 组合键
+        if event.key() == QtCore.Qt.Key.Key_S and event.modifiers() == QtCore.Qt.KeyboardModifier.ControlModifier:
+            self.saveListToJfile(self.compressPath+'/J_f.jm')
+    
     # 创建视频列表
     def createVideoList(self):
         self.model.clear()
@@ -247,13 +253,11 @@ class J_VideoConverter(QtWidgets.QMainWindow):
     def saveListToJfile(self,*args):
         savePath=str(args[0])
         print(os.path.exists(savePath))
-        if not savePath.endswith('.jm') or not os.path.exists(savePath):
+        if not savePath.endswith('.jm') :
             # 路径不存在,弹窗提示
             diaglog = QtWidgets.QFileDialog.getSaveFileName(self, u'保存文件', '', u'*.jm')
             if diaglog:
                 savePath=diaglog[0]
-        if not os.path.exists(savePath):
-            return
         writeFileAll = open(savePath, 'w',encoding='utf-8')
         allFile=[]
         for iRow in range(0,self.model.rowCount()):
