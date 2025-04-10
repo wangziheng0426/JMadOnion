@@ -258,6 +258,8 @@ class J_VideoConverter(QtWidgets.QMainWindow):
             diaglog = QtWidgets.QFileDialog.getSaveFileName(self, u'保存文件', '', u'*.jm')
             if diaglog:
                 savePath=diaglog[0]
+        if not savePath.endswith('.jm'):
+            return
         writeFileAll = open(savePath, 'w',encoding='utf-8')
         allFile=[]
         for iRow in range(0,self.model.rowCount()):
@@ -389,13 +391,18 @@ class J_VideoConverter(QtWidgets.QMainWindow):
 
 ######创建执行文件，同时输出Jliving 任务列表
     def executJob(self):
-        outPath = str(self.main_ui.lineEdit_inputField.displayText())
-        if not os.path.exists(outPath):
-            return
-        strtowrite=''
-        combinId=[0,0]
-        fileCombinList = {}
-        for i in range(0,self.main_ui.tableView_fileList.model().rowCount()):
+        if self.main_ui.radioButton_1.isChecked():
+            self.createBatFile()
+        elif self.main_ui.radioButton_2.isChecked():
+            self.connectVideo()
+        elif self.main_ui.radioButton_3.isChecked():
+            self.createFfmpegCommand()
+        elif self.main_ui.radioButton_4.isChecked():
+            self.deadlineCompress()      
+    def createFfmpegCommand(self):
+        commandList=[]
+        fileCombinList={}
+        for i in range(0,self.model.rowCount()):
             startTimeStr=str(self.model.item(i,1).text())
             endTimeStr=str(self.model.item(i,2).text())
             #判断如果不是时间就用帧数
@@ -403,51 +410,61 @@ class J_VideoConverter(QtWidgets.QMainWindow):
             startSec=startTime[0]*3600+startTime[1]*60+startTime[2]
             endTime=self.convertStrToTime(endTimeStr)
             endSec = endTime[0] * 3600 + endTime[1] * 60 + endTime[2]
-            compressTime=''
-            resolusion=''
+            compressTime=' '
+            resolusion=' '
             if endSec-startSec>0:
                 compressTime=' -t '+str(int(endSec - startSec) //3600) + ':'\
                 + str(int((endSec - startSec)%3600)//60) + ':'\
                 + str((endSec - startSec)%60) + ' '
-            else:
-                compressTime=' '
+
             if str(self.model.item(i,3).text())!='':
                 resolusion=' -s ' +str(self.model.item(i,3).text())+' '
-            ####加入新行 
-            # 输出文件路径
             currentFileName = str(self.model.item(i, 0).text())
-            outFile = outPath+'/' +currentFileName+str(self.model.item(i,6).text())+'.mp4'
-            strtowrite+= self.ffmpegPath+' -i \"'+str(self.model.item(i,7).text())+'\"'\
+            suffix = str(self.model.item(i, 6).text())
+            outFile = self.compressPath+'/' +currentFileName+suffix+'.mp4'
+            ffCommand=self.ffmpegPath+' -i \"'+str(self.model.item(i,7).text())+'\"'\
                         + ' -ss '+str((startTime[0]))+':'+str((startTime[1]))+':'+str(startTime[2])+ ' '\
                         + compressTime\
                         + resolusion\
                         + ' -c:v '+str(self.model.item(i,4).text())+' '\
                         + ' -crf ' +str(self.model.item(i,5).text())+' '\
                         + ' -y \"'+ outFile\
-                        + '\"\n\n'
+                        + '\"\n'
+            commandList.append(ffCommand)
             # 拆分的文件进行记录,方便后续合并 k是文件名 v是需要合并文件名称列表
-            if  currentFileName not in fileCombinList.keys():
+            if currentFileName not in fileCombinList.keys():
                 fileCombinList[currentFileName] = []
-            fileCombinList[currentFileName].append(os.path.basename(outFile))
+            # 如果输出文件有数字后缀,则表示需要合并
+            if re.search(r'\d+', suffix):
+                fileCombinList[currentFileName].append(os.path.basename(outFile))
         # 查询所有行,确定需要合并的文件,第一种状况,是手动拆分的文件,第二种状况是文件名相似的文件
-        
         for k,v in fileCombinList.items():
             if len(v)>1:
-                combinFileListName =outPath+'/'+k + '_J.Cbn'
-                combinFileName = outPath+'/'+k  + '_jcomp.mp4'
+                combinFileListName =self.compressPath+'/'+k + '_J.Cbn'
+                combinFileName = self.compressPath+'/'+k  + '_jcomp.mp4'
                 videoToCombin = ''
                 for i in v:
                     videoToCombin += ('file \'' + i + '\'\n')
                 writeCombinFile = open(combinFileListName, 'w',encoding='utf-8')
                 writeCombinFile.write(str(videoToCombin))
                 writeCombinFile.close()
-                strtowrite += (self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n")
-
-        if self.main_ui.checkBox_shutdown.checkState()==2:
-            strtowrite+='shutdown -f -s -t 60 \n  -t 0:0:0  '
+                commandList.append((self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinFileName + '\"\n' + "\n"))
+        return commandList
+    def deadlineCompress(self):
+        pass
+    
+    def createBatFile(self,commandList=None):
+        if commandList==None:
+            commandList=self.createFfmpegCommand()
+        if commandList==None:
+            return
+        strtowrite='\n'.join(commandList)
+        
+        # if self.main_ui.checkBox_shutdown.checkState()==2:
+        #     strtowrite+='shutdown -f -s -t 60 \n  -t 0:0:0  '
         
         
-        outBat=outPath+'/run.bat'
+        outBat=self.compressPath+'/run.bat'
         if os.path.exists(outBat):
             os.remove(outBat)
         writeFileAll = open(outBat, 'w',encoding='gbk')        
@@ -455,27 +472,19 @@ class J_VideoConverter(QtWidgets.QMainWindow):
         writeFileAll.close()    
     # 连接列表中名称相似的视频为一个视频文件
     def connectVideo(self):
-        inPath = str(self.main_ui.lineEdit_inputField.displayText())
-        if not os.path.exists(inPath):
-            return
-        allFile = ''
-        
-        videoPath= os.path.dirname(str(self.model.item(0, 7).text())).replace('\\','/')
+        combinCommand = ''        
         videoName = str(self.model.item(0, 0).text())
-        combinFileListName =inPath+'/'+ videoName + '_combinJ.Cbn'
-        combinVideoFileName = inPath+'/'+ videoName + '_combin.mp4'
+        combinFileListName =self.compressPath+'/'+ videoName + '_combinJ.Cbn'
+        combinVideoFileName = self.compressPath+'/'+ videoName + '_combin.mp4'
         videoToCombin = ''
         for iRow in range(0,self.model.rowCount()):
             videoToCombin += ('file \'' + os.path.basename(str(self.model.item(iRow, 7).text())) + '\'\n')
         writeCombinFile = open(combinFileListName, 'w',encoding='utf-8')
         writeCombinFile.write(videoToCombin)
         writeCombinFile.close()
-        allFile +=(self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy \"' + combinVideoFileName + '\"\n' + "\n")
+        combinCommand =(self.ffmpegPath+' -safe 0 -f concat -i \"' + combinFileListName + '\" -c copy -y \"' + combinVideoFileName + '\"\n' )
         
-        writeFileAll = open((inPath + '/' + 'runCombin.bat'), 'w',encoding='gbk')
-        writeFileAll.write(allFile)
-        writeFileAll.close()
-        return allFile
+        os.system(combinCommand)
     # 转换时间字符串为时间
     def convertStrToTime(self,strs):
         strlist=strs.split(':')

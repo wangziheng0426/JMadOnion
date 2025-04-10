@@ -233,9 +233,9 @@
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
      <item row="0" column="0">
-      <widget class="QRadioButton" name="radioButton">
+      <widget class="QRadioButton" name="radioButton_1">
        <property name="text">
-        <string>压缩视频</string>
+        <string>输出命令行</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -252,7 +252,7 @@
      <item row="0" column="2">
       <widget class="QRadioButton" name="radioButton_3">
        <property name="text">
-        <string>输出命令行</string>
+        <string>压缩视频</string>
        </property>
       </widget>
      </item>
