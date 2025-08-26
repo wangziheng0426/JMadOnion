@@ -1,38 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root> 
-  <MainMenu> 通用工具 usually </MainMenu>  
+  <MainMenu> 通用工具 common </MainMenu>  
   <SubMenu> 批量改名 J_rename_win common/J_rename_win.mel </SubMenu>  
-  <SubMenu> 检查重名工具 J_moreThanOneObj common/J_moreThanOneObj.mel </SubMenu>  
-  <SubMenu> 批量传预设工具 J_attrTransfor common/J_attrTransfor.mel </SubMenu>  
-  
+
   <MainMenu> 流程工具 pipeline </MainMenu>  
-  <SubMenu> 资源导出 J_resourceExporter pipeline/J_resourceExporter.mel </SubMenu>  
-  <SubMenu> 项目管理 J_projectManeger pipeline/J_projectManeger.mel </SubMenu>  
+  <SubMenu> 1、项目管理 J_projectManager pipeline/J_projectManager.mel </SubMenu>  
+  <SubMenu> 2、资产检查 J_assetsManagerV2 pipeline/J_assetsManagerV2.mel </SubMenu> 
+  <SubMenu> 3、资源导出 J_resourceExporter pipeline/J_resourceExporter.mel </SubMenu>
+  <SubMenu> 4、拍平工具 J_playBlastTool pipeline/J_playBlastTool.mel </SubMenu>   
+  <SubMenu> 5、后台批处理 J_batchRuningManager pipeline/J_batchRuningManager.mel </SubMenu>   
 
-  <MainMenu> 模型工具 model </MainMenu>  
-  <SubMenu> 模型整理 J_modelClearMC model/J_modelClearMC.mel </SubMenu>  
-  <SubMenu> 删除辣鸡 J_deleteJunkWin model/J_deleteJunkWin.mel </SubMenu>
-  <SubMenu> 融合变形转换 J_blendTools model/J_blendTools.mel </SubMenu>  
-  <SubMenu> 模型替换 J_modelConvert model/J_modelConvert.mel </SubMenu>  
-  <SubMenu> 转换选点 J_selectPoint model/J_selectPoint.mel </SubMenu>  
-  <SubMenu> 整理曲线工具 J_curveTools model/J_curveTools.mel </SubMenu>  
-  <SubMenu> 资产导入管理器 J_sourceManger prop/J_sourceManger.mel </SubMenu>  
-  <SubMenu> 间距检查 J_modelDistanceCheck model/J_modelDistanceCheck.mel </SubMenu>  
-  
-  
-  <MainMenu> 特效工具 vfx </MainMenu>  
-  <SubMenu> 转换粒子替代 J_particleToJoint vfx/J_particleToJoint.mel </SubMenu>   
-  <SubMenu> yeti极速缓存 J_runYetiCache vfx/J_runYetiCache.mel </SubMenu>  
-  <SubMenu> 解算流程工具 J_CFXWorkFlow vfx/J_CFXWorkFlow.mel </SubMenu>  
-  <SubMenu> 批量解算 J_livingQueue vfx/J_livingQueue.mel </SubMenu> 
-  <SubMenu> 布料制作工具 J_nClothTool vfx/J_nClothTool.mel </SubMenu>
-  <SubMenu> 毛发制作工具 J_hairTools vfx/J_hairTools.mel </SubMenu>
-    
-  <MainMenu> 动画工具 anim </MainMenu>  
-  <SubMenu> 拍平工具 J_playBlastTool animation/J_playBlastTool.mel </SubMenu>
-  
+  <MainMenu> cfx工具 cfx </MainMenu>  
+  <SubMenu> 毛发工具 J_hairTools cfx/J_hairTools.mel </SubMenu>  
+  <SubMenu> 布料工具 J_nClothTool cfx/J_nClothTool.mel </SubMenu>  
+  <SubMenu> yeti工具 J_yetiCache cfx/J_yetiCache.mel </SubMenu>  
+  <SubMenu> 解算流程工具 J_CFXWorkFlow cfx/J_CFXWorkFlow.mel </SubMenu>  
+  <SubMenu> xgen流程工具 J_XGenTool cfx/J_XGenTool.mel </SubMenu>  
+  <SubMenu> deadline解算 J_deadlineSim cfx/J_deadlineSim.mel </SubMenu>  
 
-  <MainMenu> 渲染工具 render </MainMenu>  
-  <SubMenu> 自动分层 J_autoLayer render/J_autoLayer.mel </SubMenu>
-  #<SubMenu> 前台渲染 J_perFrameRender render/J_perFrameRender.mel </SubMenu> 
 </root>

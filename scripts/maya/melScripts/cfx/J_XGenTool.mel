@@ -1,0 +1,136 @@
+/////////////////////////////////////////////////////////////
+///\file J_runYetiCache.mel
+///
+///\brief    xgen工具
+///
+///\author 桔
+///\version 1.0
+///\date  15:23 2024/6/6
+///History:  
+///
+///////////////////////////////////////////////////////////////
+
+global proc   J_XGenTool()//yeti出缓存
+{
+//
+//自动生产yeti缓存工具
+/////////////////////////////////////////////////////////////窗口
+string $checkBoxs[];
+
+int $count=10;
+if (`window -ex  J_XGenTool`)
+    deleteUI -window  J_XGenTool;
+    window -w 300 -title "XGen流程工具"  J_XGenTool;
+
+
+        formLayout -numberOfDivisions 100 J_XGenToolLayout;
+            button -l "1-导入交互Abc" -c "J_XGenTool_importAbcGroom"  J_XGenTool_Bu_Step1 ;
+            textScrollList -sc "" -allowMultiSelection 1  J_XGenTool_CurvesList;
+            button -l "2-曲线重分组(不可Z)" -c "J_XGenTool_reGroup"  J_XGenTool_Bu_Step2 ;
+            
+            button -l "3-曲线组改名" -c "J_XGenTool_renameGroomGroup"  J_XGenTool_Bu_Step3 ;
+            separator -bgc .5 .5 .5 -st "in" sepx1 ;
+            button -l "4-设置曲线为向导线" -c "J_XGenTool_setGuideInfo"  J_XGenTool_Bu_Step4 ;
+            button -l "5-设置向导线id" -c "J_XGenTool_setGuideID"  J_XGenTool_Bu_Step5 ;
+            button -l "6-设置groom组id" -c "J_XGenTool_setGroomId"  J_XGenTool_Bu_Step6 ;
+            button -l "7-添加uv" -c "J_XGenTool_createUV"  J_XGenTool_Bu_Step7 ;
+            separator -bgc .5 .5 .5 -st "in" sepx2 ;
+            button -l "8-导出曲线" -c "J_exportCurveToUnreal"  J_XGenTool_Bu_Step8 ;
+            button -l "8-导出曲线动态cache" -c "J_exportCurveCacheToUnreal"  J_XGenTool_Bu_Step9 ;
+
+    /////////////////////////////////////////////////////////
+
+    formLayout -e
+        -ap  J_XGenTool_Bu_Step1 left 0 1
+        -af  J_XGenTool_Bu_Step1 top 3
+        -ap  J_XGenTool_Bu_Step1 right 0 99
+
+        -ap  J_XGenTool_CurvesList left 0 1
+        -ac  J_XGenTool_CurvesList top 3  J_XGenTool_Bu_Step1
+        -ac  J_XGenTool_CurvesList bottom 3  J_XGenTool_Bu_Step2
+        -ap  J_XGenTool_CurvesList right 0 99
+
+        -ap  J_XGenTool_Bu_Step2 left 0 1
+        -ac  J_XGenTool_Bu_Step2 bottom 3 sepx1
+        -ap  J_XGenTool_Bu_Step2 right 0 49
+
+        -ap  J_XGenTool_Bu_Step3 left 0 50
+        -ac  J_XGenTool_Bu_Step3 bottom 3 sepx1
+        -ap  J_XGenTool_Bu_Step3 right 0 99
+
+        -af sepx1 left 0
+        -ac sepx1 bottom 3  J_XGenTool_Bu_Step4
+        -af sepx1 right 0
+
+        -ap  J_XGenTool_Bu_Step4 left 0 1
+        -ac  J_XGenTool_Bu_Step4 bottom 3  J_XGenTool_Bu_Step6
+        -ap  J_XGenTool_Bu_Step4 right 0 49
+
+        -ap  J_XGenTool_Bu_Step5 left 0 50
+        -ac  J_XGenTool_Bu_Step5 bottom 3  J_XGenTool_Bu_Step6
+        -ap  J_XGenTool_Bu_Step5 right 0 99
+
+        -ap  J_XGenTool_Bu_Step6 left 0 1
+        -ac  J_XGenTool_Bu_Step6 bottom 3  J_XGenTool_Bu_Step7
+        -ap  J_XGenTool_Bu_Step6 right 0 99
+
+        -ap  J_XGenTool_Bu_Step7 left 0 1
+        -ac  J_XGenTool_Bu_Step7 bottom 3 sepx2
+        -ap  J_XGenTool_Bu_Step7 right 0 99
+
+        -af sepx2 left 0
+        -ac sepx2 bottom 3  J_XGenTool_Bu_Step8
+        -af sepx2 right 0
+        
+        -ap  J_XGenTool_Bu_Step8 left 0 1
+        -ap  J_XGenTool_Bu_Step8 bottom 2 100
+        -ap  J_XGenTool_Bu_Step8 right 0 49
+
+        -ap  J_XGenTool_Bu_Step9 left 0 50
+        -ap  J_XGenTool_Bu_Step9 bottom 2 100
+        -ap  J_XGenTool_Bu_Step9 right 0 99
+
+        J_XGenToolLayout;
+showWindow  J_XGenTool;
+python("J_XGenTool_Temp=Jpy.cfx.J_XGenTool.J_XGenTool()");
+
+
+}
+global proc   J_XGenTool_importAbcGroom()
+{
+python("J_XGenTool_Temp.J_XGenTool_importAbcGroom()");
+}
+global proc J_XGenTool_reGroup()
+{
+python("J_XGenTool_Temp.J_XGenTool_reGroup()");
+}
+global proc J_XGenTool_renameGroomGroup()
+{
+python("J_XGenTool_Temp.J_XGenTool_renameGroomGroup()");
+}
+global proc J_XGenTool_setGuideInfo()
+{
+python("J_XGenTool_Temp.J_XGenTool_setGuideInfo()");
+}
+global proc J_XGenTool_setGuideID()
+{
+python("J_XGenTool_Temp.J_XGenTool_setGuideID()");
+}
+global proc J_XGenTool_setGroomId()
+{
+python("J_XGenTool_Temp.J_XGenTool_setGroomId()");
+}
+global proc J_XGenTool_createUV()
+{
+python("J_XGenTool_Temp.J_XGenTool_createUV()");
+}
+global proc J_exportCurveToUnreal()
+{
+python("J_XGenTool_Temp.J_exportCurveToUnreal()");
+}
+global proc J_exportCurveCacheToUnreal()
+{
+python("J_XGenTool_Temp.J_exportCurveToUnreal(0)");
+}
+
+//J_XGenTool();

@@ -1,0 +1,119 @@
+/////////////////////////////////////////////////////////////
+///\file J_projectManager.mel
+///\brief 项目管理
+///
+///\author 桔
+///\version 1.4.2
+///\date  9:45 2022/4/6
+///History:  导出动画工具
+///
+///////////////////////////////////////////////////////////////
+global proc J_projectManager()//主窗口
+{
+    if (`window -ex J_projectManager`)
+        deleteUI -window J_projectManager;
+    window -w 300 -h 400 -title "文件管理" J_projectManager;
+    string $geoSettingCheckBox[];
+    formLayout  -numberOfDivisions 100  J_projectManager_FromLayout0;
+        
+        textField -text "工程目录" J_projectManager_projectPath;
+        textField -e  -text `workspace -q -rootDirectory` J_projectManager_projectPath;
+        button -l "设置工程目录"  J_projectManager_loadPath;
+        
+        formLayout  -numberOfDivisions 100  J_projectManager_FromLayout1;
+            treeView -numberOfButtons 2  -abr false J_projectManager_TreeView;
+            
+        setParent ..;
+        formLayout -e
+			-attachForm  J_projectManager_TreeView "top" 1
+			-attachForm  J_projectManager_TreeView "left" 1
+			-attachForm  J_projectManager_TreeView "bottom" 1
+			-attachForm  J_projectManager_TreeView "right" 1
+		J_projectManager_FromLayout1;
+    formLayout -e 
+        -ap J_projectManager_projectPath left 1 1
+        -af J_projectManager_projectPath right 90
+        -af J_projectManager_projectPath top 3
+
+        -ac J_projectManager_loadPath left 3 J_projectManager_projectPath
+        -ap J_projectManager_loadPath right 1 99
+        -af J_projectManager_loadPath top 3
+
+        -ac J_projectManager_FromLayout1 top 1 J_projectManager_loadPath
+        -ap J_projectManager_FromLayout1 left 0 1
+        -ap J_projectManager_FromLayout1 right 0 99        
+        -af J_projectManager_FromLayout1 bottom 2 
+
+
+    J_projectManager_FromLayout0;
+
+    
+    
+
+    python("Jpy.pipeline.J_projectManager.J_projectManager()");
+    python("Jpy.public.J_deleteUnknownNode()");
+    python("Jpy.public.J_cleanVaccine_gene()");
+    showWindow J_projectManager;
+}
+//随选择修改窗体内容
+global proc J_projectManagerRunScriptJob()
+{
+    int $sjId = `scriptJob -e "SelectionChanged" J_resourceExporterScriptJob `;
+    string $temp = ("scriptJob -k "+ $sjId);
+    scriptJob -uid "J_resourceExporterWin" $temp;
+
+}
+
+
+global proc J_projectManager_subWin()//子窗口
+{
+    if (`window -ex J_projectManager_subWin`)
+        deleteUI -window J_projectManager_subWin;
+    window -w 400 -h 400 -title "文件管理" J_projectManager_subWin;
+    string $geoSettingCheckBox[];
+    formLayout  -numberOfDivisions 100  J_projectManager_subWin_FromLayout0;
+        
+        scrollField -text "对象名称" -wordWrap 1 -editable 0 -h 40 J_projectManager_subWin_obj;
+        columnLayout -adjustableColumn 1 -rowSpacing 1 J_projectManager_subWin_colLay;
+        setParent ..;
+        text -label "日志" J_projectManager_subWin_log;
+        iconTextButton -l "" -i "nudgeUp.png" J_projectManager_subWin_preLog;        
+        iconTextButton -l "" -i "nudgeDown.png" J_projectManager_subWin_nextLog;  
+        button -l "添加条目" -c  "" J_projectManager_subWin_addInfo;        
+        button -l "保存信息" -c  "" J_projectManager_subWin_saveInfo;     
+    formLayout -e 
+        -af J_projectManager_subWin_obj left 1
+        -af J_projectManager_subWin_obj right 1
+        -af J_projectManager_subWin_obj top 1
+
+        -af J_projectManager_subWin_addInfo left 1
+        -ap J_projectManager_subWin_addInfo right 0 50        
+        -af J_projectManager_subWin_addInfo bottom 1 
+
+        -ap J_projectManager_subWin_saveInfo left 1 51
+        -af J_projectManager_subWin_saveInfo right 1        
+        -af J_projectManager_subWin_saveInfo bottom 1 
+
+        -af J_projectManager_subWin_log left 1
+        -af J_projectManager_subWin_log right 50
+        -ac J_projectManager_subWin_log bottom 6 J_projectManager_subWin_saveInfo
+
+        -ac J_projectManager_subWin_preLog left 1 J_projectManager_subWin_log
+        -af J_projectManager_subWin_preLog right 26
+        -ac J_projectManager_subWin_preLog bottom 2 J_projectManager_subWin_saveInfo
+
+        -ac J_projectManager_subWin_nextLog left 1 J_projectManager_subWin_preLog
+        -af J_projectManager_subWin_nextLog right 1
+        -ac J_projectManager_subWin_nextLog bottom 2 J_projectManager_subWin_saveInfo
+
+        -af J_projectManager_subWin_colLay left 1
+        -af J_projectManager_subWin_colLay right 1
+        -ac J_projectManager_subWin_colLay top 1 J_projectManager_subWin_obj
+        -ac J_projectManager_subWin_colLay bottom 3 J_projectManager_subWin_saveInfo
+
+        
+
+    J_projectManager_subWin_FromLayout0;
+
+    showWindow J_projectManager_subWin;
+}

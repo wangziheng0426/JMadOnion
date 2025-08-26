@@ -123,6 +123,8 @@ class J_hudNodeDrawOverride(om2r.MPxDrawOverride):
     def hasUIDrawables(self):
         return True
     def addUIDrawables(self, obj_path, draw_manager, frame_context, data):
+        if data is None:
+            data =J_hudData()
         camera_path = frame_context.getCurrentCameraPath()
         camera = om2.MFnCamera(camera_path)
         camera_aspect_ratio = camera.aspectRatio()
@@ -147,7 +149,7 @@ class J_hudNodeDrawOverride(om2r.MPxDrawOverride):
         rowCount=math.ceil(itemCount/4.0)
         #生成hud
         for textIndex in range(0,len(data.text_fields)):
-            posx=viewport_width*((textIndex/3)/4.5+0.06)
+            posx=viewport_width*((textIndex//3)/4.5+0.06)
             posy=viewport_height*(textIndex%3)*0.03
             draw_manager.text2d(om2.MPoint(posx,posy),data.text_fields[textIndex],
             alignment=om2r.MUIDrawManager.kLeft,
@@ -159,7 +161,7 @@ class J_hudNodeDrawOverride(om2r.MPxDrawOverride):
         draw_manager.setColor(om2.MColor((1,1,1,data.textColor.a)))
         draw_manager.setFontSize(int(data.textScale*viewport_height/700))
         for textIndex in range(0,len(J_hud.hudInfos)):
-            posx=viewport_width*((textIndex/3)/4.5+0.06)
+            posx=viewport_width*((textIndex//3)/4.5+0.06)
             posy=viewport_height*(textIndex%3)*0.03
             draw_manager.text2d(om2.MPoint(posx,posy),str(J_hud.hudInfos[textIndex]+': '),
             alignment=om2r.MUIDrawManager.kRight,

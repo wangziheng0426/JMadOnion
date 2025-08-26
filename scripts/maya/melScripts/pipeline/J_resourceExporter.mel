@@ -4,7 +4,7 @@
 ///
 ///\author 桔
 ///\version 1.4.2
-///\date  9:45 2022/4/6
+///\date  9:45 2022/4/6 
 ///History:  导出动画工具
 ///
 ///////////////////////////////////////////////////////////////
@@ -47,8 +47,19 @@ global proc J_resourceExporter()//主窗口
                     -ap $geoSettingCheckBox[$iItem] right 0 (49+50*($iItem%2))
                     -af $geoSettingCheckBox[$iItem] top (15*floor($iItem/2)) $formLayout_Temp0;
                 }
-            setParent ..;
-            button -l "导出绑定" -c  "J_resourceExporterExportRig" J_expRig;   
+            setParent ..; 
+            string $formLayout_Temp1=`formLayout -numberOfDivisions 100 `;
+                button -l "导出选择" -c  "J_resourceExporterExportSelection" J_expSelection;   
+                button -l "导出到引擎" -c  "J_resourceExporterExportSelectionToEngine" J_expToEngine  ;
+            setParent ..;  
+            formLayout -e 
+                -ap J_expSelection left 0 1
+                -ap J_expSelection right 0 49
+                -af J_expSelection top 0
+                -ap J_expToEngine left 0 50
+                -ap J_expToEngine right 0 99
+                -af J_expToEngine top 0
+            $formLayout_Temp1;
             separator -style "in"; 
         setParent ..;
         frameLayout -cll 1 -cl 0 -l "动画选项"  J_resourceExporter_aniframeLayout;
@@ -67,6 +78,8 @@ global proc J_resourceExporter()//主窗口
                 menuItem  -label "resample";
                 menuItem  -label "euler";
                 menuItem  -label "quaternion";
+
+
 
                 button -l "导出相机" -c  "J_resourceExporterExportCam" J_expCam;
                 button -l "导出动画" -c  "J_resourceExporterExportAniBut" J_expAni;
@@ -109,29 +122,33 @@ global proc J_resourceExporter()//主窗口
         -ap J_resourceExporter_chbox03 right 0 99
         -ac J_resourceExporter_chbox03 top  2 J_allRefNode
 
-        -ap J_resourceExporter_optionMenu01 left 0 1
-        -ap J_resourceExporter_optionMenu01 right 0 99
-        -ac J_resourceExporter_optionMenu01 top  2 J_resourceExporter_chbox03
-
         -ap J_resourceExporter_chbox04 left 0 1
         -ap J_resourceExporter_chbox04 right 0 33
-        -ac J_resourceExporter_chbox04 top  2 J_resourceExporter_optionMenu01
+        -ac J_resourceExporter_chbox04 top  2 J_resourceExporter_chbox03
 
         -ap J_resourceExporter_chbox05 left 0 34
         -ap J_resourceExporter_chbox05 right 0 66
-        -ac J_resourceExporter_chbox05 top  2 J_resourceExporter_optionMenu01        
+        -ac J_resourceExporter_chbox05 top  2 J_resourceExporter_chbox03     
+
+        -ap J_resourceExporter_optionMenu01 left 0 67
+        -ap J_resourceExporter_optionMenu01 right 0 99
+        -ac J_resourceExporter_optionMenu01 top  2 J_resourceExporter_chbox03   
+
+ 
+ 
+ 
 
         -ap J_expCam left 0 1
         -ap J_expCam right 0 33
-        -ac J_expCam top  2 J_resourceExporter_chbox05
+        -ac J_expCam top  3 J_resourceExporter_optionMenu01
 
         -ap J_expAni left 0 34
         -ap J_expAni right 0 66
-        -ac J_expAni top 2 J_resourceExporter_chbox05        
+        -ac J_expAni top 3 J_resourceExporter_optionMenu01        
 
         -ap J_expAniBat left 0 67
         -ap J_expAniBat right 0 99
-        -ac J_expAniBat top 2 J_resourceExporter_chbox05
+        -ac J_expAniBat top 3 J_resourceExporter_optionMenu01
        
     J_resourceExporter_animationFromLayout;
 
@@ -140,8 +157,8 @@ global proc J_resourceExporter()//主窗口
     showWindow J_resourceExporterWin;
     J_resourceExporterInit();
     J_resourceExporterRunScriptJob();
-    python("JpyModules.public.J_deleteUnknownNode()");
-    python("JpyModules.public.J_cleanVaccine_gene()");
+    python("Jpy.public.J_deleteUnknownNode()");
+    python("Jpy.public.J_cleanVaccine_gene()");
 }
 //初始化窗体
 global proc J_resourceExporterInit()
@@ -174,7 +191,7 @@ global proc J_resourceExporterInit()
 global proc J_resourceExporterExportCam()
 {
     string $selCam[]=`textScrollList  -q -si  J_allCameraNode`;    
-    string $outPath=J_resourceExporterGetFilePath()+"/cache/";
+    string $outPath=J_resourceExporterGetFilePath()+"/"+J_resourceExporterGetFileNameWithOutExtension()+"_cache/";
     if (size ($outPath)<3)
         $outPath= "c:/temp";
     if (size($selCam)>0)
@@ -183,11 +200,11 @@ global proc J_resourceExporterExportCam()
         {
             if (`checkBox -q -v J_resourceExporter_chbox04`==1)
             {
-                python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Fbx('"+$item+"')"); 
+                python("Jpy.pipeline.J_resourceExporter.J_exportCamera2Fbx('"+$item+"')"); 
             }
             else
             {
-                python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Abc('"+$item+"')");    
+                python("Jpy.pipeline.J_resourceExporter.J_exportCamera2Abc('"+$item+"')");    
             }
         }
         string $cmd="os.startfile(\""+$outPath+"\")";
@@ -203,36 +220,42 @@ global proc J_resourceExporterExportAniBut()
     //如果在ref列表里选择了对象,则导出选择的ref,未选任何ref节点,则导出所选对象
     if (size($selRef)>0)
     {
+        //状况1按ref导出abc
         string $mFile=`file -query -sceneName`;
-        //按ref导出
-        for ($item in $selRef)
-        {  
-            //动画->fbx未勾选,则导出abc,勾选则导出fbx
-            if (`checkBox -q -v J_resourceExporter_chbox05`==0)
+        if (`checkBox -q -v J_resourceExporter_chbox05`==0)
             {
-                python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc('"+$item +"')");
+                python("rfFiles=cmds.textScrollList('J_allRefNode',q=1,si=1)");
+                //置过滤器,按照文本框内设置的字段获取过滤器关键字
+                //python("filter=cmds.textField('J_resourceExporter_tf',q=1,text=1).split(',')");
+                //运行导出
+                python("Jpy.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc(rfFiles)");
             }
-            else
-            {
-                python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefNodeToFbx('"+$item +"')");
-                file  -force  -prompt  true  -open  $mFile;
-            }
+        //状况2按ref导出fbx
+        else{
+            for ($item in $selRef)
+                {  
+                    //动画->fbx未勾选,则导出abc,勾选则导出fbx
+                    python("Jpy.pipeline.J_resourceExporter.J_exportAnimationFromRefNodeToFbx('"+$item +"')");
+                    file  -force  -prompt  true  -open  $mFile;
+                }
         }
     }
     else
     {
         //将选择的物体导出
         //动画->fbx未勾选,则导出abc,勾选则导出fbx
+        //状况3 直接导出abc
             if (`checkBox -q -v J_resourceExporter_chbox05`==0)
             {
-                python("JpyModules.public.J_exportAbc(mode=1,exportMat=False)");
+                python("Jpy.pipeline.J_resourceExporter.J_exportAnimationFromSelectionToAbc()");
             }
             else
             {
-                python("JpyModules.public.J_exportFbx() ");
+                python("Jpy.public.J_exportFbx() ");
             }
     }
-    string $outPath=J_resourceExporterGetFilePath()+"/cache/";
+    string $outPath=J_resourceExporterGetFilePath()+"/"+J_resourceExporterGetFileNameWithOutExtension()+"_cache";
+    //print $outPath;
     //导出后打开文件夹
     string $cmd="os.startfile(\""+$outPath+"\")";
     python("import os");
@@ -260,29 +283,32 @@ global proc J_resourceExporterBatchExportAniBut()
             {
                 if (`checkBox -q -v J_resourceExporter_chbox04`==1)
                 {
-                    python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Fbx('"+$itemC+"')"); 
-                    file -force  -prompt  true  -open  $fItem;
+                    python("Jpy.pipeline.J_resourceExporter.J_animationExportCamera2Fbx('"+$itemC+"')"); 
+                    file -force  -prompt  true  -open  ($file[0]+"/"+$fItem );
                 }
                 else
                 {
-                    python("JpyModules.pipeline.J_resourceExporter.J_animationExportCamera2Abc('"+$itemC+"')");    
+                    python("Jpy.pipeline.J_resourceExporter.J_animationExportCamera2Abc('"+$itemC+"')");    
                 }
             }
             //批量导出动画
-            string $allRefFile[]=`file -q -r`;
-            for ($itemR in $allRefFile)
-            {   
-                string $refNode=`referenceQuery -referenceNode -tr $itemR`; 
-                //动画->fbx未勾选,则导出abc,勾选则导出fbx
-                if (`checkBox -q -v J_resourceExporter_chbox05`==0)
-                {
-                    python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc('"+$refNode +"')");
+            //动画->fbx未勾选,则导出abc,勾选则导出fbx
+            if (`checkBox -q -v J_resourceExporter_chbox05`==0)
+            {
+                //置过滤器,按照文本框内设置的字段获取过滤器关键字
+                //python("filter=cmds.textField('J_resourceExporter_tf',q=1,text=1).split(',')");
+                //运行导出
+                python("Jpy.pipeline.J_resourceExporter.J_exportAnimationFromRefToAbc([])");
+            }
+            else
+            {
+                string $allRefFile[]=`file -q -r`;
+                for ($itemR in $allRefFile)
+                {   
+                    string $refNode=`referenceQuery -referenceNode -tr $itemR`; 
+                    python("Jpy.pipeline.J_resourceExporter.J_exportAnimationFromRefNodeToFbx('"+$refNode +"')");
+                    file -force  -prompt  true  -open  ($file[0]+"/"+$fItem );        
                 }
-                else
-                {
-                    python("JpyModules.pipeline.J_resourceExporter.J_exportAnimationFromRefNodeToFbx('"+$refNode +"')");
-                    file -force  -prompt  true  -open  $fItem;
-                }               
             }
         }
     }
@@ -323,10 +349,16 @@ global proc J_resourceExporterSelitem()
 }
 
 //单独导出fbx文件
-global proc  J_resourceExporterExportRig()
+global proc  J_resourceExporterExportSelection()
 {
-    python("JpyModules.pipeline.J_resourceExporter.J_exportFbxFromSelection()");
+    python("Jpy.pipeline.J_resourceExporter.J_exportFbxFromSelection()");
 }
+//单独导出fbx文件
+global proc  J_resourceExporterExportSelectionToEngine()
+{
+    python("Jpy.pipeline.J_resourceExporter.J_exportFbxFromSelectionToEngine()");
+}
+
 global proc  J_resourceExporterRemoveAllNameSpace()
 {
     string $nameSpaces[]=`namespaceInfo -listOnlyNamespaces`;

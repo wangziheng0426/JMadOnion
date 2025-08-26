@@ -1,1 +1,0 @@
-"C:\Program Files\Autodesk\Maya2014\bin\mayabatch.exe"  -file E:/dev_j/mayaAn/testFile/testFile.mb -script E:/dev_j/mayaAn/JmayaAnStartScript.mel 0 E:/dev_j/mayaAn/a.log

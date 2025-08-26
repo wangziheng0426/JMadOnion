@@ -111,6 +111,8 @@ class J_hud_aNodeDrawOverride(om2r.MPxDrawOverride):
     def hasUIDrawables(self):
         return True
     def addUIDrawables(self, obj_path, draw_manager, frame_context, data):
+        if data is None:
+            data =J_hud_a()
         camera_path = frame_context.getCurrentCameraPath()
         camera = om2.MFnCamera(camera_path)
         camera_aspect_ratio = camera.aspectRatio()

@@ -1,0 +1,69 @@
+/////////////////////////////////////////////////////////////
+///\file J_madOnion.mel
+///
+///\brief  加载插件主体,查询插件目录
+///
+///\author 桔
+///\version 1.0
+///\date  2025-03-04 00:52:28
+///History:  插件迭代升级,不再使用mel作为主体,改用python,mel仅作为加载插件的入口
+///
+///////////////////////////////////////////////////////////////
+
+
+///加载插件主体,并导入python库
+///\param string $inPath 通过userSetup输入路径\
+///\return success
+global proc string J_madOnion()
+{
+    //加载插件主体,取文件夹名做为菜单名称
+    string $pathStr=J_madOnionGetScriptsPath();
+    string $J_menuName=dirname($pathStr);
+    $J_menuName=basename($J_menuName,"");
+    if (!`menu -exists  $J_menuName`)     
+    {    
+    string $menu=`menu  -l $J_menuName -p MayaWindow  $J_menuName`; 
+    }
+    //加载python内置模块
+    python("import maya.cmds as cmds");
+    python("import re,os,json,uuid,time,datetime,shutil,sys");
+    python("import maya.api.OpenMaya as om2");
+
+    //自动更新模块   
+    python("sys.path.append('"+$pathStr+"')");
+    python("import J_autoUpDate");
+    python("import Jpy");
+    print "********************************PlugIn Loaded***********************\n";
+    // if (!`menuItem -ex "j_madOnionUpData" `)
+    //     menuItem -p $J_menuName -label "更新工具" -c "J_madOnionUpData" "j_madOnionUpData";
+    return "success";
+}
+
+///\return string 插件文件目录
+global proc string J_madOnionGetScriptsPath()
+{
+    string $J_path=`whatIs J_madOnion`;
+    int $k=sizeBytes($J_path);
+    $J_path=`substring $J_path 25 $k`;
+    string $buffer[];
+    string $numTokens=`tokenize $J_path "/" $buffer`;
+    if(size($buffer))
+    {
+        string $pluginPath=$buffer[0];
+        for ($i=1;$i< size($buffer)-1;$i++)
+        {
+            $pluginPath+="/"+$buffer[$i];
+        }
+        if(`gmatch $J_path "//*" ` )
+        {$pluginPath="//"+$pluginPath;}
+        return $pluginPath;
+    }
+    return("load plugin failed");
+}
+
+//更新工具
+global proc  J_madOnionUpData()
+{
+    python("J_autoUpDate.J_autoUpDateSvn()");
+}
+//source "E:/evenPro/MadOnion/maya/J_madOnion.mel";J_madOnion();

@@ -2,7 +2,4 @@
 ///\file   userSetup.mel
 ///\brief  maya插件引导文件
 /////////////////////////////
-string $J_pluginPath="your path";
-string $J_startUp="source \""+$J_pluginPath+"/J_sourceScripts.mel\"" ;
-catch(`eval $J_startUp`);
-J_sourceScripts($J_pluginPath);
+J_madOnion();
