@@ -1,1 +1,0 @@
-sc.exe create Mongodb binPath="\"E:\even9700Share\mongo\bin\""

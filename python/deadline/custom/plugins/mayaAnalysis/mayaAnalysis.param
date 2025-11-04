@@ -1,6 +1,0 @@
-[maya2014]
-Category = Executables
-Type = MultiLineMultiFilename
-Label = Maya2014 Analysis Executeable
-Default = C:\Program Files\Autodesk\Maya2014\bin\maya.exe
-Description = The path to the executable file used for analysis.

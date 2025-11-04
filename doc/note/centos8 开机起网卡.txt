@@ -1,1 +1,0 @@
-# nmcli connection modify eth0 connection.autoconnect yes
