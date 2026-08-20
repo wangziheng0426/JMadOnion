@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##############################################
-# Author        : 张千桔
+# Author        : 张大头
 # Last modified : 2025-03-30 16:15:17
 # Filename      : J_simulationTool.py
 # Description   :

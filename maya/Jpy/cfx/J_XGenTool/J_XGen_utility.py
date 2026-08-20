@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 ##  @package  J_XGen_utility
-##  @author 张千桔
+##  @author 张大头
 ##  @brief  xgen通用工具集
 ##  @version 1.0
 ##  @date  16:46 2024/6/7

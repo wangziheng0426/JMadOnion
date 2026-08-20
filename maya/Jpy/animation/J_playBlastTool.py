@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################
-# Author        : 张千桔
+# Author        : 张大头
 # Last modified : 2025-03-07 17:49:31
 # Filename      : J_animationCurveEditTool.py
 # Description   : 拍屏工具

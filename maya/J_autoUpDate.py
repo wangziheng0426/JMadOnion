@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##############################################
-# Author        : 张千桔
+# Author        : 张大头
 # Last modified : 2024-12-03 16:02:24
 # Filename      : J_startUp.py
 # Description   :

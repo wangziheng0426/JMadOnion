@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##############################################
-# Author        : 张千桔
+# Author        : 张大头
 # Last modified : 15:18 2024/4/15
 # Filename      : J_animationOffset.py
 # Description   :

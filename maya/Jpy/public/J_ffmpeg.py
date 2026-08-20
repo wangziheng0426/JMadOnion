@@ -4,7 +4,7 @@
 ## 
 # @file J_ffmpeg.py
 # @brief 调用ffmpeg功能 
-# @Author        : 张千桔
+# @Author        : 张大头
 # @Last modified : 10:18 2024/1/23
 # @Filename      : J_ffmpeg.py
 # @Description   :

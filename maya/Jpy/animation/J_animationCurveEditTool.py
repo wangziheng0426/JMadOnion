@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################
-# Author        : 张千桔
+# Author        : 张大头
 # Last modified : 2024-12-11 15:50:00
 # Filename      : J_animationCurveEditTool.py
 # Description   : 批量修改动画曲线,提升动画师修改动画效率
