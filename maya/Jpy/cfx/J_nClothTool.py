@@ -34,12 +34,15 @@ class J_nClothTool(object):
                  #{u'刷输入吸附':self.paintInputAttract,},
                  #{u'刷碰撞':self.paintCollideStrength,},
                  {u'建blendshape':self.createBlendShape,},
+                 {u'传统包裹':self.createWrap,},
+                 {u'高级包裹(2020+)':self.createProximityWrap},
+                 {u'重置模型变换':self.reset_transform},
                  {u'找骨骼':self.selectSkinJoints,},
                  {u'蒙皮':self.createSkin,},
                  {u'拷贝权重':self.copySkinWeights,},
-                 {u'传统包裹':self.createWrap,},
-                 {u'高级包裹(2020+)':self.createProximityWrap},
-                 {u'重置模型变换':self.reset_transform}]
+                 {u'直接拷贝':self.copySkinWeightToMesh,},
+                 ]
+                 
         index=0
         for butDict in butList:
             for butName,butCommand in butDict.items():
@@ -97,10 +100,11 @@ class J_nClothTool(object):
             print(u"请先选择一个模型！")
             return
         for item in sel:
-            mesh_nodes=cmds.ls(sl=1,leaf=1,dag=1,ni=1,type='mesh')
+            mesh_nodes=cmds.ls(item,leaf=1,dag=1,ni=1,type='mesh')
             copyNode=cmds.createNode("J_copyMeshPointsNode")
             # 链接模型到插件节点
             if len(mesh_nodes)>0:
+                print("Processing mesh:", mesh_nodes)
                 cmds.connectAttr(mesh_nodes[0]+".outMesh", copyNode+".inputMesh")
                 # 新建一个mesh节点作为输出
                 outTransform=cmds.createNode("transform",name=item+'_resetTr#')
@@ -110,16 +114,17 @@ class J_nClothTool(object):
                 cmds.connectAttr(mesh_nodes[0]+".worldMatrix[0]", copyNode+".worldMatrix")
                 # 拷贝uv
                 mselection_list = om2.MSelectionList()
+                mselection_list.clear()
                 mselection_list.add(item)
                 mselection_list.add(outTransform)
                 source_meshFn = om2.MFnMesh(mselection_list.getDagPath(0))
                 target_meshFn = om2.MFnMesh(mselection_list.getDagPath(1))
                 uv_sets=source_meshFn.getUVSetNames()
-                print("Source UV Sets:", uv_sets)
+                # print("Source UV Sets:", uv_sets)
                 if len(uv_sets) > 0:
                     # 拷贝所有 UV 集
                     for uv_set in uv_sets:
-                        print("Copying UV Set:", uv_set)
+                        # print("Copying UV Set:", uv_set)
                         # 获取UV坐标
                         uArray, vArray = source_meshFn.getUVs(uv_set)
                         # 获取UV分配关系
@@ -130,6 +135,9 @@ class J_nClothTool(object):
                         # 设置UV坐标
                         target_meshFn.setUVs(uArray, vArray, uv_set)
                         # 分配UV到面
+                        # print("Assigning UVs to faces for UV Set:", uv_set)
+                        # print("uvCounts:", uvCounts)
+                        # print("uvIds:", uvIds)
                         target_meshFn.assignUVs(uvCounts, uvIds, uv_set)
     def createCloth(self, *args):
         sel=cmds.ls(sl=1,leaf=1,dag=1,type='mesh')
@@ -233,6 +241,22 @@ class J_nClothTool(object):
 
     def copySkinWeights(self, *args):
         mel.eval('CopySkinWeights')
+    def copySkinWeightToMesh(self, *args):
+        sel=cmds.ls(sl=1, leaf=1,ni=1, dag=1, type='mesh')
+        if len(sel)<2:
+            print(u"请至少选择两个模型！")
+            return
+        # 第一个模型为源模型，第二个模型为目标模型
+        sourceMesh=sel[0]
+        joints=cmds.ls(cmds.listHistory(sourceMesh),type='joint')
+        cmds.select(joints)
+        cmds.select(sel[1:],tgl=1)
+        mel.eval('SmoothBindSkin')
+        for targetMesh in sel[1:]:
+            cmds.select(cl=1)
+            cmds.select(sourceMesh)
+            cmds.select(targetMesh,tgl=1)
+            mel.eval('CopySkinWeights')
     def createWrap(self, *args):
         mel.eval('CreateWrap')
     def onClose(self):

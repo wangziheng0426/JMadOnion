@@ -8,9 +8,35 @@
 #  History:  
 # 以前制作资产的小伙伴电脑装了一些不相干的插件,信息就会保留下来,包括他导入了别人的文件,那别人文件里的插件信息也会引入进来,
 # 最后就会有很多垃圾信息留在文件里,其实这些插件你可能都没有安装过
+#
+# 兼容 Maya 内置 Python 2（如 2022 及更早）与 Python 3（2023+）
+from __future__ import print_function, unicode_literals
+
 import maya.cmds as cmds
 import maya.api.OpenMaya as om2
-import json ,shutil,os,sys,stat
+import json, shutil, os, sys, stat
+
+PY2 = sys.version_info[0] < 3
+if PY2:
+    import io
+
+def _J_open_text(file_path, mode='r'):
+    """按文本模式打开文件；Py2 无内置 encoding，使用 io.open。"""
+    if PY2:
+        if 'r' in mode:
+            return io.open(file_path, mode, encoding='utf-8', errors='ignore')
+        return io.open(file_path, mode, encoding='utf-8')
+    if 'r' in mode:
+        return open(file_path, mode, encoding='utf-8', errors='ignore')
+    return open(file_path, mode, encoding='utf-8')
+
+def _J_makedirs(dir_path):
+    """创建目录；Py3 使用 exist_ok，Py2 先判断再创建。"""
+    if PY2:
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+    else:
+        os.makedirs(dir_path, exist_ok=True)
 
 def J_deleteUnknownNode():
     if cmds.objExists("renderPartition"):
@@ -47,61 +73,164 @@ def J_removeAllNameSpace():
             cmds.namespace(mergeNamespaceWithRoot=1,removeNamespace=item)
             print (item+u"被删除\n")
         J_removeAllNameSpace()
-    return (u'所有名字空间已被删除')    
-def J_cleanVirus():
-    hasVirus=False
-    # 检查用户脚本目录下是否有恶意脚本
-    scriptPath = os.path.dirname(os.path.dirname(
-        os.path.dirname(cmds.internalVar(userScriptDir=True))))+'/scripts/'
-    # 检查是否有userSetup.py文件，如果有则检查内容
-    if os.path.exists(scriptPath+'userSetup.py'):
-        fileTemp = open(scriptPath+'userSetup.py', 'r')
-        frl = fileTemp.read()
-        fileTemp.close()
-        if frl.find('vaccine.phage') > 0:
-            if os.stat(scriptPath+'userSetup.py').st_mode == 33060:
-                os.chmod(scriptPath+'userSetup.py', stat.S_IWRITE)
-            fileTemp = open(scriptPath+'userSetup.py', 'w')
-            fileTemp.write('')
-            fileTemp.close()
-        os.chmod(scriptPath+'userSetup.py', stat.S_IREAD)
-    # 检查是否有恶意脚本
-    virusList = ['vaccine.py', 'vaccine.pyc', 'fuckVirus.py', 'fuckVirus.pyc']
-    for item in virusList:
-        if os.path.exists(scriptPath+item):
-            # 先检查文件大小，如果是0kb则略过
-            if os.path.getsize(scriptPath+item) == 0:
-                continue
-            if os.stat(scriptPath+item).st_mode == 33206:
-                if os.stat(scriptPath+item).st_mode == 33060:
-                    os.chmod(scriptPath+item, stat.S_IWRITE)
-                fileTemp = open(scriptPath+item, 'w')
-                fileTemp.write('')
-                fileTemp.close()
+    return (u'所有名字空间已被删除')
 
-            if os.stat(scriptPath+item).st_mode != 33060:
-                os.chmod(scriptPath+item, stat.S_IREAD)
-    # 检查文件脚本中是否有恶意脚本
-    sjs=cmds.scriptJob(listJobs=True)
-    for i in sjs:
-        if i.find('leukocyte.antivirus()')>-1:
-            id=int(i.split(':')[0])
-            cmds.scriptJob( kill=id, force=True)
-            hasVirus=True
-    # 检查所有运行表达式
-    expressions = cmds.ls(type='expression')
-    for expression in expressions:
-        if cmds.expression(expression, query=True, string=True).find('leukocyte.antivirus') > -1:
+# =============================================================================
+# Maya 病毒清理（与 MadOnionBox MayaVirusCleaner.cpp 规则同步）
+# -----------------------------------------------------------------------------
+# 分工：
+#   - 启动 Maya 前：C++ 扫描 Documents/maya/<ver>/scripts（本文件中的目录逻辑）
+#   - Maya 打开后：J_cleanVirus() 另清理 scriptJob / expression / script 节点
+# 修改关键词时请同时改 C++ 中 virusNameKeywords / virusContentSignatures。
+# 文件读写经 _J_open_text()，兼容 Python 2 / 3。
+# =============================================================================
+
+# 文件名主干（不含扩展名）子串匹配；命中则视为恶意脚本文件
+_J_VIRUS_NAME_KEYWORDS = [
+    'vaccine', 'fuckVirus', 'maya_secure_system',
+    'leukocyte', 'breed_gene', 'fuckVirus_gene',
+]
+# 文件内容与场景节点字符串匹配
+_J_VIRUS_CONTENT_KEYWORDS = [
+    'vaccine', 'fuckVirus', 'maya_secure_system',
+    'leukocyte', 'breed_gene', 'fuckVirus_gene',
+    'leukocyte.antivirus', 'vaccine.phage', 'fuckVirus.phage',
+    'vaccine_gene', 'fuckVirus_gene',
+    'b64decode', 'exec(',  # 混淆病毒常见；避免单独使用 base64 降低误杀
+]
+
+def _J_normalize_slash(path):
+    """统一为 Maya / 跨平台常用的正斜杠路径"""
+    return path.replace('\\', '/')
+
+
+def _J_make_file_writable(file_path):
+    """病毒常将脚本设为只读；写入前先恢复写权限"""
+    try:
+        if not os.access(file_path, os.W_OK):
+            os.chmod(file_path, stat.S_IWRITE | stat.S_IREAD)
+    except Exception:
+        pass
+
+def _J_file_name_matches_virus(file_name):
+    """例如 vaccine.py、user_vaccine_backup.py 均会命中"""
+    stem = os.path.splitext(file_name)[0]
+    for keyword in _J_VIRUS_NAME_KEYWORDS:
+        if stem.find(keyword) > -1:
+            return True
+    return False
+
+def _J_content_matches_virus(content):
+    """用于 userSetup.py 及场景内节点脚本内容检测"""
+    if not content:
+        return False
+    for keyword in _J_VIRUS_CONTENT_KEYWORDS:
+        if content.find(keyword) > -1:
+            return True
+    return False
+
+def _J_neutralize_virus_file(file_path):
+    """
+    中和磁盘上的恶意文件：
+    - .pyc / .pyo：删除（不宜用文本写空）
+    - 其它：截断为 0 字节，并尝试设为只读
+    返回 True 表示已成功处理。
+    """
+    if not os.path.isfile(file_path):
+        return False
+    if os.path.getsize(file_path) == 0:
+        return False
+    ext = os.path.splitext(file_path)[1].lower()
+    _J_make_file_writable(file_path)
+    if ext in ('.pyc', '.pyo'):
+        try:
+            os.remove(file_path)
+            return True
+        except Exception:
+            return False
+    try:
+        with _J_open_text(file_path, 'w') as file_temp:
+            file_temp.write('')
+        try:
+            os.chmod(file_path, stat.S_IREAD)
+        except Exception:
+            pass
+        return True
+    except Exception:
+        return False
+
+def J_cleanVirus():
+    """
+    清理 Maya 病毒（常见 vaccine / fuckVirus 等）。
+
+    1) 脚本目录：userSetup.py + os.walk 下按文件名/内容处理（与 C++ 启动前扫描互补）
+    2) 当前场景：scriptJob、expression、script 节点的恶意代码（仅 Maya 内可处理）
+
+    由 Jpy.__init__ 在 import 时调用；也可在脚本编辑器中单独执行。
+    """
+    hasVirus=False
+    # 版本 scripts + 通用 maya/scripts（无版本号）均需检查
+    script_path_list=[]
+    script_path_list.append(os.path.dirname(os.path.dirname(os.path.dirname(cmds.internalVar(userScriptDir=True)))).replace('\\', '/')+'/scripts/')
+    script_path_list.append(cmds.internalVar(userScriptDir=True).replace('\\', '/')+'/')
+    for scriptPath in script_path_list:
+        if not os.path.isdir(scriptPath):
+            continue
+        # --- 阶段 A：启动时自动执行的 userSetup.py ---
+        user_setup_path = scriptPath + 'userSetup.py'
+        if os.path.isfile(user_setup_path):
             try:
-                cmds.delete(expression)
-                print(expression+u'已被删除')
-            except: 
-                cmds.expression(expression, edit=True, string='')
-            hasVirus = True
-    # 检查所有运行的脚本
-    scripts = cmds.ls(type='script')
+                with _J_open_text(user_setup_path, 'r') as file_temp:
+                    content = file_temp.read()
+            except Exception:
+                content = ''
+            if _J_content_matches_virus(content):
+                hasVirus = True
+                if _J_neutralize_virus_file(user_setup_path):
+                    print (u'已清空恶意 userSetup.py: ' + user_setup_path)
+
+        # --- 阶段 B：递归 scripts 子目录（含 startup 等）---
+        for root, dirs, files in os.walk(scriptPath):
+            for item in files:
+                file_path = _J_normalize_slash(root) + '/' + item
+                if item.lower() == 'usersetup.py':  # Py2/3 均支持 str.lower()
+                    continue  # 已在阶段 A 处理
+                if not _J_file_name_matches_virus(item):
+                    continue
+                hasVirus = True
+                if _J_neutralize_virus_file(file_path):
+                    print (u'已处理恶意脚本文件: ' + file_path)
+
+    # --- 阶段 C：当前已打开场景中的运行时恶意项（C++ 无法触及）---
+    virus_key_list = _J_VIRUS_CONTENT_KEYWORDS
+    sjs = cmds.scriptJob(listJobs=True) or []
+    for i in sjs:
+        for keyWord in virus_key_list:
+            if i.find(keyWord) > -1:
+                try:
+                    job_id = int(i.split(':')[0])
+                    cmds.scriptJob(kill=job_id, force=True)
+                    hasVirus = True
+                except Exception:
+                    pass
+                break
+    # 恶意 expression 节点
+    expressions = cmds.ls(type='expression') or []
+    for expression in expressions:
+        expressionString = cmds.expression(expression, query=True, string=True) or ''
+        for keyWord in virus_key_list:
+            if expressionString.find(keyWord) > -1:
+                try:
+                    cmds.delete(expression)
+                    print(expression+u'已被删除')
+                except:
+                    cmds.expression(expression, edit=True, string='')
+                hasVirus = True
+                break
+    # 恶意 script 节点（before/after 脚本）
+    scripts = cmds.ls(type='script') or []
     for scriptItem in scripts:
-        for keyWord in ['leukocyte.antivirus', 'vaccine.phage','fuckVirus.phage','vaccine_gene','breed_gene']:
+        for keyWord in virus_key_list:
             tempScript = cmds.getAttr(scriptItem+'.before')
             if tempScript is None:
                 continue
@@ -109,15 +238,14 @@ def J_cleanVirus():
                 try:
                     cmds.delete(scriptItem)
                     print (scriptItem+u'已被删除')
-                    break
                 except:
-                    # 如果删除失败，则清空脚本内容
                     print (scriptItem+u'无法删除,尝试清空脚本内容')
                     cmds.setAttr(scriptItem+'.before', '')
                     cmds.setAttr(scriptItem+'.after', '')
-                    
                 hasVirus = True
+                break
     if hasVirus:
+        cmds.warning(u'检测到恶意脚本，已尝试清除，建议重启 Maya 以彻底清除')
         return (u'恶意脚本已清除')
     else:
         return  (u'未发现恶意脚本')
@@ -253,7 +381,7 @@ def J_duplicateName():
             if mObject.hasFn(107):
                 res.append(om2.MFnDagNode(mObject).fullPathName())
             else:
-                res.append(mfnDgNode.name)
+                res.append(mfnDgNode.name())
         dgIterator.next()
     return res
 #根据输入的过滤器查节点的子物体
@@ -306,25 +434,36 @@ def J_loadPlugin(pluginFileName):
             return False
     
 
-
+# 如果文件名无效,则提示保存,如果用户取消保存,则使用c:/temp代替
 def J_getMayaFileFolder():
     res= os.path.dirname(cmds.file(query=True,sceneName=True))
     if not os.path.exists(res):
-        print ("path not found use c:/temp instead")
+        # 弹出文件窗口
+        multipleFilters = "Maya Files (*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;All Files (*.*)"
+        fileName=cmds.fileDialog2( caption="Save Maya File", fileMode=0, dialogStyle=2, fileFilter=multipleFilters )
+        if fileName:
+            try:
+                cmds.file(rename=fileName[0])
+                res= os.path.dirname(fileName[0])
+            except:
+                res='c:/temp'
+        else:
+            res='c:/temp'
+    if not os.path.exists(res):
+        _J_makedirs('c:/temp')
+        cmds.file(rename='c:/temp/temp.ma')
+        cmds.file(save=True,type='mayaAscii')
         res='c:/temp'
-    if not os.path.exists(res):   
-        os.makedirs(res)
-        return 'c:/temp'
     return res
 def J_getMayaFileName():
-    res= os.path.basename(cmds.file(query=True,sceneName=True))
-    if res=="" :
-        print ("path not found use temp.ma instead")
-        return "temp.ma"
-    return res
+    res= cmds.file(query=True,sceneName=True)
+    if not os.path.exists(res):
+        J_getMayaFileFolder()
+    res= cmds.file(query=True,sceneName=True)
+    return os.path.basename(res)
 
 def J_getMayaFileNameWithOutExtension():
-    res= os.path.basename(cmds.file(query=True,sceneName=True))[:-3]
+    res= J_getMayaFileName()[:-3]
     if res=="" :return "temp"
     return res
 

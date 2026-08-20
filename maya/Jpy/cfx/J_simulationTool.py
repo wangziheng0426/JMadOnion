@@ -30,8 +30,9 @@ class J_simulationTool(object):
         cmds.window(self.winName, width=200, height=500, title=self.winTitle,closeCommand=self.onClose)
         cmds.showWindow(self.winName)
         self.createUI()
-        # 脚本任务
+        # 脚本任务,当选择发生变化时,刷新列表,窗口关闭时,自动删除脚本任务
         sjId=cmds.scriptJob(event=['SelectionChanged',self.scriptJobSelectNode],parent=self.winName)
+        
     def createUI(self):
         self.mainLayout=cmds.formLayout(numberOfDivisions=100)      
         self.paneLayout=cmds.paneLayout('dynNodesPane',configuration="horizontal2",
@@ -292,7 +293,7 @@ class J_simulationTool(object):
         # 分析工程目录名称
         # projName=os.path.splitext(os.path.basename(cmds.workspace(q=1,rd=1)[0:-1]))[0]
         outPath=J_public.J_getMayaFileFolder()+"/"+\
-            J_public.J_getMayaFileNameWithOutExtension()+"/cache/abc"
+            J_public.J_getMayaFileNameWithOutExtension()+"_cache/abc"
 
         for mitem in sel:
             cacheItem={} 

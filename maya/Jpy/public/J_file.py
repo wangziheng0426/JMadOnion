@@ -3,95 +3,128 @@
 #
 ##  @brief  适配不同版本python的打开编码
 ##  @author 桔
-##  @version 1.0
-##  @date  2024-07-10 11:20:34 
+##  @version 1.1
+##  @date  2025-04-20
 ##########################################################
-import json ,os,sys
-#支持各种方式打开文件，尤其是写入文件，进行编码判断，适配不同版本的python
+import json
+import os
+import sys
+
 class J_file():
-    filePath=None
-    def __init__(self,filePath):
-        if os.access(os.path.dirname(filePath),os.W_OK):
-            self.filePath=filePath
-            #self.fmodel=['t','x','b','+','r','rb','r+','rb+','w','w+','wb','wb+','a','ab','a+','ab+']
-    def write(self,strInfo=u'',operation='w'):
-        fId=self.open(operation)
+    filePath = None
+
+    def __init__(self, filePath):
+        self.filePath = filePath
+
+    def write(self, strInfo=u'', operation='w'):
+        fId = self.open(operation)
         if fId:
-            fId.write(strInfo)
-            fId.close()
+            try:
+                fId.write(strInfo)
+            finally:
+                fId.close()
         else:
             print('write failed')
-    def writeJson(self,strInfo=u'',operation='w'):
-        #print(strInfo)
-        fId=self.open(operation)
-        if fId:
-            if self.version():
-                fId.write(json.dumps(strInfo,encoding='utf-8',sort_keys=True,indent=4,separators=(",",":"))) 
-            else:
-                fId.write(json.dumps(strInfo,ensure_ascii=False,sort_keys=True,indent=4,separators=(",",":")))         
-            fId.close()
-        else:
+
+    def writeJson(self, strInfo=u'', operation='w'):
+        fId = self.open(operation)
+        if not fId:
             print('write json failed')
-    def read(self,size=-1):
-        fId=self.open('r')
-        if fId==None:
+            return
+
+        try:
+            if self.version():
+                # Python2
+                json_str = json.dumps(
+                    strInfo,
+                    encoding='utf-8',
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(",", ":")
+                )
+            else:
+                # Python3
+                json_str = json.dumps(
+                    strInfo,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(",", ":")
+                )
+            fId.write(json_str)
+        except:
+            print("dump as json failed")
+        finally:
+            fId.close()
+
+    def read(self, size=-1):
+        fId = self.open('r')
+        if not fId:
             print('read failed,file not found')
             return None
-        res=fId.read(size)
-        fId.close()
-        return res
+        try:
+            return fId.read(size)
+        finally:
+            fId.close()
 
-    def readlines(self,size=-1):
-        fId=self.open('r')
-        if fId==None:
+    def readlines(self, size=-1):
+        fId = self.open('r')
+        if not fId:
             print('readlines failed,file not found')
             return None
-        res=fId.readlines(size)
-        fId.close()
-        return res
+        try:
+            return fId.readlines(size)
+        finally:
+            fId.close()
 
     def readJson(self):
-       
-        res=None
+        fId = self.open('r')
+        if not fId:
+            return None
+
         try:
-            fId=self.open('r')
-            if self.version():
-                res=json.load(fId)
-            else:
-                res=json.load(fId,encoding='utf-8')
-            fId.close()
+            return json.load(fId)
         except:
             print("load as json failed")
-        
-        return res
-    def open(self,operation):
-        # 搜索文件，如果不存在，且为写模式，则创建目录和文件，如果是读模式，则退出
-        if self.filePath !=None:
-            if operation in ['w','w+','wb+','a','a+']:
-                if not os.path.exists(os.path.dirname(self.filePath)):
-                    os.makedirs(os.path.dirname(self.filePath))
-                if self.version():
-                    return open(self.filePath,operation)
-                else:
-                    return open(self.filePath,operation,encoding='utf-8')
-            if operation in ['r+','r']:    
-                if os.path.exists(self.filePath): 
-                    if self.version():
-                        return open(self.filePath,operation)
-                    else:
-                        return open(self.filePath,operation,encoding='utf-8')
-                else:
-                    print('read failed,file not found')
-                    return None 
-            else:
-                print('operation invalid')
-                return None
-        else:
+            return None
+        finally:
+            fId.close()
+
+    def open(self, operation):
+        if not self.filePath:
             print('file path error,path invalid')
             return None
-    # 版本判断，python2.7都返回True
+
+        # 自动创建目录
+        dir_name = os.path.dirname(self.filePath)
+        if dir_name and not os.path.exists(dir_name):
+            try:
+                os.makedirs(dir_name)
+            except Exception as e:
+                print('create dir failed:', dir_name, e)
+                return None
+
+        if operation not in ('r', 'w', 'a', 'r+', 'w+', 'a+'):
+            print('operation invalid:', operation)
+            return None
+
+        # 只读且文件不存在：直接返回，避免 FileNotFoundError
+        if operation in ('r', 'r+') and not os.path.isfile(self.filePath):
+            return None
+
+        try:
+            if self.version():
+                return open(self.filePath, operation)
+            return open(self.filePath, operation, encoding='utf-8')
+        except Exception as e:
+            print('open file failed:', self.filePath, e)
+            return None
+
+    # 版本判断：Python2 返回 True
     def version(self):
-        return sys.version.split(' ')[0].startswith('2')
-if __name__=='__main__':
-    temp=J_file('d:/test1.txt')
+        return sys.version_info.major == 2
+
+if __name__ == '__main__':
+    temp = J_file('d:/test1.txt')
     print(temp.readlines())

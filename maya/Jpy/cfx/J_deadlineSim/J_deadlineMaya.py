@@ -32,7 +32,7 @@ class J_deadlineMaya(object):
         #     pass
         #填写导出字典信息，用于导出abc
 
-        outPath=self.mayaFilePath+'/'+self.mayaFileName+'/cache/abc'
+        outPath=self.mayaFilePath+'/'+self.mayaFileName+'_cache/abc'
 
         if not os.path.exists(outPath):
             os.makedirs(outPath)

@@ -30,18 +30,24 @@ class J_resourceExporter(object):
         child1=cmds.formLayout('J_resourceExporter_formLayout01',p=self.mainTable)
         abcChBoxList=[]
         abcChBoxItems=[u'UV write',u'Write Face Sets',u'World Space',u'exportAnimation',u'exportMaterials',]
+        abcChBoxLabels=[u'导出UV',u'导出面集合',u'世界空间',u'导出动画',u'带材质导出']
         for index,item in enumerate(abcChBoxItems):
-            abcChBoxList.append(cmds.checkBox('J_resourceExporter_'+item,label=item, value=1,en=0))
+            abcChBoxList.append(cmds.checkBox('J_resourceExporter_'+item,label=abcChBoxLabels[index], value=1,en=1))
+            # print('J_resourceExporter_'+item)
             cmds.formLayout(child1, edit=True, attachForm=[(abcChBoxList[index], 'top', 5+index*20), (abcChBoxList[index], 'left', 15), (abcChBoxList[index], 'right', 5)])
-
+        # print(abcChBoxList)
         # cmds.checkBox('J_resourceExporter_exportAnimation',e=1, label=u'导出abc动画', value=1,en=1)
-        cmds.checkBox('J_resourceExporter_exportMaterials',e=1, label=u'带材质导出abc', value=0,en=1)
+        # cmds.checkBox('J_resourceExporter_exportMaterials',e=1, label=u'带材质导出abc', value=0,en=1)
         exportAbcBut0=cmds.button(label=u'导出相机',c=partial(self.exportCamera,'abc'))
-        cmds.formLayout(child1, edit=True, attachForm=[(exportAbcBut0, 'bottom', 30), (exportAbcBut0, 'left', 5), (exportAbcBut0, 'right', 5)])
+        cmds.formLayout(child1, edit=True, attachForm=[(exportAbcBut0, 'bottom', 55), (exportAbcBut0, 'left', 5), (exportAbcBut0, 'right', 5)])
 
-        exportAbcBut=cmds.button(label=u'导出选择对象',c=partial(self.exportSelectionToAbc))
+        exportAbcBut=cmds.button(label=u'导出选择对象(每个对象一个文件)',c=partial(self.exportSelectionToAbc))
+        cmds.formLayout(child1, edit=True, attachForm=[(exportAbcBut, 'bottom', 30), (exportAbcBut, 'left', 5), (exportAbcBut, 'right', 5)])
+        
+        exportAbcBut1=cmds.button(label=u'导出选择对象(合并导出一个文件)',c=partial(self.exportSelectionToOneAbc))
+        cmds.formLayout(child1, edit=True, attachForm=[(exportAbcBut1, 'bottom', 5), (exportAbcBut1, 'left', 5), (exportAbcBut1, 'right', 5)])
         cmds.setParent('..')
-        cmds.formLayout(child1, edit=True, attachForm=[(exportAbcBut, 'bottom', 5), (exportAbcBut, 'left', 5), (exportAbcBut, 'right', 5)])
+        
         child2=cmds.formLayout('J_resourceExporter_formLayout02',p=self.mainTable)
         settingItems=[{"SmoothingGroup":"Export|IncludeGrp|Geometry|SmoothingGroups"},
                       {"SmoothMesh":"Export|IncludeGrp|Geometry|SmoothMesh"},
@@ -166,13 +172,46 @@ class J_resourceExporter(object):
                     # 选择的节点下有曲线则标记为毛发缓存
                     cacheType='_camera'
                 outPath=Jpy.public.J_getMayaFileFolder()+"/"+\
-                    Jpy.public.J_getMayaFileNameWithOutExtension()+'/cache/abc'
+                    Jpy.public.J_getMayaFileNameWithOutExtension()+'_cache/abc'
                 cacheItem['cachePath']=outPath+'/'+item.split("|")[-1].split(":")[0]
                 cacheItem['cacheName']=item.replace(':', '@')+cacheType
                 cacheItem['nodes']=[item]
                 jobInfo['cacheInfo'].append(cacheItem)
         print(jobInfo)
-        Jpy.public.J_exportAbc(jobInfo,exportMat=cmds.checkBox('J_resourceExporter_exportMaterials', query=True, value=True))
+        exportMat=cmds.checkBox('J_resourceExporter_exportMaterials', query=True, value=True)
+        exportAnimtion=cmds.checkBox('J_resourceExporter_exportAnimation', query=True, value=True)
+        
+        exportUv=cmds.checkBox('J_resourceExporter_UV_write', query=True, value=True)
+        exportFaceSet=cmds.checkBox('J_resourceExporter_Write_Face_Sets', query=True, value=True)
+        exportWorldSpace=cmds.checkBox('J_resourceExporter_World_Space', query=True, value=True)
+        
+
+        Jpy.public.J_exportAbc(jobInfo,[exportMat,exportAnimtion,exportUv,exportFaceSet,exportWorldSpace])
+        if (os.path.exists(outPath)):
+            os.startfile(outPath)
+        else:
+            print('lost files check outputs')
+    def exportSelectionToOneAbc(self,*args):
+        jobInfo={'cacheInfo':[]}
+        sel=cmds.ls(sl=1,ap=1)
+        if len(sel)<1:
+            print (u'未选任何节点')
+            return
+        cacheItem={}
+        outPath=Jpy.public.J_getMayaFileFolder()+"/"+\
+            Jpy.public.J_getMayaFileNameWithOutExtension()+'_cache/abc'
+        cacheItem['cachePath']=outPath+'/'+sel[0].split("|")[-1].split(":")[0]
+        cacheItem['cacheName']=sel[0].replace(':', '@')
+        cacheItem['nodes']=sel
+        jobInfo['cacheInfo'].append(cacheItem)
+        print(jobInfo)
+        exportMat=cmds.checkBox('J_resourceExporter_exportMaterials', query=True, value=True)
+        exportAnimtion=cmds.checkBox('J_resourceExporter_exportAnimation', query=True, value=True)        
+        exportUv=cmds.checkBox('J_resourceExporter_UV_write', query=True, value=True)
+        exportFaceSet=cmds.checkBox('J_resourceExporter_Write_Face_Sets', query=True, value=True)
+        exportWorldSpace=cmds.checkBox('J_resourceExporter_World_Space', query=True, value=True)       
+
+        Jpy.public.J_exportAbc(jobInfo,[exportMat,exportAnimtion,exportUv,exportFaceSet,exportWorldSpace])
         if (os.path.exists(outPath)):
             os.startfile(outPath)
         else:
@@ -242,7 +281,7 @@ class J_resourceExporter(object):
         if exportType == 'fbx':
             # 文件路径
             filePath = Jpy.public.J_getMayaFileFolder()+"/" +\
-                Jpy.public.J_getMayaFileNameWithOutExtension()+"/cache/fbx"
+                Jpy.public.J_getMayaFileNameWithOutExtension()+"_cache/fbx"
             if not os.path.exists(filePath):
                 os.makedirs(filePath)
             for item in cameras:
@@ -318,17 +357,21 @@ class J_resourceExporter(object):
             for item in cmds.ls(type="joint"):
                 cmds.setAttr(item +".drawStyle",0)
                 cmds.setAttr(item +".radius",1)
-            # 搜索根骨节
+            # 搜索根骨节；已在世界层的根骨也要加入 newRoot，否则 bakeResults 会报空对象
             res=self.getRootJoint(skinedJoints)
             newRoot=[] 
             for item in res:
-                if cmds.objExists(item):
-                    parentTemp=cmds.listRelatives(item,p=1) 
-                    if  parentTemp is not None:
-                        if len(parentTemp)>0:
-                            temp= cmds.parent(item,w=1)
-                            for itemTemp in temp:
-                                newRoot.append(itemTemp)
+                if not cmds.objExists(item):
+                    continue
+                parentTemp=cmds.listRelatives(item,p=1) 
+                if parentTemp:
+                    for itemTemp in cmds.parent(item,w=1):
+                        newRoot.append(itemTemp)
+                else:
+                    newRoot.append(item)
+            if not newRoot:
+                print (u"未找到根骨骼，无法烘焙动画")
+                continue
             
             #移动所有mesh到最外层
             trNodes=list(set(cmds.listRelatives(meshNodes,p=1,f=1)))
@@ -378,7 +421,7 @@ class J_resourceExporter(object):
             # 删除名字空间
             Jpy.public.J_removeAllNameSpace()
             # 导出动画
-            print(outPath+'/'+item.replace(':',"@"))
+            # print(outPath+'/'+item.replace(':',"@"))
             Jpy.public.J_exportFbx(outPath+'/'+item.split('|')[-1].replace(':',"@")+'.fbx',
                                    takeName=item.split('|')[-1].replace(':',"_")) 
             # 导出后重新打开文件
@@ -388,7 +431,7 @@ class J_resourceExporter(object):
             faceModels=cmds.ls("*_Face",ap=1,type='transform')
             if faceModels:
                 cmds.select(cmds.ls(cmds.listHistory(faceModels),type='blendShape'))
-                if len(cmds.ls(sl=1)<1):
+                if len(cmds.ls(sl=1))<1:
                     print (u"脸部没有表情相关数据，请检查")
                     return
                 #删除blendshape节点上的动画和模型链接
@@ -454,19 +497,26 @@ class J_resourceExporter(object):
                 skinedJoints=cmds.ls(cmds.listHistory(skinClusters),type="joint")
             #设置所有骨骼可见
             for jointItem in cmds.ls(type="joint"):
-                cmds.setAttr(jointItem +".drawStyle",0)
-                cmds.setAttr(jointItem +".radius",1)
-            # 搜索根骨节
+                try:
+                    cmds.setAttr(jointItem +".drawStyle",0)                
+                    cmds.setAttr(jointItem +".radius",1)
+                except:
+                    pass
+            # 搜索根骨节；已在世界层的根骨也要加入 newRoot
             res=self.getRootJoint(skinedJoints)
             newRoot=[] 
             for resItem in res:
-                if cmds.objExists(resItem):
-                    parentTemp=cmds.listRelatives(resItem,p=1) 
-                    if  parentTemp is not None:
-                        if len(parentTemp)>0:
-                            temp= cmds.parent(resItem,w=1)
-                            for itemTemp in temp:
-                                newRoot.append(itemTemp)
+                if not cmds.objExists(resItem):
+                    continue
+                parentTemp=cmds.listRelatives(resItem,p=1) 
+                if parentTemp:
+                    for itemTemp in cmds.parent(resItem,w=1):
+                        newRoot.append(itemTemp)
+                else:
+                    newRoot.append(resItem)
+            if not newRoot:
+                print (u"未找到根骨骼")
+                return
             
             #移动所有mesh到最外层
             trNodes=list(set(cmds.listRelatives(meshNodes,p=1,f=1)))

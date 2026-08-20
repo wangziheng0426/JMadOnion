@@ -11,35 +11,58 @@ import maya.mel as mel
 import os,sys,json
 import maya.api.OpenMaya as om2
 import Jpy
-#导出abc，字典内容关键字｛'cacheInfo':[{'nodes':[],'cacheName':'','cachePath':""}]｝
-#cachePath字段可以不配置，默认生成在maya文件相同目录下
-#deadlineMaya.py中要使用大部分本脚本,本行为标识位,不可删除
-def J_exportAbc(cacheInfo,exportMat=False,attrList=None):
+# 导出abc，字典内容关键字｛'cacheInfo':[{'nodes':[],'cacheName':'','cachePath':""}]｝
+# cachePath字段可以不配置，默认生成在maya文件相同目录下
+# deadlineMaya.py中要使用大部分本脚本,本行为标识位,不可删除
+def J_exportAbc(cacheInfo=None,abcSettings=None,attrList=None):
+    res=False
+    # 如果输入信息为空,则使用选择的节点，默认生成在maya文件相同目录下
+    if cacheInfo==None:
+        selNodes=cmds.ls(sl=1)
+        if len(selNodes)<1:
+            print(u'no nodes selected')
+            return res
+        cacheInfo={'cacheInfo':[{'nodes':selNodes,'cacheName':'','cachePath':''}]}
+    
     #如果输入信息为空,则退出
     if len(cacheInfo['cacheInfo'])<1:
-        return
+        print(u'invalid cacheInfo')
+        return res
     #先读取abc属性列表，为空则使用默认属性
     if attrList==None:
         attrList=['SGInfo','MatInfo','NodeName','NodeVisibility','groom_guide','width','groom_group_id',\
                   'groom_root_uv','groom_guide_AbcGeomScope','groom_group_id_AbcGeomScope',\
             'Width','WidthTaper','WidthTaperStart','WidthRampPositions','WidthRampValues','WidthRampInterps']
-    exportScript='AbcExport '
+    if abcSettings==None:
+        # 设置为1导出材质 2导出动画 3 导出UV 4 导出面集 5 导出世界空间
+        # exportMat,exportAnimtion,exportUv,exportFaceSet,exportWorldSpace
+        abcSettings=[False,True,True,True,True]
+    # 判断abcsettings参数是否合法，如果不合法，则进行补全
+    if len(abcSettings)<5:
+        while len(abcSettings)<5:
+            abcSettings.append(True)
+    exportMat=abcSettings[0]
+    exportAnim=abcSettings[1]
+    exportUV=abcSettings[2]
+    exportFaceSet=abcSettings[3]
+    exportWorldSpace=abcSettings[4]
     
     #解锁默认材质集
     cmds.lockNode("initialShadingGroup", l=0, lu=0)
     timeSliderStart=cmds.playbackOptions(query=True,minTime=True)
     timeSliderEnd=cmds.playbackOptions(query=True,maxTime=True)
+    jobList=[]
     #根据输入的信息修改文件，编辑输出脚本    
     for infoItem in cacheInfo['cacheInfo']:
         #写log
         logStr={}
         #导出的节点，如果是空数据，则退出
         if len(infoItem['nodes'])<1:
-            print (u"输入了空数据")
+            print (u"input nodes is empty")
             continue
         # 检查导出的节点是否存在
         if len(J_getAllGeo(infoItem['nodes']))<1:
-            print (','.join(infoItem['nodes'])+u"内没有有效的mesh,曲线,相机")
+            print (','.join(infoItem['nodes'])+u" contains no geometry nodes,camera or curves")
             continue
         # 2025-03-21 14:41:17重写,使用om2进行检查
         # 检查要输出的节点, 如果输出节点存在父子关系,则仅保留父层
@@ -63,21 +86,22 @@ def J_exportAbc(cacheInfo,exportMat=False,attrList=None):
         if len(tempList)>0:
             infoItem['nodes']=tempList
         else:
-            print (u"输入了空数据")
+            print (u"input nodes is empty")
             continue    
         #print ('export:'+','.join(tempList))
         #缓存路径如果不存在，则自动根据maya文件进行拼装
         if infoItem['cachePath']=='':
             infoItem['cachePath']=Jpy.public.J_getMayaFileFolder()\
-            +"/"+Jpy.public.J_getMayaFileNameWithOutExtension()+'/cache/abc'
+            +"/"+Jpy.public.J_getMayaFileNameWithOutExtension()+'_cache/abc'
         #文件夹不存在则创建
         if not os.path.exists(infoItem['cachePath']):
             os.makedirs(infoItem['cachePath'])
         #缓存名如果不存在，则使用文件名+选择的第一个物体名字
         if infoItem['cacheName']=='':
             infoItem['cacheName']=Jpy.public.J_getMayaFileNameWithOutExtension()\
-                +infoItem['nodes'][0]+'_cache'
-        
+                +'_'+infoItem['nodes'][0].split('|')[-1].replace(':','@')+'_cache'
+        else:
+            infoItem['cacheName']=infoItem['cacheName'].split('|')[-1].replace(':','@')
         #写log
         logStr[infoItem['cacheName']]={}#每个abc对应一组数据
         logStr["settings"]={}
@@ -130,31 +154,86 @@ def J_exportAbc(cacheInfo,exportMat=False,attrList=None):
             if len(curveShapeNodes)>0:
                 # 记录选择的节点下的所有曲线
                 logStr[infoItem['cacheName']]['curves'][nodeItem]=curveShapeNodes
-        #配置导出命令
-        exportScript +=' -j "-frameRange '+str(timeSliderStart)+' '+str(timeSliderEnd)
-        #导出abc时添加自定义的属性，以便记录材质信息
-        if(len(attrList)>0):            
-            for attrItem in attrList:
-                exportScript+=' -attr '+attrItem+' '        
-        #不输出面集，避免材质被替换
-        exportScript+=' -uvWrite -worldSpace -dataFormat ogawa ' 
+        # 构建AbcExport -j job字符串
+        jobArgs = []
         
-        for nitem in infoItem['nodes']:
-            exportScript+=' -root '+nitem +" "
-        exportScript+=' -file '+infoItem['cachePath']+'/'+infoItem['cacheName']+'.abc"'
+        # 配置帧范围
+        if exportAnim:
+            jobArgs.append('-frameRange {} {}'.format(int(timeSliderStart), int(timeSliderEnd)))
+        else:
+            currentFrame = int(cmds.currentTime(query=True))
+            jobArgs.append('-frameRange {} {}'.format(currentFrame, currentFrame))
+        
+        # 配置自定义属性列表
+        for attrItem in attrList:
+            jobArgs.append('-attr {}'.format(attrItem))
+        
+        # 配置导出选项
+        if exportUV:
+            jobArgs.append('-uvWrite')
+            jobArgs.append('-writeUVSets')
+        if exportFaceSet:
+            jobArgs.append('-writeFaceSets')
+        if exportWorldSpace:
+            jobArgs.append('-worldSpace')
+        
+        # 数据格式
+        jobArgs.append('-dataFormat ogawa')
+        
+        # 根节点列表
+        for rootNode in infoItem['nodes']:
+            jobArgs.append('-root {}'.format(rootNode))
+        
+        # 输出文件路径
+        abcOutputPath = infoItem['cachePath'] + '/' + infoItem['cacheName'] + '.abc'
+        jobArgs.append('-file {}'.format(abcOutputPath.replace('\\', '/')))
+        
+        jobList.append(' '.join(jobArgs))
         #写缓存日志,为每个abc文件创建一个日志
         logFileName=infoItem['cachePath']+'/'+infoItem['cacheName']+'.jcl'
         fid=Jpy.public.J_file(logFileName)
         fid.writeJson(logStr)
 
-    print  (exportScript)
     dnTemp=Jpy.public.J_duplicateName()
     if dnTemp:
         #print (u"文件中有重名物体:"+','.join(dnTemp))
         cmds.warning(u"文件中有重名物体:"+','.join(dnTemp))
-    mel.eval(exportScript)
+    # 为了提升导出速度，导出前关闭视口更新，导出后再打开，
+    cmds.refresh(suspend=True)
+    cmds.undoInfo(state=False)
+    try:
+        cmds.AbcExport(j=jobList)
+        print(u'abc export completed.')
+        res=True
+    except RuntimeError as e:
+        err = str(e)
+        # 捕获：无法写入文件（权限、被占用、路径不存在）
+        if "Can't write to file" in err or "cannot open" in err.lower():
+            cmds.confirmDialog(
+                title=u"ABC导出失败",
+                message=u"ABC文件无法写入!\n\n可能原因:\n• 文件被其他程序占用\n• 没有写入权限\n• 目录不存在\n• 文件只读",
+                button=[u"确定"]
+            )
+
+        # 捕获：物体不存在
+        elif "No object matches name" in err or "does not exist" in err.lower():
+            cmds.confirmDialog(
+                title=u"ABC导出失败",
+                message=u"模型不存在,无法导出ABC!\n\n可能原因:\n• 模型被删除或重命名\n• 模型未正确选择",
+                button=[u"确定"]
+            )
+        else:
+            cmds.confirmDialog(
+                title=u"ABC导出失败",
+                message=u"导出过程中发生错误!\n尝试手动导出abc文件\n错误信息:\n{}".format(err),
+                button=[u"确定"]
+            )
+
+
+    cmds.refresh(suspend=False)
+    cmds.undoInfo(state=True)
     #导出的节点，未定义则使用选择的节点，什么都没选，则退出
-    
+    return res
 
 #为模型添加自定义属性，并将材质信息写入，最后导出材质球，返回导出材质文件列表
 def J_exportMaterail(exportPath,meshTrNode,exportMat=1,attrList=None):
@@ -246,7 +325,9 @@ def J_exportMaterail(exportPath,meshTrNode,exportMat=1,attrList=None):
             if not cmds.attributeQuery('NodeName',node=sItem,ex=1):
                 cmds.addAttr(sItem,longName='NodeName',dt='string')
             cmds.setAttr(sItem+'.NodeName',sItem,type='string') 
-        
+            if not cmds.attributeQuery('NodeVisibility',node=sItem,ex=1):
+                cmds.addAttr(sItem,longName='NodeVisibility',dt='string')
+            cmds.setAttr(sItem+'.NodeVisibility',cmds.getAttr(sItem+".visibility"),type='string')
         matInfo['materialFileList']=matFileList
         matInfo['shadingEngineNodes']=shadingEngineNodes
         matInfo['materialNodes']=matNodeList
@@ -308,7 +389,8 @@ def J_importAbc(jclFiles=None,importModel='abcMerge'):
             if os.path.exists(abcFile):
                 groupNode=cmds.createNode('transform',name=abcGroupName)
                 cmds.setAttr(groupNode+'.visibility',0)
-                mel.eval('AbcImport -mode import -reparent '+groupNode+' \"'+abcFile +'\";')
+                # 使用Python API调用AbcImport（替代mel.eval）
+                cmds.AbcImport(abcFile, mode='import', reparent=groupNode)
             #如果导入后,发现日志中记录的模型存在,且模式为则创建blendShape,则创建blendShape
             # 融合成功,则不再导入材质球
             #if importModel=='blendShape' :
@@ -390,7 +472,8 @@ def J_importAbc(jclFiles=None,importModel='abcMerge'):
 def J_getAllGeo(meshTrNodes):
     allMesh=[]
     for item in meshTrNodes:
-        J_getChildNodes(item,allMesh)
+        if cmds.objExists(item):
+            J_getChildNodes(item,allMesh)
     allMeshParents=[]
     for item in allMesh:
         if cmds.listRelatives(item,fullPath=True,parent=True)[0]!=None:
@@ -413,12 +496,13 @@ def J_getChildNodes(currentNode,meshList):
 
 #deadlineMaya.py(end)中要使用大部分本脚本,本行为标识位,不可删除
 if __name__ == "__main__":
+    J_exportAbc()
     #aa={'cacheInfo':[{'nodes':cmds.ls(sl=1),'cacheName':'aa','cachePath':""},{'nodes':cmds.ls(sl=1),'cacheName':'aabb','cachePath':""}]}
-    if 0:
-        exList=[]
-        for item in cmds.ls(sl=1):
-            exList.append({'nodes':[item],'cacheName':item.replace(':', '_'),'cachePath':""})
-        aa={'cacheInfo':exList}
-        J_exportAbc(aa)
-    else:
-        J_importAbc()
+    # if 1:
+    #     exList=[]
+    #     for item in cmds.ls(sl=1):
+    #         exList.append({'nodes':[item],'cacheName':item.replace(':', '_'),'cachePath':""})
+    #     aa={'cacheInfo':exList}
+    #     J_exportAbc(aa)
+    # else:
+    #     J_importAbc()

@@ -36,6 +36,7 @@ class J_modelingTool():
             'centerPivot': self.centerPivot,
             'buttomPivot': self.buttomPivot,
             'moveToWorldOrigin': self.moveToWorldOrigin,
+            'curveToTube':self.convertCurveToTube
         }
         btns=[]
         for toolName in toolDic:
@@ -110,6 +111,33 @@ class J_modelingTool():
     
             cmds.xform(obj, translation=(pos[0]*-1, pos[1]*-1, pos[2]*-1), worldSpace=True)
         om2.MGlobal.displayInfo("Selected objects moved to world origin.")
+        
+    # 曲线转管道
+    def convertCurveToTube(self, *args):
+        # 获取选择的曲线
+        sel=cmds.ls(sl=1,leaf=1,dag=1,shapes=1)
+        if not sel:
+            om2.MGlobal.displayWarning("Please select at least one curve.")
+            return
+        for obj in sel:
+            if cmds.nodeType(obj) != 'nurbsCurve':
+                om2.MGlobal.displayWarning(obj+" is not a NURBS curve. Skipping.")
+                continue
+            # 创建圆形截面
+            cmds.polyDisc(r=1,subdivisionMode=4,subdivisions=1,sides=8)
+            pDisc=cmds.ls(sl=1)[0]
+            # 求出曲线第一个点到第二个点的方向,并将圆形对齐该方向,同时移动到第一个点位置
+            curvePoints=om2.MVector(cmds.pointOnCurve(obj,pr=0, p=True ))
+            nextPoint=om2.MVector(cmds.pointOnCurve(obj,pr=0.1, p=True ))
+            dirVector=(nextPoint-curvePoints).normal()
+            cmds.xform(pDisc,ws=1,translation=(curvePoints[0],curvePoints[1],curvePoints[2]))
+            cmds.xform(pDisc,ws=1,rotation=cmds.angleBetween(euler=True,vector1=(0,1,0),vector2=dirVector))
+            # 使用挤出命令将圆形沿曲线挤出
+            tube=cmds.polyExtrudeFacet(pDisc+'.f[0:7]',constructionHistory=1,keepFacesTogether=1,
+                pvx=curvePoints[0],pvy=curvePoints[1],pvz=curvePoints[2],divisions=8,
+                twist=0,taper=1,thickness=0,smoothingAngle=30,inputCurve=obj)
+            
+            om2.MGlobal.displayInfo("Converted "+obj+" to tube: "+str(tube))
 if __name__ == "__main__":
     temp=J_modelingTool()
     

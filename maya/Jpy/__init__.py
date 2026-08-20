@@ -8,6 +8,7 @@ from . import pipeline
 from . import render
 # 查询本地是否有垃圾代码文件，并设置本地免疫
 import maya.cmds as cmds
+import maya.mel as mel
 import os
 import functools
 current_paths = os.environ.get('MAYA_PLUG_IN_PATH', '').split(os.pathsep)
@@ -38,6 +39,7 @@ def createMenus():
             {u'动画曲线工具': 'Jpy.animation.J_animationCurveEditTool()'},
             {u'动画偏移工具': 'Jpy.animation.J_animationOffset()'},
             {u'拍屏工具': 'Jpy.animation.J_playBlastTool()'},
+            {u'动画工具': 'Jpy.animation.J_animUtil().createUI()'},
             
             ]},
         {'Cfx': [
@@ -46,11 +48,14 @@ def createMenus():
             {u"毛发工具": 'Jpy.cfx.J_nHairTool()'},
             {u"布料工具": 'Jpy.cfx.J_nClothTool()'},
             {u"XGen工具": 'Jpy.cfx.J_XGenTool()'},
+            {u"yeti工具": 'Jpy.cfx.J_yetiTool.J_yetiCache()'},
+            {u"快速模拟工具": 'Jpy.cfx.J_advancedSimulation()'},
             ]},
         {'Model': [
             {u'改名工具': 'Jpy.model.J_renameTool()'},
             {u'uv合并': 'Jpy.model.mergeUVSets()'},
             {u'模型工具': 'Jpy.model.J_modelingTool()'},
+            {u'模型替换工具': 'Jpy.model.J_replaceGeoTool()'},
         ]},
         {'Pipeline': [
             {u'资产检查': 'Jpy.pipeline.J_assetsManager.J_assetsManager()'},
@@ -73,6 +78,14 @@ def createMenus():
     # 清理无用节点和病毒
     if not cmds.menu('Jpy_cleanup', exists=True):
         cmds.menuItem('Jpy_cleanup', label=u'清理无用节点和病毒', c=functools.partial(J_cleanup), parent=mainMenuName)
+    # 自动加载melScripts下的所有mel脚本到maya
+    melScriptsPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'melScripts')
+    if os.path.isdir(melScriptsPath):
+        for root, dirs, files in os.walk(melScriptsPath):
+            for file in files:
+                if file.endswith('.mel'):
+                    melFilePath = os.path.join(root, file)
+                    mel.eval('source "{}"'.format(melFilePath.replace('\\', '/')))
 def J_cleanup(*args):
     public.J_cleanVirus()
     public.J_deleteUnknownNode()

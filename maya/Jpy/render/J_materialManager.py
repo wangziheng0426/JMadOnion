@@ -1,10 +1,10 @@
 ﻿# -*- coding:utf-8 -*-
 ##  @package render
 #
-##  @brief 缓存加载
+##  @brief 材质管理器
 ##  @author 桔
 ##  @version 1.0
-##  @date  2025-05-21 17:09:55
+##  @date  2026-01-17 08:22:22
 #  History:  
 
 import maya.cmds as cmds
@@ -22,102 +22,211 @@ class  J_materialManager(object):
             cmds.deleteUI(self.winName)
         cmds.window(self.winName,title=self.windowTitle,closeCommand=self.onClose)
         cmds.showWindow(self.winName)
+        self.state=0  # 显示模式，0为材质列表，1为贴图列表
         self.toolOptions=J_toolOptions(self.winName)
         self.initUi()
         self.loadOptions()
     def initUi(self):
+        # 主界面布局 
         mainform=cmds.formLayout(p=self.winName)
-        self.textureScrollList=cmds.textScrollList('textureScrolllist',p=mainform,allowMultiSelection=False,selectCommand=self.treeViewSelect)
-        cmds.formLayout(mainform,edit=True,attachForm=[(self.textureScrollList,'top',5),
-            (self.textureScrollList,'left',5),(self.textureScrollList,'right',5),(self.textureScrollList,'bottom',5)])
-        for item in cmds.ls(type='file'):
-            if cmds.getAttr(item+'.fileTextureName'):
-                texturePath=item+"@"+cmds.getAttr(item+'.fileTextureName')
-                
-                cmds.textScrollList(self.textureScrollList,e=1,append=texturePath)
-    
-    def treeViewSelect(self,*args):
-        selitem=cmds.textScrollList(self.textureScrollList,q=1,selectItem=1)
+        # 添加横向按钮菜单栏
+        lv1Form=cmds.formLayout(p=mainform,h=40)
+        cmds.formLayout(mainform,edit=True,attachForm=[(lv1Form,'top',0),
+            (lv1Form,'left',0),(lv1Form,'right',0)])
+        # 搜索文本框
+        self.searchText=cmds.textField(p=lv1Form,tx='',w=300,h=30,tcc=self.highLightNode)
+        cmds.formLayout(lv1Form,edit=True,attachForm=[(self.searchText,'top',4),
+            (self.searchText,'left',5)])
+        # 刷新按钮
+        refreshBut= cmds.iconTextButton(style='iconAndTextVertical',image1='refresh.png',
+                                        w=28,h=28,scaleIcon=1,label=u'',c=self.refreshNodeList)
+        cmds.formLayout(lv1Form,edit=True,attachForm=[(refreshBut,'top',4)],
+                        attachControl=[(refreshBut,'left',6,self.searchText)])
+        # 切换显示模式按钮
+        self.swithBut= cmds.iconTextButton(style='iconAndTextVertical',image1='out_shaderGlow.png',
+                                      w=28,h=28,scaleIcon=1,label=u'',c=self.switchDisplayMode)
+        cmds.formLayout(lv1Form,edit=True,attachForm=[(self.swithBut,'top',4)],
+                        attachControl=[(self.swithBut,'left',6,refreshBut)])
+        # 选择模型按钮
+        selectModelBut= cmds.iconTextButton(style='iconAndTextVertical',image1='polySelectBoundary.png',
+                                            w=28,h=28,scaleIcon=1,label=u'',c=self.selectModel)
+        cmds.formLayout(lv1Form,edit=True,attachForm=[(selectModelBut,'top',4)],
+                        attachControl=[(selectModelBut,'left',6,self.swithBut)])
+        # 指定材质按钮
+        assignMaterialBut= cmds.iconTextButton(style='iconAndTextVertical',image1='meshToPolygons.png',
+                                               w=28,h=28,scaleIcon=1,label=u'',c=self.assignMaterial)
+        cmds.formLayout(lv1Form,edit=True,attachForm=[(assignMaterialBut,'top',4)],
+                        attachControl=[(assignMaterialBut,'left',6,selectModelBut)])
+        cmds.setParent('..')
+        # 纹理列表和贴图列表，使用paneLayout分割
+        panaleLayout=cmds.paneLayout('J_materialManagerPaneLayout',p=mainform,configuration='vertical2',w=600,h=400)
+        cmds.formLayout(mainform,edit=True,attachForm=[(panaleLayout,'bottom',4),
+            (panaleLayout,'left',5),(panaleLayout,'right',5)],
+            attachControl=[(panaleLayout,'top',1,lv1Form)])
+        self.leftScrollList=cmds.textScrollList(p=panaleLayout,allowMultiSelection=True,
+                                               selectCommand=self.leftScrollListSelectChanged)
+        self.rightScrollList=cmds.textScrollList(p=panaleLayout,allowMultiSelection=True)
+        cmds.setParent('..')
+        # 列出所有材质节点，并填充到材质列表中,剔除默认材质
+        self.refreshNodeList()
+
+    def refreshNodeList(self,*args):
+        cmds.textScrollList(self.leftScrollList,e=1,removeAll=1)
+        cmds.textScrollList(self.rightScrollList,e=1,removeAll=1)
+        if self.state==0:
+            allShaders=cmds.ls(materials=1)
+            # 排序
+            allShaders.sort()
+            for shader in allShaders:
+                if shader in ['lambert1','particleCloud1','shaderGlow1','layeredShader1','oceanShader1']:
+                    continue
+                cmds.textScrollList(self.leftScrollList,e=1,append=shader)
+        else:
+            # 列出所有贴图文件节点
+            allFileNodes=cmds.ls(type='file')
+            allFiles=[]
+            for fileNode in allFileNodes:
+                texturePath=cmds.getAttr(fileNode+'.fileTextureName')
+                # 获取贴图信息后检查是否为相对路径，转换为绝对路径
+                if not os.path.isabs(texturePath):
+                    texturePath=os.path.abspath(cmds.workspace(q=1,rd=1)+texturePath)
+                if os.path.exists(texturePath) and texturePath not in allFiles:
+                    allFiles.append(texturePath)
+            for filePath in allFiles:
+                cmds.textScrollList(self.leftScrollList,e=1,append=filePath)
+    # 高亮搜索结果
+    def highLightNode(self,*args):
+        searchText=cmds.textField(self.searchText,q=1,tx=1)
+        allItems=cmds.textScrollList(self.leftScrollList,q=1,allItems=1)
+        print(allItems)
+        if not allItems:
+            return
+        cmds.textScrollList(self.leftScrollList,e=1,deselectAll=1)
+        for item in allItems:
+            if searchText.lower() in item.lower():
+                cmds.textScrollList(self.leftScrollList,e=1,selectItem=item)
+    # 切换显示模式
+    def switchDisplayMode(self,*args):
+        self.state=1-self.state
+        if self.state==0:
+            cmds.iconTextButton(self.swithBut,e=1,image1='out_shaderGlow.png')
+        else:
+            cmds.iconTextButton(self.swithBut,e=1,image1='render_file.png')
+        cmds.textScrollList(self.leftScrollList,e=1,removeAll=1)
+        self.refreshNodeList()
+        cmds.textScrollList(self.rightScrollList,e=1,removeAll=1)
+    # 左侧列表选择变化
+    def leftScrollListSelectChanged(self,*args):
+
+        selItem=cmds.textScrollList(self.leftScrollList,q=1,selectItem=1)
+        cmds.textScrollList(self.rightScrollList,e=1,removeAll=1)
+        if not selItem:
+            return
+        selItem=selItem[0]
+        # 根据当前显示模式，列出对应信息，状态0为材质列表，1为贴图列表
+        if self.state==0:
+            # 显示材质对应的贴图文件节点
+            shader=selItem
+            fileNodes=[]
+            # 获取材质历史记录
+            historyNodes=cmds.listHistory(shader)
+
+            if historyNodes:
+                for node in historyNodes:
+                    if cmds.nodeType(node)=='file':
+                        fileNodes.append(node)
+            for fileNode in fileNodes:
+                texturePath=cmds.getAttr(fileNode+'.fileTextureName')
+                # 获取贴图信息后检查是否为相对路径，转换为绝对路径
+                if not os.path.isabs(texturePath):
+                    texturePath=os.path.abspath(cmds.workspace(q=1,rd=1)+texturePath)
+                if os.path.exists(texturePath):
+                    cmds.textScrollList(self.rightScrollList,e=1,append=texturePath)
+
+        else:
+            # 显示贴图对应的材质节点
+            texturePath=selItem
+            fileNodes=cmds.ls(type='file')
+            relatedShaders=[]
+            for fileNode in fileNodes:
+                fileTexturePath=cmds.getAttr(fileNode+'.fileTextureName')
+                # 获取贴图信息后检查是否为相对路径，转换为绝对路径
+                if not os.path.isabs(fileTexturePath):
+                    fileTexturePath=os.path.abspath(cmds.workspace(q=1,rd=1)+fileTexturePath)
+                if os.path.exists(fileTexturePath) and os.path.abspath(fileTexturePath)==os.path.abspath(texturePath):
+                    # 找到对应的文件节点，获取连接的材质节点
+                    shadingEngines=cmds.ls(cmds.listHistory(fileNode,f=1),type='shadingEngine')
+                    for sg in shadingEngines:
+                        if sg  in  ['initialParticleSE', 'initialShadingGroup']:
+                            continue
+                        materials=cmds.ls(cmds.listConnections(sg,s=1),materials=1)
+                        print('Materials connected to SG',sg,':',materials)
+                        for mat in materials:
+                            if mat not in relatedShaders:
+                                
+                                relatedShaders.append(mat)
+                                print ('Found related shader:',mat)
+            for shader in relatedShaders:
+                cmds.textScrollList(self.rightScrollList,e=1,append=shader)
+
+
+    def assignMaterial(self,*args):
+        # 根据当前选择的材质，赋予选中的模型
+        selitem=None
+        if self.state==0:
+            selitem=cmds.textScrollList(self.leftScrollList,q=1,selectItem=1)
+        else:
+            selitem=cmds.textScrollList(self.rightScrollList,q=1,selectItem=1)
         if selitem:
-            selitem=selitem[0]
-            if '@' in selitem:
-                fileNode,texturePath=selitem.split('@')
-
-                sg=cmds.ls(cmds.listHistory(fileNode,f=1),type='shadingEngine')
-
+            mat=selitem[0]
+            selObjs=cmds.ls(sl=1,fl=1)
+            if selObjs:
+                for obj in selObjs:
+                    cmds.select(obj,r=1)
+                    cmds.hyperShade(assign=mat)
+        else:
+            om2.MGlobal.displayWarning(u'请先选择一个材质节点或贴图节点对应的材质节点！')
+        
+    # 选择模型
+    def selectModel(self,*args):
+        selitem=cmds.textScrollList(self.leftScrollList,q=1,selectItem=1)
+        if selitem:
+            meshNodes=[]
+            if self.state==0:
+                shader=selitem[0]
+                sg=cmds.ls(cmds.listHistory(shader,f=1),type='shadingEngine')
                 if sg:
-                    # 根据材质找到模型节点
-                    meshNodes=[]
+                    # 根据材质找到模型节点                    
                     for sgItem in sg:
                         # 获取材质连接的模型节点
-                        print(cmds.ls(cmds.listConnections(sgItem,d=1,shapes=1),type='mesh'))
                         meshNodes.extend(cmds.ls(cmds.listConnections(sgItem,d=1,shapes=1),type='mesh'))
-                    if meshNodes:
-                        cmds.select(meshNodes)
-    def saveOptions(self,*args):
+                    
+            else:
+                texturePath=selitem[0]
+                #print('Selected texture path:',texturePath)
+                fileNodes=cmds.ls(type='file')
+                for fileNode in fileNodes:
+                    fileTexturePath=cmds.getAttr(fileNode+'.fileTextureName')
+                    # 获取贴图信息后检查是否为相对路径，转换为绝对路径
+                    if not os.path.isabs(fileTexturePath):
+                        fileTexturePath=os.path.abspath(cmds.workspace(q=1,rd=1)+fileTexturePath)
+                    if os.path.exists(fileTexturePath) and os.path.abspath(fileTexturePath)==os.path.abspath(texturePath):
+                        # 找到对应的文件节点，获取连接的材质节点
+                        shadingEngines=cmds.ls(cmds.listHistory(fileNode,f=1),type='shadingEngine')
+                        #print('Shading engines connected to file node',fileNode,':',shadingEngines)
+                        for sg in shadingEngines:
+                            if sg  in  ['initialParticleSE', 'initialShadingGroup']:
+                                continue
+                            meshNodes.extend(cmds.ls(cmds.listConnections(sg,d=1,shapes=1),type='mesh'))
+            if meshNodes:
+                cmds.select(meshNodes)
+            else:
+                cmds.select(cl=1)
 
-        #loadCacheModel= cmds.radioButtonGrp('loadCacheType',q=1,select=1)
-        #self.toolOptions.setOption('loadCacheType','select',loadCacheModel)
-        # 保存选项
-        self.toolOptions.saveOption()
+    def saveOptions(self,*args):
+        pass
     def loadOptions(self):
-        try:
-            cmds.tabLayout('tableLayout0', edit=True, selectTab=self.toolOptions.getOption('tableLayout0','selectTab'))
-            assetsFolder=self.toolOptions.getOption('assetFolderButton','label')
-            if os.path.isdir(assetsFolder):
-                cmds.button('assetFolderButton',edit=True,label=assetsFolder)
-                self.initTreeView(assetsFolder)
-            #加载上次选择的文件
-            selFile=self.toolOptions.getOption('fileTree','selectItem')
-            if selFile!=None:   
-                if os.path.exists(selFile):
-                    #添加目录元素
-                    for fitem in os.listdir(assetsFolder):              
-                        self.treeViewAddItem(assetsFolder+'/'+fitem,assetsFolder)
-                    if selFile.lower().startswith(assetsFolder.lower()):
-                        projectPathTemp=assetsFolder
-                        #目录最后没有斜杠
-                        for pItem in os.path.dirname(selFile).replace(assetsFolder,'').split('/'):
-                            if pItem!='':
-                                projectPathTemp=projectPathTemp+'/'+pItem 
-                                self.treeViewDoubleClick(projectPathTemp,'')
-                        if cmds.treeView(self.fileTree,q=1, itemExists=selFile ):
-                            cmds.treeView(self.fileTree,e=1, selectItem=(selFile,True))
-                            cmds.treeView(self.fileTree,e=1, showItem=selFile)
-            # 加载历史文件
-            historyList=self.toolOptions.getOption('historyList','historyList')
-            if historyList!=None:
-                historyList=historyList.split(',')
-                for item in historyList:
-                    if os.path.exists(item):
-                        cmds.textScrollList(self.historyList,e=1, append=item)
-            # 加载常用文件
-            favoriteList=self.toolOptions.getOption('favoriteList','favoriteList')
-            if favoriteList!=None:
-                favoriteList=favoriteList.split(',')
-                for item in favoriteList:
-                    if os.path.exists(item):
-                        cmds.textScrollList(self.favoriteList,e=1, append=item)
-                    int_array=self.toolOptions.getOption(self.paneLayout,'paneSize')
-            # 加载ui比例
-            int_array=self.toolOptions.getOption(self.paneLayout,'paneSize')
-            if int_array:
-                int_array = [int(x) for x in (int_array.split(','))]
-                if len(int_array) == 4:
-                    cmds.paneLayout(self.paneLayout,edit=True,paneSize=[(1,100,int(int_array[3])),(1,100,int(int_array[1]))])
-                else:
-                    cmds.paneLayout(self.paneLayout,edit=True,paneSize=[(1,100,50),(1,100,50)])
-            # 加载缓存路径
-            cachePath=self.toolOptions.getOption('cacheTree','rootItem')
-            if os.path.exists(cachePath):
-                self.loadJclInPath(cachePath)
-            # 加载缓存导入模式
-            loadCacheModel=self.toolOptions.getOption('loadCacheType','select')
-            if loadCacheModel!=None:
-                cmds.radioButtonGrp('loadCacheType',edit=True,select=loadCacheModel)
-        except:
-            pass
-        #加载fbx导出选项
+        pass
     def onClose(self):
         self.saveOptions()    
 

@@ -47,7 +47,7 @@ class J_toolOptions():
             print ('file path invalid,can not save infomation')
     #读取
     def loadOption(self):
-        if os.access(os.path.dirname(self.optionPath),os.R_OK):
+        if self.optionPath and os.access(self.optionPath,os.R_OK):
             fid=Jpy.public.J_file(self.optionPath)
             options=fid.readJson()
             if options!=None:
@@ -56,7 +56,7 @@ class J_toolOptions():
         else:
             print ('file path invalid,can not load infomation')
             # 读取不到就制空
-            options={}
+            self.options={}
     # 存取工具配置 字典为3层第一层关键字是控件名称，第二层是控件属性名，第三层是属性
     def getOption(self,controlName,controlAttrbuteName):
         if controlName in self.options.keys():

@@ -11,8 +11,7 @@
 ##############################################
 import os,sys,json,subprocess
 
-#导出abc缓存,模式1普通模式,直接导出所选模型为一个整体abc文件
-#模式2单独导出每个模型文件
+# 图片序列转视频
 def p2v(compressPath,fileList=None,frameRate=24,waterMark='',outFile='',subtitle='',audio='',compression='h264'):
     # 去除路径末尾的斜杠
     if (compressPath.endswith('/'))or (compressPath.endswith('\\')):

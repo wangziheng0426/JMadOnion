@@ -21,7 +21,25 @@ class J_batchRuningManager():
     computeList=[]
     J_thread=''
     jobCountLimit=1
-    def __init__(self,fileList=[]):        
+    def __init__(self,fileList=[]):
+        winName='J_batchRuningManager_UI'
+        if cmds.window(winName,ex=1):
+            cmds.deleteUI(winName)
+        cmds.window(winName, width=400, height=600, title=u'批量运行管理器')
+        cmds.showWindow(winName)
+        self.mainLayout=cmds.formLayout( parent=winName )
+        self.treeV=cmds.treeView( self.treeV, parent=self.mainLayout)
+        
+        cmds.intSliderGrp('J_batchRuningManager_projectPath', parent=self.mainLayout, label=u'最大并发任务数', field=True, minValue=1, maxValue=8, value=1)
+        cmds.iconTextButton('J_batchRuningManager_stateContral', parent=self.mainLayout,
+                style='iconAndTextHorizontal', i='redrawPaintEffects.png', label=u'开始/停止 批量运行', height=24,l="         开启后台批处理")
+        cmds.formLayout( self.mainLayout, edit=True,
+                        attachForm=[ (self.treeV, 'top', 5), (self.treeV, 'left', 5), (self.treeV, 'right', 5),
+                                     ('J_batchRuningManager_projectPath', 'left', 5), ('J_batchRuningManager_projectPath', 'right', 5),
+                                     ('J_batchRuningManager_stateContral', 'left', 125), ('J_batchRuningManager_stateContral', 'right', 125), ( 'J_batchRuningManager_stateContral', 'bottom', 5)],
+                        attachControl=[ (self.treeV, 'bottom', 5, 'J_batchRuningManager_projectPath'),
+                                        ('J_batchRuningManager_projectPath', 'bottom', 5, 'J_batchRuningManager_stateContral') ] )          
+        
         cmds.treeView(self.treeV, edit=True, removeAll = True )
         cmds.treeView(self.treeV,edit=1, addItem=("playBlast", "") )
         cmds.treeView(self.treeV,edit=1, displayLabel=("playBlast",u"批量拍平"))

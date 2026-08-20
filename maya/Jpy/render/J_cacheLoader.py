@@ -10,7 +10,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import maya.api.OpenMaya as om2
-import re,os,json
+import re,os,json,shutil
 import Jpy.public.J_toolOptions  as J_toolOptions
 import Jpy.public
 import xgenm.xgGlobal as xgg
@@ -26,6 +26,11 @@ class  J_cacheLoader(object):
         self.toolOptions=J_toolOptions(self.winName)
         self.initUi()
         self.loadOptions()
+        # 尝试加载yeti插件,如果没有安装则忽略
+        try:
+            cmds.loadPlugin('pgYetiMaya.mll')
+        except:
+            pass
     def initUi(self):
         self.mainform=cmds.formLayout('J_cacheLoader_loadRef',p=self.winName)
         assetFolderButton=cmds.button('assetFolderButton',label=u'选择资产目录',h=25,c=self.setAssetsFolder)
@@ -160,7 +165,7 @@ class  J_cacheLoader(object):
         sel=cmds.treeView(self.fileTree,q=1, selectItem=1)
         if len(sel)>0:
             if cmds.file(q=1, modified=True):
-                res=cmds.confirmDialog(title=u'提示', message=u'当前文件尚未保存，是否继续？', button=[u'确定',u'取消'],defaultButton=u'取消',cancelButton=u'取消',dismissString=u'取消')
+                res=cmds.confirmDialog(title=u'提示', message=u'当前文件尚未保存，是否继续?', button=[u'确定',u'取消'],defaultButton=u'取消',cancelButton=u'取消',dismissString=u'取消')
                 if res==u'取消':
                     return
             cmds.file(sel[0],open=1, force=1)
@@ -176,11 +181,13 @@ class  J_cacheLoader(object):
             # 获取目录下以及子目录下所有maya文件            
             for root, dirs, files in os.walk(sel[0]):
                 for file in files:
+                    filename,ext=os.path.splitext(file)
                     if root.find('history')>-1 :
                         continue
-                    if file.endswith('.ma') or file.endswith('.mb'):
-                        if file.lower().find('_tex')>0 or file.lower().find('_hair')>0:
-                            allFiles.append(os.path.join(root, file))
+                    if ext in ['.ma','.mb']:
+                        for tagItem in ['_cfx','_hair','_tex','_srf']:
+                            if filename.lower().endswith(tagItem):
+                                allFiles.append(os.path.join(root, file).replace('\\','/'))
         elif os.path.isfile(sel[0]):
             allFiles = [sel[0]]
         allitems=cmds.textScrollList(self.favoriteList,q=1, allItems=1)
@@ -260,19 +267,14 @@ class  J_cacheLoader(object):
             cmds.treeView(self.cacheTree,edit=1, addItem=(folderPath, ''))
             cmds.treeView(self.cacheTree,edit=1, image=(folderPath, 1,'precompExportChecked.png') )
             cmds.treeView(self.cacheTree,edit=1, image=(folderPath, 2,'SP_DirClosedIcon.png') )
-            for item in os.listdir(folderPath):
-                subFolderPath=folderPath.replace('\\','/')+'/'+item
-                if os.path.isdir(folderPath+'/'+item):
-                    cmds.treeView(self.cacheTree,edit=1, addItem=(subFolderPath, folderPath))
-                    cmds.treeView(self.cacheTree,edit=1, image=(subFolderPath, 1,'precompExportChecked.png') )
-                    cmds.treeView(self.cacheTree,edit=1, image=(subFolderPath, 2,'SP_DirClosedIcon.png') )
-                    for root, dirs, files in os.walk(subFolderPath):
-                        for item in files:
-                            if  item.endswith('.abc'):
-                                jclFile=root.replace('\\','/')+'/'+item
-                                #添加子集缓存
-                                self.addNewItemToCacheTree(jclFile,subFolderPath)
-                                # 读取jcl判断缓存类型,并搜索匹配资产文件,如果找到文件,则标识为绿色,为找到标识为红色
+            for root, dirs, files in os.walk(folderPath):
+                for item in files:
+                    if  item.endswith('.abc') or item.endswith('.jyc'):
+                        jclFile=root.replace('\\','/')+'/'+item
+                        print(u'找到缓存文件:'+jclFile)
+                        #添加子集缓存
+                        self.addNewItemToCacheTree(jclFile,folderPath)
+                        # 读取jcl判断缓存类型,并搜索匹配资产文件,如果找到文件,则标识为绿色,为找到标识为红色
                         
         else:
             cmds.confirmDialog(title=u'提示', message=u'请选择一个有效的目录', button=[u'确定'])
@@ -287,8 +289,9 @@ class  J_cacheLoader(object):
             if os.path.exists(assetInfo[5]):
                 stateIcon='precompExportChecked.png'
         # 根据文件中曲线数量,模型数量判断是毛发缓存还是模型缓存
-        if abcFile.endswith('_hair.abc'):
+        if abcFile.endswith('_hair.abc') or abcFile.endswith('.jyc'):
             # 导入xgen abc
+            print(u'毛发缓存:'+abcFile)
             typeIcon='hairConvertHairSystem.png'
             if assetInfo[6]!='':
                 if os.path.exists(assetInfo[6]):
@@ -304,57 +307,71 @@ class  J_cacheLoader(object):
             if assetInfo[5]!='':
                 if os.path.exists(assetInfo[5]):
                     stateIcon='precompExportChecked.png'
+        if abcFile.find('yeti')>=0:
+            stateIcon='precompExportChecked.png'
 
         cmds.treeView(self.cacheTree,edit=1, addItem=(abcFile, folderPath))
         cmds.treeView(self.cacheTree,edit=1, image=(abcFile, 1,stateIcon) )
         cmds.treeView(self.cacheTree,edit=1, image=(abcFile, 2,typeIcon) )
     # 解析资产名称
+    # 2026-02-20 10:31:41增加适配性，通用扩展，返回信息列表[资产名,资产类型,缓存类型,输出节点名称,名字空间id,材质资产文件路径,毛发资产文件路径]
     def getAssetInfo(self,abcFile):
         # 先拆分文件名和目录
         # 以 A:\project\madOnionTestProject\sim\cam001s\cache\abc\ch01_rig@fur01_hair.abc为例
         # 资产类型以下划线区分
+        # assetName,assetType,cacheType,outPutNode,namespaceId,texFileName,cfxFileName
         abcFileName = os.path.basename(abcFile)
         abcFileNoExt= os.path.splitext(abcFileName)[0]
-        # 文件名内以@分段,@之前为资产:名称_资产分类,用于加载的缓存可以没有类型后缀:_rig _cfx _mod _tex,
-        # 如果没有后缀,则规定@之前为角色名称,@之后为导出的节点名_缓存类型
+        assetName=''
         assetType = ''
-        # 正则匹配找出字符串中符合_rig _cfx _mod _tex的字符串
-        pattern = re.compile(r'(_rig|_cfx|_hair|_mod|_tex|_srf)', re.IGNORECASE)
-        match = pattern.search(abcFileNoExt.split('@')[0])
+        cacheType=''
+        outPutNode=''
+        namespaceId=''
+        texFileName=''
+        cfxFileName=''
+
+        # 文件名内以@分段,@之前为资产:名称_资产分类,用于加载的缓存可以没有类型后缀:_rig _cfx _mod _tex,
+        # 如果没有后缀,则规定@之前为角色名称,@之后为导出的节点名_缓存类型        
+        
+        if abcFileNoExt.find('@')<0:
+            print(u'文件名不规范,未找到@分隔符,解析资产信息可能不准确:'+abcFileName)
+        
+        # 正则匹配找出字符串中符合_rig _cfx _mod _tex _hair 且不能为_hair.abc结尾的字符的字符串
+        pattern = re.compile(r'(_rig|_cfx|_mod|_tex|_hair)(?!\.abc)', re.IGNORECASE)
+        match = pattern.search(abcFileNoExt)
         if match:
             assetType = match.group(0)
-        # 名字空间id主要是解决一个镜头内相同角色多次导入问题
-        namespaceId=''
-        # 资产名称中不允许有数字,避免和名字空间序列号冲突
-        pattern = re.compile(r'(\d+)')
-        match = pattern.search(abcFileNoExt.split('@')[0])
-        if match:  
-            namespaceId = match.group(0)
+            if assetType.startswith('_'):
+                assetType=assetType[1:]# 去掉类型前的下划线
         #资产名称解析,如果没找到类型,则@之前都是资产名称
         assetName=abcFileNoExt.split('@')[0]
         if len(assetType)>0:
             # 如果有类型,则去掉类型
-            assetName = assetName.split(assetType)[0]
-            assetType=assetType[1:]
-        # 解析缓存类型
-        cacheType=''
-        pattern = re.compile(r'(_cfx|_hair|_cloth|_camera)', re.IGNORECASE)
-        match = pattern.search(abcFileNoExt.split('@')[-1])
+            assetName = assetName.split('_'+assetType)[0]
+        # 名字空间id主要是解决一个镜头内相同角色多次导入问题,资产类型后面的数字为名字空间id,如果没有数字则默认为空
+        pattern = re.compile(r'('+'_'+assetType+'\d+)')
+        match = pattern.search(abcFileNoExt.split('@')[0])
+        if match:  
+            namespaceId = match.group(0).replace('_'+assetType,'')# 去掉类型前的下划线和类型名称,只保留数字部分作为名字空间id
+        # 解析缓存类型,如果文件名中包含_hair.abc则为毛发缓存,如果包含_cloth.abc则为布料缓存,如果包含_camera.abc则为摄像机缓存
+        pattern = re.compile(r'(_hair|_cloth|_camera|_yeti)', re.IGNORECASE)
+        match = pattern.search(abcFileNoExt)
         if match:
             cacheType = match.group(0)
+            if cacheType.startswith('_'):
+                cacheType=cacheType[1:]# 去掉类型前的下划线
+
         # 解析导出的节点
-        outPutNode=abcFileNoExt.split('@')[-1].split(cacheType)[0]
-        cacheType=cacheType[1:]
+        outPutNode=abcFileNoExt.split('@')[-1].split('_'+cacheType)[0]
         # 根据解析到的信息搜索资产文件
         # 先搜索常用列表,如果没有,则搜索指定的资产目录
         favoriteList=cmds.textScrollList(self.favoriteList,q=1, allItems=1)
         # 目标资产名称应当为: assetName + cfx|tex 目录应包含/assetName/ 使用文件名和目录双重验证避免出错
-        texFileName=''
-        cfxFileName=''
+        
         texAssetFileFound=False
         cfxAssetFileFound=False
         # 根据缓存类型,确定要找的文件
-        assetFileSuffix=['_cfx','_hair','_tex']
+        assetFileSuffix=['_cfx','_hair','_tex','_srf']
         # 如果是毛发缓存,则需要查找_cfx或_hair后缀的文件,如果是布料缓存,则需要查找_tex或_srf后缀的文件
         # if cacheType.lower()=='cfx' or cacheType.lower()=='hair':
         #     assetFileSuffix=['_cfx','_hair']
@@ -382,39 +399,39 @@ class  J_cacheLoader(object):
                                 cfxFileName=item
                                 cfxAssetFileFound=True
                             
-                if texAssetFileFound:
-                    print(u'常用列表中找到资产文件:'+texFileName)
-                if cfxAssetFileFound:
-                    print(u'常用列表中找到资产文件:'+cfxFileName)
                 if texAssetFileFound and cfxAssetFileFound:
                     break
+            if texAssetFileFound:
+                print(u'常用列表中找到资产文件:'+texFileName)
+            if cfxAssetFileFound:
+                print(u'常用列表中找到资产文件:'+cfxFileName)
         # 如果常用列表中没有找到,则搜索指定的资产目录
-        if not texAssetFileFound or not cfxAssetFileFound:
-            # 搜索指定的资产目录
-            assetFolder=cmds.button('assetFolderButton',q=1,label=1)
-            if os.path.isdir(assetFolder):
-                # 读取资产目录                
-                for root, dirs, files in os.walk(assetFolder):
-                    # 历史菜单略过
-                    if 'history' in root:
-                        continue
-                    for item in files:
-                        # 查找文件名不区分大小写
-                        itemLower=item.lower()
-                        #if root.replace('\\','/').find('/'+assetName.lower()+'/')>0 :
-                        if itemLower.endswith('.ma') or itemLower.endswith('.mb'):
-                            itemPath=root.replace('\\','/')+'/'+item
-                            for suffixItem in assetFileSuffix:
-                        # 如果文件名包含资产名称和类型,则认为是目标文件
-                                if itemLower.find(assetName.lower()+suffixItem.lower())>=0:
-                                    # 如果是材质文件
-                                    if suffixItem.lower() in ['_tex','_srf']:
-                                        texFileName=itemPath
-                                        texAssetFileFound=True
-                                    # 如果是毛发文件
-                                    if suffixItem.lower() in ['_cfx','_hair']:
-                                        cfxFileName=itemPath
-                                        cfxAssetFileFound=True
+        # if not texAssetFileFound or not cfxAssetFileFound:
+        #     # 搜索指定的资产目录
+        #     assetFolder=cmds.button('assetFolderButton',q=1,label=1)
+        #     if os.path.isdir(assetFolder):
+        #         # 读取资产目录                
+        #         for root, dirs, files in os.walk(assetFolder):
+        #             # 历史菜单略过
+        #             if 'history' in root:
+        #                 continue
+        #             for item in files:
+        #                 # 查找文件名不区分大小写
+        #                 itemLower=item.lower()
+        #                 #if root.replace('\\','/').find('/'+assetName.lower()+'/')>0 :
+        #                 if itemLower.endswith('.ma') or itemLower.endswith('.mb'):
+        #                     itemPath=root.replace('\\','/')+'/'+item
+        #                     for suffixItem in assetFileSuffix:
+        #                 # 如果文件名包含资产名称和类型,则认为是目标文件
+        #                         if itemLower.find(assetName.lower()+suffixItem.lower())>=0:
+        #                             # 如果是材质文件
+        #                             if suffixItem.lower() in ['_tex','_srf']:
+        #                                 texFileName=itemPath
+        #                                 texAssetFileFound=True
+        #                             # 如果是毛发文件
+        #                             if suffixItem.lower() in ['_cfx','_hair']:
+        #                                 cfxFileName=itemPath
+        #                                 cfxAssetFileFound=True
         # [资产名,资产类型,缓存类型,输出节点名称,名字空间id,材质资产文件路径,毛发资产文件路径]
         #print([assetName,assetType,cacheType,outPutNode,namespaceId,texFileName,cfxFileName])
         print('-----------------------------------')
@@ -434,39 +451,31 @@ class  J_cacheLoader(object):
         if allItems==None:
             cmds.confirmDialog(title=u'提示', message=u'没有加载缓存', button=[u'确定'])
             return
-        cacheItems=cmds.treeView(self.cacheTree,q=1, selectItem=1)
-        if cacheItems==None:
-            cacheItems=cmds.treeView(self.cacheTree,q=1, children='')
-        for item in cacheItems:
-            # 导入缓存,按窗口按钮导入仅可导入文件夹级别,导入前先检索整个文件夹下的abc文件,先导入cloth结尾的abc因为要驱动毛发生长面
-            if os.path.isdir(item) and item !=allItems[0]:
-                # 先找cloth结尾的abc
-                assetInfo=None
-                for root, dirs, files in os.walk(item):
-                    for file in files:
-                        if file.endswith('_cloth.abc'):
-                            clothAbcFile=root.replace('\\','/')+'/'+file
-                            assetInfo=self.getAssetInfo(clothAbcFile)
-                            print(assetInfo)
-                            self.importCacheFromAbc(clothAbcFile, assetInfo)
-                        if file.endswith('_camera.abc'):
-                            cameraAbcFile=root.replace('\\','/')+'/'+file
-                            # 如果是摄像机缓存,则直接导入
-                            if os.path.exists(cameraAbcFile):
-                                print(u'导入摄像机缓存:'+cameraAbcFile)
-                                cmds.AbcImport(cameraAbcFile,mode='import',fitTimeRange=True)
+        selectedItems=cmds.treeView(self.cacheTree,q=1, selectItem=1)
+        if selectedItems==None:
+            selectedItems=cmds.treeView(self.cacheTree,q=1, children='')
+        # 导入缓存,按窗口按钮导入仅可导入文件夹级别,导入前先检索整个文件夹下的abc文件,先导入cloth结尾的abc因为要驱动毛发生长面
+        for item in selectedItems:            
+            if item.endswith('_cloth.abc') :
+                print(u'找到布料缓存:'+item)
+                self.importCacheFromAbc(item)
+            if item.endswith('_camera.abc'):
+                print(u'找到摄像机缓存:'+item)
+                # 如果是摄像机缓存,则直接导入
+                cmds.AbcImport(item,mode='import',fitTimeRange=True)
                 # 再找hair结尾的abc
-                for root, dirs, files in os.walk(item):
-                    for file in files:
-                        if file.endswith('_hair.abc'):
-                            hairAbcFile=root.replace('\\','/')+'/'+file
-                            self.importCacheFromAbc(hairAbcFile, assetInfo)
+        for item in selectedItems:
+            if item.endswith('_hair.abc') or item.endswith('.jyc'):
+                print(u'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+                print(u'找到毛发缓存:'+item)
+                self.importCacheFromAbc(item)
     # abcFile abc文件  assetInfo [资产名,资产类型,缓存类型,输出节点名称,名字空间id,材质资产文件路径,毛发资产文件路径]
-    def importCacheFromAbc(self,abcFile, assetInfo):
-        print('abcFile:'+abcFile)
+    def importCacheFromAbc(self,abcFile):
+        importResult=abcFile + u'未导入'
+        assetInfo = self.getAssetInfo(abcFile)
         if not os.path.exists(abcFile):
             print(abcFile+u'缓存文件不存在,请检查路径')
-            return
+            return importResult
         # 如果abc是cloth类型则引入渲染资产
         if abcFile.endswith('_cloth.abc'):
             assetFile=assetInfo[5]
@@ -474,8 +483,9 @@ class  J_cacheLoader(object):
             print (u'引入渲染文件：'+ assetFile)
             if not os.path.exists(assetFile):
                 print('!'+assetFile+u'渲染资产文件不存在,请检查路径')
-                return
-                
+                importResult=abcFile+u'对应的渲染资产文件不存在,请检查路径'
+                return importResult
+            # 引用渲染资产
             texRefFile=cmds.file(assetFile, reference=True,prompt=0, mergeNamespacesOnClash=False, namespace=assetFileNameNoExt)
             texRefNode=cmds.referenceQuery(texRefFile,referenceNode=True)
             # 名字空间
@@ -502,7 +512,7 @@ class  J_cacheLoader(object):
                 # 如果名字空间是:开头,则去掉
                 if hairRefNameSpace.startswith(":"):
                     hairRefNameSpace=hairRefNameSpace[1:]
-                    # 布料缓存
+            # 布料缓存
             # 获取缓存加载模式 布料分为blendShape和abcMerge两种模式
             loadCacheType=cmds.radioButtonGrp('loadCacheType',q=1,select=1)
             if loadCacheType==1:
@@ -514,6 +524,7 @@ class  J_cacheLoader(object):
                     print (u'使用abc:'+abcFile+u' merge到'+nodeToMergeAbc)
                 else:
                     print (u'没有找到节点：'+nodeToMergeAbc+u'，请检查')
+                    importResult=abcFile+u'未找到对应的输出节点:'+nodeToMergeAbc+u'，请检查'
 
                 # 如果有毛发资产,则再融合毛发资产
                 if hairRefNode!=None:
@@ -551,8 +562,12 @@ class  J_cacheLoader(object):
                                         bsNode=cmds.blendShape(abcMesh,texRefMesh,origin='world',name=abcMeshName+'_blendShape')
                                         cmds.blendShape(bsNode,edit=True,weight=[(0,1)])
                                         print (u'添加blendShape:'+abcMeshName+u'_blendShape')
+                                        importResult=abcFile+u'成功导入,并添加blendShape'
                                     except Exception as e:
                                         print (u'添加blendShape失败:'+abcMeshName+u'_blendShape,错误信息:'+str(e))
+                else:
+                    print (u'没有找到渲染资产中的模型,无法添加blendShape')
+                    importResult=abcFile+u'未找到对应的模型节点，请检查'
                 if hairRefNode!=None:
                     hairRefMeshs=cmds.ls(cmds.referenceQuery(hairRefNode,showDagPath=True,nodes=True),type='mesh')
                     # 逐个比较节点名称,将匹配的模型进行顶点数比较,相同则添加blendShape
@@ -578,34 +593,164 @@ class  J_cacheLoader(object):
                                             print (u'添加blendShape失败:'+abcMeshName+u'_blendShape,错误信息:'+str(e))
 
                 print('abcMeshs:',abcMeshs)
-        # 如果是毛发缓存
+        # 如果是毛发缓存,优先适配xgen,如果没有找到匹配的xgen描述符,则匹配hair系统，找到对应的hair系统后，关闭系统内原有毛囊，
+        # 并将abc文件导入，连接到系统中,如果没有找到对应的hair系统,则提示用户没有找到匹配的毛发系统,请检查文件命名是否规范或者手动导入缓存
         if abcFile.endswith('_hair.abc'):
             # 毛发缓存
             # 先判断是否有xgen描述符
+            xgenNodeFound=False
             if xgg.Maya:
                 #palette is collection, use palettes to get collections first.
                 palettes = xg.palettes()
-                hairName=abcFile.split('@')[-1].split('_hair')[0]
+                xgenName=abcFile.split('@')[-1].split('_hair')[0]
                 for palette in palettes:
-                    print ("Collection:" + palette)
+                    #print ("Collection:" + palette)
                     if (palette.find(assetInfo[0])<0):
+                        print('Collection:'+palette+u'不匹配,跳过')
                         continue
                     #Use descriptions to get description of each collection
                     descriptions = xg.descriptions(palette)
                     for description in descriptions:
                         #xg.setAttr('renderer','Arnold Renderer',palette,description,'RendermanRenderer')
-                        # 正则匹配节点名称为 资产名+名字空间id+输出节点名称
-                        #print(r'('+assetInfo[0]+'_?.*?'+str(assetInfo[4])+':'+hairName+')')
-                        pattern = re.compile(r'('+assetInfo[0]+'_?.*?'+str(assetInfo[4])+':'+hairName+')')
+                        # 正则匹配节点名称为 资产名+名字空间id+输出节点名称 [0资产名,4名字空间id]
+                        pattern = re.compile(r'('+assetInfo[0]+'_?\D*?'+str(assetInfo[4])+':'+xgenName+')')
                         match = pattern.search(description)
                         if match:
+                            print(u'找到匹配的xgen描述符:'+description)
                             self.loadXgenCache(abcFile,palette,description)
+                            xgenNodeFound=True
                             break
                 if xgg.DescriptionEditor: 
                     xgg.DescriptionEditor.refresh("Full")
+            if xgenNodeFound:
+                print(u'成功加载xgen缓存:'+abcFile)
+                return importResult
+            # 加载nhair缓存
+            hairNodes=cmds.ls(type='hairSystem')
+            # 正则匹配节点名称为 资产名+名字空间id+输出节点名称 [0资产名,4名字空间id]
+            for hairNode in hairNodes:
+                hairTrNode=cmds.listRelatives(hairNode, parent=True)[0]
+                hairTrNodeName=hairTrNode.split('|')[-1].split(':')[-1]
+                # 对毛发节点名称进行正则匹配，不符合规则的跳过，避免误匹配
+                hairNamePattern = re.compile(r'('+assetInfo[0]+'_?\D*?'+str(assetInfo[4])+')')
+                print('毛发系统:'+hairNode+u'进行正则匹配:'+assetInfo[0]+'_?\D*?'+str(assetInfo[4]))
+                hairNameMatch = hairNamePattern.search(hairNode)
+                if not hairNameMatch:
+                    # print('毛发系统:'+hairNode+u'不匹配,跳过')
+                    continue
+                print('毛发系统:'+hairNode+u'正则匹配通过,继续匹配输出节点名称:'+assetInfo[3])
+                pattern = re.compile(r'('+assetInfo[0]+'_?\D*?'+str(assetInfo[4])+'@'+hairTrNodeName+')')
+                print(assetInfo[0]+'_?\D*?'+str(assetInfo[4])+'@'+hairTrNodeName)
+                match = pattern.search(abcFile)
+                hairMesh=''
+                # 如果找到匹配的hair系统,则连接abc缓存到hair系统,需要符合正则表达式: 资产名+名字空间id+@+输出节点名称,
+                # 其中名字空间id可以没有,输出节点名称必须有,且与文件名一致
+                
 
+                if match:
+                    print(u'找到匹配的hair系统:'+hairNode)
+                    print(match.group(0))
+                    # 连接abc缓存到hair系统
+                    abcGroupNode=cmds.createNode('transform',name=assetInfo[0]+str(assetInfo[4])+'_nHairCache')
+                    hairAbcNode=cmds.AbcImport(abcFile,mode= 'import',reparent=abcGroupNode,fitTimeRange=True)
+                    # 隐藏原有毛囊
+                    follicles=cmds.listConnections(hairNode+'.inputHair',sh=1,type='follicle')
+                    if follicles:
+                        # 查询毛囊的模型
+                        hairMesh=cmds.listConnections(follicles[0]+'.inputMesh',sh=1,type='mesh')
+                        # 关闭所有之前的毛囊，使其不再运行
+                        for follicle in follicles:
+                            cmds.setAttr(follicle+'.nodeState',2)
+                    
+                    # 列出所有abc导入的曲线
+                    allAbcCurves=cmds.listConnections(hairAbcNode,type='nurbsCurve')
+                    cmds.select(allAbcCurves)
+                    print(u'导入毛发缓存:'+abcFile+u',连接到hair系统:'+hairNode)
+                    mel.eval('J_assignHairSystem '+hairNode+';')
+                    # 设置所有毛囊 1连接到hair系统的模型 2修改startDirection值为0 3修改restPose 值为1
+                    if cmds.objExists(hairMesh[0]):
+                        follicles=cmds.listConnections(hairNode+'.inputHair',sh=1,type='follicle')
+                        # 毛发系统设为静态
+                        cmds.setAttr(hairNode+'.simulationMethod',1)
+                        for follicle in follicles:
+                            nodeState=cmds.getAttr(follicle+'.nodeState')
+                            if nodeState==2:
+                                print(u'毛囊:'+follicle+u'处于关闭状态,跳过连接')
+                                continue
+                            cmds.connectAttr(hairMesh[0]+'.worldMatrix[0]',follicle+'.inputWorldMatrix',f=1)
+                            cmds.connectAttr(hairMesh[0]+'.outMesh',follicle+'.inputMesh',f=1)
+                            cmds.setAttr(follicle+'.startDirection',0)
+                            cmds.setAttr(follicle+'.restPose',1)
+                    break
+                else:
+                    print(u'没有找到匹配的毛发系统:'+hairNode+u'，请检查文件命名是否规范或者手动导入缓存')
 
+        # 匹配yeti缓存
+        if abcFile.find('yeti')>=0:
+            cachePath=os.path.dirname(abcFile)
+            fileId=open(abcFile,'r')
+            yetiInfo=json.load(fileId)
+            fileId.close()
+            for yetiDicItem in yetiInfo:
+                #检查yeti节点是否存在，否则创建
+                yetiCacheNodeName=yetiDicItem['yetiNodeName']
+                # 以@拆分节点名称和名字空间，名字空间可选
+                yetiNode=yetiCacheNodeName
+                yetiNodeNamespace=yetiDicItem['nameSpace']
+                assetType=yetiDicItem['nameSpace']
+                pattern = re.compile(r'(_rig|_cfx|_mod|_tex|_hair)(?!\.abc)', re.IGNORECASE)
+                match = pattern.search(yetiNodeNamespace)
+                if match:
+                    assetType = match.group(0)
+                    if assetType.startswith('_'):
+                        assetType=assetType[1:]# 去掉类型前的下划线
+                assetName=yetiNodeNamespace.split('_'+assetType)[0]
+                yetiNodeNameSpaceId= yetiDicItem['nameSpaceId']
+                yetiNodeName=yetiCacheNodeName.split(':')[-1]
+                # 正则匹配节点名称为 资产名+名字空间id+输出节点名称 [0资产名,4名字空间id]
+                pattern = re.compile(r'('+assetName+'_?\D*?'+str(yetiNodeNameSpaceId)+':'+yetiNodeName+')')
 
+                for yetiItem in cmds.ls(type='pgYetiMaya'):
+                    print('yeti节点:'+yetiItem+u'进行正则匹配:'+assetName+'_?\D*?'+str(yetiNodeNameSpaceId)+':'+yetiNodeName)
+                    match = pattern.search(yetiItem)
+                    if match:
+                        yetiNode=yetiItem
+                        print(u'找到匹配的yeti节点:'+yetiNode)
+                        break
+                if not cmds.objExists(yetiNode):
+                    cmds.createNode('pgYetiMaya',n=yetiNode)
+                    cmds.connectAttr('time1.outTime',yetiNode+'.currentTime')
+                    #导入材质球
+                    if not cmds.objExists(yetiDicItem['yetiSG']):            
+                        sgNode=cmds.sets(renderable=True,noSurfaceShader=True,empty=True, name=yetiDicItem['yetiSG'])
+                        shaderFile=cachePath+'/'+yetiDicItem['relativePath']+'/'+yetiDicItem['yetiShaderPath'] 
+                        if os.path.exists(shaderFile):
+                            try:
+                                cmds.file(shaderFile,i=1,type="mayaAscii",ignoreVersion=1,ra=1,mergeNamespacesOnClash=1,ns=":")
+                            except:
+                                pass
+                        if yetiDicItem['yetiShaderName']!="" and cmds.objExists(yetiDicItem['yetiShaderName']):
+                            cmds.connectAttr(yetiDicItem['yetiShaderName']+'.outColor',sgNode+'.surfaceShader')
+                        cmds.sets(yetiNode,fe=sgNode, e=True)
+                    #导入预设
+                    presetsPath=cmds.internalVar(userPresetsDir=True)+'/attrPresets/pgYetiMaya/'
+                    if not os.path.exists(presetsPath):
+                        os.makedirs(presetsPath)
+                    shutil.copy(cachePath+'/'+yetiDicItem['relativePath']+'/'+yetiDicItem['yetiPreset'],presetsPath)
+                    cmds.select(yetiNode)
+                    mel.eval('applyAttrPreset '+yetiNode+' '+yetiNode.replace(':','_')+' 1')
+                # 显示yeti节点
+                if cmds.objExists(yetiNode):
+                    parentTrNode=cmds.listRelatives(yetiNode,p=True)
+                    if parentTrNode!=None and len(parentTrNode)>0:
+                        cmds.setAttr(parentTrNode[0]+'.v',1)
+                
+                cmds.setAttr(yetiNode+".fileMode",1)
+                try:
+                    cmds.setAttr(yetiNode+".cacheFileName",cachePath+'/'+yetiDicItem['relativePath']+'/'+yetiDicItem['yetiCacheName'],type='string')
+                except:
+                    pass           
+        return importResult
     # xgen加缓存
     def loadXgenCache(self,abcFile,palette,description):
         xg.setAttr('useCache','true',palette,description,'SplinePrimitive')

@@ -224,6 +224,7 @@ class J_nHairTool(object):
             par=cmds.listRelatives(item, p=True, fullPath=True)
             pos=cmds.xform(par[0]+'.ep[0]',q=1,ws=1,t=1)
             cmds.setAttr(par[0]+'.rotatePivot',pos[0],pos[1],pos[2],type='float3')
+            cmds.setAttr(par[0]+'.scalePivot',pos[0],pos[1],pos[2],type='float3')
 
 
     def J_createDynCurve(self,curveSpine=0):
